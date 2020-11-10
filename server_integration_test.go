@@ -7,7 +7,7 @@ import (
 )
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
-	store := &InMemorySubscriptionStore{}
+	store := NewInMemorySubscriptionStore()
 	server := NewSubscriptionServer(store)
 	subscription := Subscription{1, "Netflix", 100, "30"}
 
