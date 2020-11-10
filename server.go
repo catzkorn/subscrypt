@@ -19,8 +19,10 @@ func NewSubscriptionServer(store SubscriptionStore) *SubscriptionServer {
 func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
+		w.Header().Set("content-type", "application/json")
 		json.NewEncoder(w).Encode(s.store.GetSubscriptions())
 	case http.MethodPost:
+		w.Header().Set("content-type", "application/json")
 		var subscription Subscription
 
 		err := json.NewDecoder(r.Body).Decode(&subscription)

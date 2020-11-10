@@ -41,7 +41,7 @@ func TestGETSubscriptions(t *testing.T) {
 
 		assertStatus(t, response.Code, http.StatusOK)
 		assertSubscriptions(t, got, wantedSubscriptions)
-
+		assertContentType(t, response, jsonContentType)
 	})
 }
 
@@ -68,6 +68,7 @@ func TestStoreSubscription(t *testing.T) {
 			t.Errorf("did not store correct winner got %q want %q", store.subscriptions[0], subscription)
 		}
 
+		assertContentType(t, response, jsonContentType)
 	})
 }
 
@@ -75,6 +76,22 @@ func assertStatus(t *testing.T, got, want int) {
 	t.Helper()
 	if got != want {
 		t.Errorf("did not get correct status, got %d, want %d", got, want)
+	}
+}
+
+func assertSubscriptions(t *testing.T, got, want []Subscription) {
+	t.Helper()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v want %v", got, want)
+	}
+}
+
+const jsonContentType = "application/json"
+
+func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want string) {
+	t.Helper()
+	if response.Result().Header.Get("content-type") != want {
+		t.Errorf("response did not have content-type of %s, got %v", want, response.Result().Header)
 	}
 }
 
@@ -87,13 +104,6 @@ func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions [
 	}
 
 	return
-}
-
-func assertSubscriptions(t *testing.T, got, want []Subscription) {
-	t.Helper()
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v want %v", got, want)
-	}
 }
 
 func newGetSubscriptionRequest() *http.Request {
