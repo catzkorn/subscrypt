@@ -23,7 +23,12 @@ func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.
 	case http.MethodGet:
 		json.NewEncoder(w).Encode(s.store.GetSubscriptions())
 	case http.MethodPost:
-		subscription := Subscription{1, "Netflix", 100, "30"}
+		var subscription Subscription
+
+		err := json.NewDecoder(r.Body).Decode(&subscription)
+		if err != nil {
+			//TODO: log and return error
+		}
 		s.store.RecordSubscription(subscription)
 		w.WriteHeader(http.StatusAccepted)
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -118,6 +119,8 @@ func newGetSubscriptionRequest() *http.Request {
 }
 
 func newPostSubscriptionRequest(subscription Subscription) *http.Request {
-	req, _ := http.NewRequest(http.MethodPost, "/", nil)
+	postBody, _ := json.Marshal(subscription)
+	req, _ := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(postBody))
+
 	return req
 }
