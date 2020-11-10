@@ -17,6 +17,10 @@ func (s *StubSubscriptionStore) GetSubscriptions() []Subscription {
 	return []Subscription{{1, "Netflix", 100, "30"},}
 }
 
+func (s *StubSubscriptionStore) RecordSubscription(subscription Subscription) {
+	s.subscriptions = append(s.subscriptions, subscription)
+}
+
 func TestGETSubscriptions(t *testing.T) {
 	t.Run("Returns 200 OK", func(t *testing.T) {
 		store := &StubSubscriptionStore{}
@@ -52,13 +56,34 @@ func TestStoreSubscription(t *testing.T) {
 	t.Run("returns 202 Accepted", func(t *testing.T) {
 		store := &StubSubscriptionStore{}
 		server := NewSubscriptionServer(store)
-
-		request := newPostSubscriptionRequest()
+		subscription := Subscription{1, "Netflix", 100, "30"}
+		request := newPostSubscriptionRequest(subscription)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusAccepted)
+	})
+
+	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
+		subscription := Subscription{1, "Netflix", 100, "30"}
+
+		store := &StubSubscriptionStore{}
+		server := NewSubscriptionServer(store)
+
+		request := newPostSubscriptionRequest(subscription)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		if len(store.subscriptions) != 1 {
+			t.Errorf("got %d calls to RecordSubscription want %d", len(store.subscriptions), 1)
+		}
+
+		if store.subscriptions[0] != subscription {
+			t.Errorf("did not store correct winner got %q want %q", store.subscriptions[0], subscription)
+		}
+
 	})
 }
 
@@ -92,7 +117,7 @@ func newGetSubscriptionRequest() *http.Request {
 	return req
 }
 
-func newPostSubscriptionRequest() *http.Request {
+func newPostSubscriptionRequest(subscription Subscription) *http.Request {
 	req, _ := http.NewRequest(http.MethodPost, "/", nil)
 	return req
 }

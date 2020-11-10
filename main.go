@@ -5,10 +5,16 @@ import (
 	"net/http"
 )
 
-type InMemorySubscriptionStore struct{}
+type InMemorySubscriptionStore struct{
+	subscriptions []Subscription
+}
 
 func (i *InMemorySubscriptionStore) GetSubscriptions() []Subscription {
 	return []Subscription{{1, "Netflixy", 100, "30"},}
+}
+
+func (i *InMemorySubscriptionStore) RecordSubscription(subscription Subscription) {
+	i.subscriptions = append(i.subscriptions, subscription)
 }
 
 func main() {

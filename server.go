@@ -23,9 +23,12 @@ func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.
 	case http.MethodGet:
 		json.NewEncoder(w).Encode(s.store.GetSubscriptions())
 	case http.MethodPost:
+		subscription := Subscription{1, "Netflix", 100, "30"}
+		s.store.RecordSubscription(subscription)
 		w.WriteHeader(http.StatusAccepted)
 	}
 }
+
 
 type SubscriptionServer struct {
 	store SubscriptionStore
@@ -34,6 +37,7 @@ type SubscriptionServer struct {
 
 type SubscriptionStore interface {
 	GetSubscriptions() []Subscription
+	RecordSubscription(subscription Subscription)
 }
 
 type Subscription struct {
