@@ -14,11 +14,13 @@ func TestGETSubscriptions(t *testing.T) {
 
 		SubscriptionServer(response, request)
 
-		got := response.Code
-		want := http.StatusOK
-
-		if got != want {
-			t.Errorf("did not get correct status, got %d, want %d", got, want)
-		}
+		assertStatus(t, response.Code, http.StatusOK)
 	})
+}
+
+func assertStatus(t *testing.T, got, want int) {
+	t.Helper()
+	if got != want {
+		t.Errorf("did not get correct status, got %d, want %d", got, want)
+	}
 }
