@@ -7,8 +7,8 @@ import (
 
 type InMemorySubscriptionStore struct{}
 
-func (i *InMemorySubscriptionStore) GetSubscriptions() string {
-	return "test"
+func (i *InMemorySubscriptionStore) GetSubscriptions() []Subscription {
+	return []Subscription{{1, "Netflixy", 100, "30"},}
 }
 
 func main() {

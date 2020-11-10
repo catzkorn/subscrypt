@@ -1,17 +1,18 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
 type StubSubscriptionStore struct {
-
+	subscriptions []Subscription
 }
 
-func (s *StubSubscriptionStore) GetSubscriptions() string {
-	return "test"
+func (s *StubSubscriptionStore) GetSubscriptions() []Subscription {
+	return []Subscription{{1, "Netflix", 100, "30"},}
 }
 
 func TestGETSubscriptions(t *testing.T) {
@@ -24,6 +25,29 @@ func TestGETSubscriptions(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusOK)
+	})
+	
+	t.Run("return a JSON of subscription", func(t *testing.T) {
+		wantedSubscriptions := []Subscription{
+			{1, "Netflix", 100, "30"},
+		}
+
+		store := StubSubscriptionStore{wantedSubscriptions}
+		server := NewSubscriptionServer(&store)
+
+		request, _ := http.NewRequest(http.MethodGet, "/", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		var got []Subscription
+
+		err := json.NewDecoder(response.Body).Decode(&got)
+
+		if err != nil {
+			t.Fatalf("Unable to parse response from server %q into slice of Subscription, '%v'", response.Body, err)
+		}
+
 	})
 }
 

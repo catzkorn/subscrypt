@@ -1,6 +1,9 @@
 package main
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 func NewSubscriptionServer(store SubscriptionStore) *SubscriptionServer {
 	s := new(SubscriptionServer)
@@ -16,7 +19,7 @@ func NewSubscriptionServer(store SubscriptionStore) *SubscriptionServer {
 }
 
 func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
-
+	json.NewEncoder(w).Encode(s.store.GetSubscriptions())
 }
 
 type SubscriptionServer struct {
@@ -25,5 +28,12 @@ type SubscriptionServer struct {
 }
 
 type SubscriptionStore interface {
-	GetSubscriptions() string
+	GetSubscriptions() []Subscription
+}
+
+type Subscription struct {
+	Id int
+	Name string
+	Amount int
+	DueDate string
 }
