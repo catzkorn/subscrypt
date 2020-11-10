@@ -22,7 +22,6 @@ func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.
 		w.Header().Set("content-type", "application/json")
 		json.NewEncoder(w).Encode(s.store.GetSubscriptions())
 	case http.MethodPost:
-		w.Header().Set("content-type", "application/json")
 		var subscription Subscription
 
 		err := json.NewDecoder(r.Body).Decode(&subscription)

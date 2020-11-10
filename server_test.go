@@ -68,7 +68,6 @@ func TestStoreSubscription(t *testing.T) {
 			t.Errorf("did not store correct winner got %q want %q", store.subscriptions[0], subscription)
 		}
 
-		assertContentType(t, response, jsonContentType)
 	})
 }
 
