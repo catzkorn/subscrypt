@@ -10,7 +10,7 @@ type InMemorySubscriptionStore struct{
 }
 
 func (i *InMemorySubscriptionStore) GetSubscriptions() []Subscription {
-	return []Subscription{{1, "Netflixy", 100, "30"},}
+	return i.subscriptions
 }
 
 func (i *InMemorySubscriptionStore) RecordSubscription(subscription Subscription) {
