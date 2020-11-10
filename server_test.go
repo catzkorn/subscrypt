@@ -48,6 +48,20 @@ func TestGETSubscriptions(t *testing.T) {
 	})
 }
 
+func TestStoreSubscription(t *testing.T) {
+	t.Run("returns 202 Accepted", func(t *testing.T) {
+		store := &StubSubscriptionStore{}
+		server := NewSubscriptionServer(store)
+
+		request, _ := http.NewRequest(http.MethodPost, "/", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusAccepted)
+	})
+}
+
 func assertStatus(t *testing.T, got, want int) {
 	t.Helper()
 	if got != want {

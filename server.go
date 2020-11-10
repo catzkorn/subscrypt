@@ -19,7 +19,12 @@ func NewSubscriptionServer(store SubscriptionStore) *SubscriptionServer {
 }
 
 func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(s.store.GetSubscriptions())
+	switch r.Method {
+	case http.MethodGet:
+		json.NewEncoder(w).Encode(s.store.GetSubscriptions())
+	case http.MethodPost:
+		w.WriteHeader(http.StatusAccepted)
+	}
 }
 
 type SubscriptionServer struct {
