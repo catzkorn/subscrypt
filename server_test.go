@@ -15,7 +15,7 @@ type StubSubscriptionStore struct {
 }
 
 func (s *StubSubscriptionStore) GetSubscriptions() []Subscription {
-	return []Subscription{{1, "Netflix", 100, "30"},}
+	return []Subscription{{1, "Netflix", "100", "30"},}
 }
 
 func (s *StubSubscriptionStore) RecordSubscription(subscription Subscription) {
@@ -26,7 +26,7 @@ func TestGETSubscriptions(t *testing.T) {
 
 	t.Run("return a JSON of subscription", func(t *testing.T) {
 		wantedSubscriptions := []Subscription{
-			{1, "Netflix", 100, "30"},
+			{1, "Netflix", "100", "30"},
 		}
 
 		store := StubSubscriptionStore{wantedSubscriptions}
@@ -48,7 +48,7 @@ func TestGETSubscriptions(t *testing.T) {
 func TestStoreSubscription(t *testing.T) {
 
 	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
-		subscription := Subscription{1, "Netflix", 100, "30"}
+		subscription := Subscription{1, "Netflix", "100", "30"}
 
 		store := &StubSubscriptionStore{}
 		server := NewSubscriptionServer(store)

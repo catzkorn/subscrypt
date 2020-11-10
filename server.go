@@ -49,6 +49,6 @@ type SubscriptionStore interface {
 type Subscription struct {
 	ID int
 	Name string
-	Amount int
+	Amount string
 	DateDue string
 }
