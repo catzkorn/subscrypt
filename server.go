@@ -35,5 +35,5 @@ type Subscription struct {
 	Id int
 	Name string
 	Amount int
-	DueDate string
+	DateDue string
 }
