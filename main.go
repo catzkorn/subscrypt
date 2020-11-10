@@ -5,9 +5,15 @@ import (
 	"net/http"
 )
 
+type InMemorySubscriptionStore struct{}
+
+func (i *InMemorySubscriptionStore) GetSubscriptions() string {
+	return "test"
+}
+
 func main() {
-	handler := http.HandlerFunc(SubscriptionServer)
-	if err := http.ListenAndServe(":5000", handler); err != nil {
+	server := NewSubscriptionServer(&InMemorySubscriptionStore{})
+	if err := http.ListenAndServe(":5000", server); err != nil {
 		log.Fatalf("could not listen on port 5000 %v", err)
 	}
 }

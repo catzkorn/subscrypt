@@ -6,13 +6,22 @@ import (
 	"testing"
 )
 
+type StubSubscriptionStore struct {
+
+}
+
+func (s *StubSubscriptionStore) GetSubscriptions() string {
+	return "test"
+}
+
 func TestGETSubscriptions(t *testing.T) {
 	t.Run("Returns 200 OK", func(t *testing.T) {
-
+		store := &StubSubscriptionStore{}
+		server := NewSubscriptionServer(store)
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
 
-		SubscriptionServer(response, request)
+		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusOK)
 	})
