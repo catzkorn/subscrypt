@@ -23,17 +23,7 @@ func (s *StubSubscriptionStore) RecordSubscription(subscription Subscription) {
 }
 
 func TestGETSubscriptions(t *testing.T) {
-	t.Run("Returns 200 OK", func(t *testing.T) {
-		store := &StubSubscriptionStore{}
-		server := NewSubscriptionServer(store)
-		request, _ := http.NewRequest(http.MethodGet, "/", nil)
-		response := httptest.NewRecorder()
 
-		server.ServeHTTP(response, request)
-
-		assertStatus(t, response.Code, http.StatusOK)
-	})
-	
 	t.Run("return a JSON of subscription", func(t *testing.T) {
 		wantedSubscriptions := []Subscription{
 			{1, "Netflix", 100, "30"},
@@ -48,23 +38,14 @@ func TestGETSubscriptions(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		got := getSubscriptionsFromResponse(t, response.Body)
+
+		assertStatus(t, response.Code, http.StatusOK)
 		assertSubscriptions(t, got, wantedSubscriptions)
 
 	})
 }
 
 func TestStoreSubscription(t *testing.T) {
-	t.Run("returns 202 Accepted", func(t *testing.T) {
-		store := &StubSubscriptionStore{}
-		server := NewSubscriptionServer(store)
-		subscription := Subscription{1, "Netflix", 100, "30"}
-		request := newPostSubscriptionRequest(subscription)
-		response := httptest.NewRecorder()
-
-		server.ServeHTTP(response, request)
-
-		assertStatus(t, response.Code, http.StatusAccepted)
-	})
 
 	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
 		subscription := Subscription{1, "Netflix", 100, "30"}
@@ -76,6 +57,8 @@ func TestStoreSubscription(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusAccepted)
 
 		if len(store.subscriptions) != 1 {
 			t.Errorf("got %d calls to RecordSubscription want %d", len(store.subscriptions), 1)
