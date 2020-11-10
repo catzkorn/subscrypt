@@ -37,7 +37,7 @@ func TestGETSubscriptions(t *testing.T) {
 		store := StubSubscriptionStore{wantedSubscriptions}
 		server := NewSubscriptionServer(&store)
 
-		request := newSubscriptionRequest()
+		request := newGetSubscriptionRequest()
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -53,7 +53,7 @@ func TestStoreSubscription(t *testing.T) {
 		store := &StubSubscriptionStore{}
 		server := NewSubscriptionServer(store)
 
-		request, _ := http.NewRequest(http.MethodPost, "/", nil)
+		request := newPostSubscriptionRequest()
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -87,7 +87,12 @@ func assertSubscriptions(t *testing.T, got, want []Subscription) {
 	}
 }
 
-func newSubscriptionRequest() *http.Request {
+func newGetSubscriptionRequest() *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
+	return req
+}
+
+func newPostSubscriptionRequest() *http.Request {
+	req, _ := http.NewRequest(http.MethodPost, "/", nil)
 	return req
 }
