@@ -47,7 +47,7 @@ type SubscriptionStore interface {
 
 // Subscription stores the id, name, amount and datedue of an individual subscription
 type Subscription struct {
-	Id int
+	ID int
 	Name string
 	Amount int
 	DateDue string
