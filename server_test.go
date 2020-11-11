@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/shopspring/decimal"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,8 @@ type StubSubscriptionStore struct {
 }
 
 func (s *StubSubscriptionStore) GetSubscriptions() []Subscription {
-	return []Subscription{{1, "Netflix", "100", "30"},}
+	amount, _ := decimal.NewFromString("100.99")
+	return []Subscription{{1, "Netflix", amount, "30"},}
 }
 
 func (s *StubSubscriptionStore) RecordSubscription(subscription Subscription) {
@@ -25,8 +27,9 @@ func (s *StubSubscriptionStore) RecordSubscription(subscription Subscription) {
 func TestGETSubscriptions(t *testing.T) {
 
 	t.Run("return a JSON of subscription", func(t *testing.T) {
+		amount, _ := decimal.NewFromString("100.99")
 		wantedSubscriptions := []Subscription{
-			{1, "Netflix", "100", "30"},
+			{1, "Netflix", amount, "30"},
 		}
 
 		store := StubSubscriptionStore{wantedSubscriptions}
@@ -48,7 +51,8 @@ func TestGETSubscriptions(t *testing.T) {
 func TestStoreSubscription(t *testing.T) {
 
 	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
-		subscription := Subscription{1, "Netflix", "100", "30"}
+		amount, _ := decimal.NewFromString("100.99")
+		subscription := Subscription{1, "Netflix", amount, "30"}
 
 		store := &StubSubscriptionStore{}
 		server := NewSubscriptionServer(store)
@@ -64,10 +68,9 @@ func TestStoreSubscription(t *testing.T) {
 			t.Errorf("got %d calls to RecordSubscription want %d", len(store.subscriptions), 1)
 		}
 
-		if store.subscriptions[0] != subscription {
-			t.Errorf("did not store correct winner got %q want %q", store.subscriptions[0], subscription)
+		if !reflect.DeepEqual(store.subscriptions[0], subscription) {
+			t.Errorf("did not store correct winner got %v want %v", store.subscriptions[0], subscription)
 		}
-
 	})
 }
 

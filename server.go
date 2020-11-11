@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/shopspring/decimal"
 	"net/http"
 )
 
@@ -49,6 +50,6 @@ type SubscriptionStore interface {
 type Subscription struct {
 	ID int
 	Name string
-	Amount string
+	Amount decimal.Decimal
 	DateDue string
 }
