@@ -28,8 +28,8 @@ type Subscription struct {
 	DateDue time.Time
 }
 
-// NewSubscriptionStore starts connection with database
-func NewSubscriptionStore(databaseDSN string) (*SubscriptionStore, error) {
+// NewDatabaseConnection starts connection with database
+func NewDatabaseConnection(databaseDSN string) (*SubscriptionStore, error) {
 	db, err := sql.Open("pgx", databaseDSN)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected connection error: %w", err)

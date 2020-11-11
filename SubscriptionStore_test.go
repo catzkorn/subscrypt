@@ -14,15 +14,12 @@ import (
 func TestDatabaseConnection(t *testing.T) {
 
 	t.Run("tests a successful database connection", func(t *testing.T) {
-		_, err := NewSubscriptionStore("user=charlotte  host=localhost port=5432 database=subscryptdb sslmode=disable")
-
-		if err != nil {
-			t.Errorf("failed to create subscription store: %v", err)
-		}
+		_, err := NewDatabaseConnection("user=charlotte  host=localhost port=5432 database=subscryptdb sslmode=disable")
+		assertDatabaseError(t, err)
 	})
 
 	t.Run("tests a database connection failure", func(t *testing.T) {
-		_, err := NewSubscriptionStore("gary the gopher")
+		_, err := NewDatabaseConnection("gary the gopher")
 
 		if err == nil {
 			t.Errorf("connected to database that doesn't exist")
@@ -31,12 +28,9 @@ func TestDatabaseConnection(t *testing.T) {
 	})
 }
 
-func TestDatabaseExecContext(t *testing.T) {
-	store, err := NewSubscriptionStore("user=charlotte  host=localhost port=5432 database=subscryptdb sslmode=disable")
-
-	if err != nil {
-		t.Errorf("unexpected connection error: %v", err)
-	}
+func TestDatabaseFunctionality(t *testing.T) {
+	store, err := NewDatabaseConnection("user=charlotte  host=localhost port=5432 database=subscryptdb sslmode=disable")
+	assertDatabaseError(t, err)
 
 	t.Run("adds a subscription and retrieves all added subscriptions", func(t *testing.T) {
 		amount, _ := decimal.NewFromString("8.00")
@@ -48,16 +42,10 @@ func TestDatabaseExecContext(t *testing.T) {
 		}
 
 		err := store.RecordSubscription(subscription)
-
-		if err != nil {
-			t.Errorf("unexpected database error: %v", err)
-		}
+		assertDatabaseError(t, err)
 
 		subscriptions, err := store.GetSubscriptions()
-
-		if err != nil {
-			t.Errorf("unexpected database error: %v", err)
-		}
+		assertDatabaseError(t, err)
 
 		if subscriptions[0].ID == 0 {
 			t.Errorf("Database did not return an ID, got %v want %v", 0, subscriptions[0].ID)
@@ -91,4 +79,11 @@ func clearSubscriptionsTable() error {
 
 	return err
 
+}
+
+func assertDatabaseError(t *testing.T, err error) {
+	t.Helper()
+	if err != nil {
+		t.Errorf("unexpected database error: %v", err)
+	}
 }
