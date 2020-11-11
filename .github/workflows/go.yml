@@ -50,8 +50,8 @@ jobs:
 
     - name: Run migrations
       run: |
-        psql -h localhost -p 5432 -c 'CREATE DATABASE subscryptdb;' 
-        psql -h localhost -p 5432 -d subscryptdb -f db/migrations/database_setup.sql
+        psql -h postgres -p 5432 -c 'CREATE DATABASE subscryptdb;' 
+        psql -h postgres -p 5432 -d subscryptdb -f db/migrations/database_setup.sql
 
     - name: Build
       run: go build -v .
@@ -59,4 +59,4 @@ jobs:
     - name: Test
       run: go test -v .
       env: 
-        DATABASE_CONN_STRING: "user=travis  host=localhost port=5432 database=subscryptdb sslmode=disable"
+        DATABASE_CONN_STRING: "user=postgres  host=postgres password=postgres port=5432 database=subscryptdb sslmode=disable"
