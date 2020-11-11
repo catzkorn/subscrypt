@@ -49,9 +49,7 @@ jobs:
         fi
 
     - name: Run migrations
-      run: |
-        psql -h postgres -p 5432 -c 'CREATE DATABASE subscryptdb;' 
-        psql -h postgres -p 5432 -d subscryptdb -f db/migrations/database_setup.sql
+      run: psql -f db/migrations/database_setup.sql postgresql://postgres:postgres@postgres:5432/postgres
 
     - name: Build
       run: go build -v .
