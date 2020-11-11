@@ -23,15 +23,20 @@ func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.
 		w.Header().Set("content-type", "application/json")
 		json.NewEncoder(w).Encode(s.store.GetSubscriptions())
 	case http.MethodPost:
-		var subscription Subscription
-
-		err := json.NewDecoder(r.Body).Decode(&subscription)
-		if err != nil {
-			//TODO: log and return error
-		}
-		s.store.RecordSubscription(subscription)
-		w.WriteHeader(http.StatusAccepted)
+		s.processPostSubscription(w, r)
 	}
+}
+
+// processPostSubscription tells the SubscriptionStore to record the subscription from the post body
+func (s *SubscriptionServer) processPostSubscription(w http.ResponseWriter, r *http.Request) {
+	var subscription Subscription
+
+	err := json.NewDecoder(r.Body).Decode(&subscription)
+	if err != nil {
+		//TODO: log and return error
+	}
+	s.store.RecordSubscription(subscription)
+	w.WriteHeader(http.StatusAccepted)
 }
 
 // SubscriptionServer is the HTTP interface for subscription information
