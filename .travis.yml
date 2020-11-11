@@ -7,7 +7,7 @@ services:
   - postgresql
 
 env:
-  - DATABASE_CONN_STRING=user=travis  host=localhost port=5432 database=subscryptdb sslmode=disable
+  - DATABASE_CONN_STRING="user=travis  host=localhost port=5432 database=subscryptdb sslmode=disable"
 
 before_script:
   - psql -c 'CREATE DATABASE subscryptdb;'

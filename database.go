@@ -10,7 +10,6 @@ import (
 
 	"github.com/jackc/pgtype"
 	_ "github.com/jackc/pgx/v4/stdlib"
-	"github.com/joho/godotenv"
 	"github.com/shopspring/decimal"
 )
 
@@ -24,11 +23,7 @@ var DatabaseConnTestString = GetDatabaseEnvVariable()
 
 // GetDatabaseEnvVariable retrieves the database string from .env
 func GetDatabaseEnvVariable() string {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
+	
 	dbEnvString := os.Getenv("DATABASE_CONN_STRING")
 
 	return dbEnvString
