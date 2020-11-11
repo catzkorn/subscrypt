@@ -56,7 +56,7 @@ type SubscriptionServer struct {
 	http.Handler
 }
 
-// SubscriptionStore stores information about individual subscriptions
+// SubscriptionStore provides an interface to store information about individual subscriptions
 type SubscriptionStore interface {
 	GetSubscriptions() []Subscription
 	RecordSubscription(subscription Subscription)
