@@ -3,10 +3,15 @@ package main
 import (
 	"log"
 	"net/http"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
-	server := NewSubscriptionServer(NewInMemorySubscriptionStore())
+
+	database, _ := NewDatabaseConnection(DatabaseConnTestString)
+
+	server := NewSubscriptionServer(database)
 	if err := http.ListenAndServe(":5000", server); err != nil {
 		log.Fatalf("could not listen on port 5000 %v", err)
 	}

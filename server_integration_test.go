@@ -26,7 +26,7 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 }
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
-	store, _ := NewDatabaseConnection("user=charlotte  host=localhost port=5432 database=subscryptdb sslmode=disable")
+	store, _ := NewDatabaseConnection(DatabaseConnTestString)
 	server := NewSubscriptionServer(store)
 	amount, _ := decimal.NewFromString("100")
 	subscription := Subscription{

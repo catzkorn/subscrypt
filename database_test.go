@@ -14,7 +14,7 @@ import (
 func TestDatabaseConnection(t *testing.T) {
 
 	t.Run("tests a successful database connection", func(t *testing.T) {
-		_, err := NewDatabaseConnection("user=charlotte  host=localhost port=5432 database=subscryptdb sslmode=disable")
+		_, err := NewDatabaseConnection(DatabaseConnTestString)
 		assertDatabaseError(t, err)
 	})
 
@@ -29,7 +29,7 @@ func TestDatabaseConnection(t *testing.T) {
 }
 
 func TestDatabaseFunctionality(t *testing.T) {
-	store, err := NewDatabaseConnection("user=charlotte  host=localhost port=5432 database=subscryptdb sslmode=disable")
+	store, err := NewDatabaseConnection(DatabaseConnTestString)
 	assertDatabaseError(t, err)
 
 	t.Run("adds a subscription and retrieves all added subscriptions", func(t *testing.T) {
@@ -70,7 +70,7 @@ func TestDatabaseFunctionality(t *testing.T) {
 }
 
 func clearSubscriptionsTable() error {
-	db, err := sql.Open("pgx", "user=charlotte  host=localhost port=5432 database=subscryptdb sslmode=disable")
+	db, err := sql.Open("pgx", DatabaseConnTestString)
 	if err != nil {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
