@@ -50,8 +50,8 @@ jobs:
 
     - name: Run migrations
       run: |
-        psql -c 'CREATE DATABASE subscryptdb;' 
-        psql -d subscryptdb -f db/migrations/database_setup.sql
+        psql -h localhost -p 5432 -c 'CREATE DATABASE subscryptdb;' 
+        psql -h localhost -p 5432 -d subscryptdb -f db/migrations/database_setup.sql
 
     - name: Build
       run: go build -v .
