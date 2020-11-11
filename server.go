@@ -20,11 +20,16 @@ func NewSubscriptionServer(store SubscriptionStore) *SubscriptionServer {
 func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		w.Header().Set("content-type", "application/json")
-		json.NewEncoder(w).Encode(s.store.GetSubscriptions())
+		s.processGetSubscription(w)
 	case http.MethodPost:
 		s.processPostSubscription(w, r)
 	}
+}
+
+// processGetSubscription processes the GET subscription request, returning the store subscriptions as json
+func (s *SubscriptionServer) processGetSubscription(w http.ResponseWriter) {
+	w.Header().Set("content-type", "application/json")
+	json.NewEncoder(w).Encode(s.store.GetSubscriptions())
 }
 
 // processPostSubscription tells the SubscriptionStore to record the subscription from the post body
