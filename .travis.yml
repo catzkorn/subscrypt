@@ -3,4 +3,16 @@ language: go
 go:
   - 1.15.x
 
+services:
+  - postgresql
+
+env:
+  - DATABASE_CONN_STRING=user=travis  host=localhost port=5432 database=subscryptdb sslmode=disable
+
+before_script:
+  - psql -c 'CREATE DATABASE subscryptdb;'
+  - psql -d subscryptdb -f db/migrations/database_setup.sql
+
+
+
 script: go test -v ./...
