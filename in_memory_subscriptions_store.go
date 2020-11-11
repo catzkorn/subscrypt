@@ -6,16 +6,17 @@ func NewInMemorySubscriptionStore() *InMemorySubscriptionStore {
 }
 
 // InMemorySubscriptionStore stores information about individual subscriptions
-type InMemorySubscriptionStore struct{
+type InMemorySubscriptionStore struct {
 	subscriptions []Subscription
 }
 
 // GetSubscriptions is a method that returns all subscriptions
-func (i *InMemorySubscriptionStore) GetSubscriptions() []Subscription {
-	return i.subscriptions
+func (i *InMemorySubscriptionStore) GetSubscriptions() ([]Subscription, error) {
+	return i.subscriptions, nil
 }
 
 // RecordSubscription is a method that stores a subscription into the store
-func (i *InMemorySubscriptionStore) RecordSubscription(subscription Subscription) {
+func (i *InMemorySubscriptionStore) RecordSubscription(subscription Subscription) error {
 	i.subscriptions = append(i.subscriptions, subscription)
+	return nil
 }

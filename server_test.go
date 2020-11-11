@@ -17,13 +17,14 @@ type StubSubscriptionStore struct {
 	subscriptions []Subscription
 }
 
-func (s *StubSubscriptionStore) GetSubscriptions() []Subscription {
+func (s *StubSubscriptionStore) GetSubscriptions() ([]Subscription, error) {
 	amount, _ := decimal.NewFromString("100.99")
-	return []Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}}
+	return []Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}}, nil
 }
 
-func (s *StubSubscriptionStore) RecordSubscription(subscription Subscription) {
+func (s *StubSubscriptionStore) RecordSubscription(subscription Subscription) error {
 	s.subscriptions = append(s.subscriptions, subscription)
+	return nil
 }
 
 func TestGETSubscriptions(t *testing.T) {

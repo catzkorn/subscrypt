@@ -34,7 +34,12 @@ func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.
 // processGetSubscription processes the GET subscription request, returning the store subscriptions as json
 func (s *SubscriptionServer) processGetSubscription(w http.ResponseWriter) {
 	w.Header().Set("content-type", JsonContentType)
-	err := json.NewEncoder(w).Encode(s.store.GetSubscriptions())
+	subscriptions, err := s.store.GetSubscriptions()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = json.NewEncoder(w).Encode(subscriptions)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -60,8 +65,8 @@ type SubscriptionServer struct {
 
 // SubscriptionStore provides an interface to store information about individual subscriptions
 type SubscriptionStore interface {
-	GetSubscriptions() []Subscription
-	RecordSubscription(subscription Subscription)
+	GetSubscriptions() ([]Subscription, error)
+	RecordSubscription(subscription Subscription) error
 }
 
 // Subscription defines a subscription. ID is unique per subscription.
