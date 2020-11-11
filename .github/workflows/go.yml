@@ -11,6 +11,25 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+
+
     steps:
 
     - name: Set up Go 1.x
@@ -29,8 +48,15 @@ jobs:
             dep ensure
         fi
 
+    - name: Run migrations
+      run: |
+        psql -c 'CREATE DATABASE subscryptdb;' 
+        psql -d subscryptdb -f db/migrations/database_setup.sql
+
     - name: Build
       run: go build -v .
 
     - name: Test
       run: go test -v .
+      env: 
+        DATABASE_CONN_STRING: "user=travis  host=localhost port=5432 database=subscryptdb sslmode=disable"
