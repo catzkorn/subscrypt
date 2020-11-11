@@ -44,7 +44,7 @@ func TestGETSubscriptions(t *testing.T) {
 
 		assertStatus(t, response.Code, http.StatusOK)
 		assertSubscriptions(t, got, wantedSubscriptions)
-		assertContentType(t, response, jsonContentType)
+		assertContentType(t, response, JsonContentType)
 	})
 }
 
@@ -87,8 +87,6 @@ func assertSubscriptions(t *testing.T, got, want []Subscription) {
 		t.Errorf("got %v want %v", got, want)
 	}
 }
-
-const jsonContentType = "application/json"
 
 func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want string) {
 	t.Helper()

@@ -3,8 +3,11 @@ package main
 import (
 	"encoding/json"
 	"github.com/shopspring/decimal"
+	"log"
 	"net/http"
 )
+
+const JsonContentType = "application/json"
 
 // NewSubscriptionServer returns a instance of a SubscriptionServer
 func NewSubscriptionServer(store SubscriptionStore) *SubscriptionServer {
@@ -28,8 +31,11 @@ func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.
 
 // processGetSubscription processes the GET subscription request, returning the store subscriptions as json
 func (s *SubscriptionServer) processGetSubscription(w http.ResponseWriter) {
-	w.Header().Set("content-type", "application/json")
-	json.NewEncoder(w).Encode(s.store.GetSubscriptions())
+	w.Header().Set("content-type", JsonContentType)
+	err := json.NewEncoder(w).Encode(s.store.GetSubscriptions())
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 
 // processPostSubscription tells the SubscriptionStore to record the subscription from the post body
@@ -38,7 +44,7 @@ func (s *SubscriptionServer) processPostSubscription(w http.ResponseWriter, r *h
 
 	err := json.NewDecoder(r.Body).Decode(&subscription)
 	if err != nil {
-		//TODO: log and return error
+		log.Fatalln(err)
 	}
 	s.store.RecordSubscription(subscription)
 	w.WriteHeader(http.StatusAccepted)
