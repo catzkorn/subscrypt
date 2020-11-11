@@ -12,24 +12,13 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// SubscriptionStore allows the user to store and read back subscriptions
-type SubscriptionStore struct {
+// Database allows the user to store and read back subscriptions
+type Database struct {
 	database *sql.DB
 }
 
-// Subscription defines a subscription. ID is unique per subscription.
-// Name is the name of the subscription stored as a string.
-// Amount is the cost of the subscription, stored as a decimal.
-// DateDue is the date that the subscription is due on, stored as a date.
-type Subscription struct {
-	ID      int
-	Name    string
-	Amount  decimal.Decimal
-	DateDue time.Time
-}
-
 // NewDatabaseConnection starts connection with database
-func NewDatabaseConnection(databaseDSN string) (*SubscriptionStore, error) {
+func NewDatabaseConnection(databaseDSN string) (*Database, error) {
 	db, err := sql.Open("pgx", databaseDSN)
 	if err != nil {
 		return nil, fmt.Errorf("unexpected connection error: %w", err)
@@ -40,12 +29,12 @@ func NewDatabaseConnection(databaseDSN string) (*SubscriptionStore, error) {
 		return nil, fmt.Errorf("unexpected connection error: %w", err)
 	}
 
-	return &SubscriptionStore{database: db}, nil
+	return &Database{database: db}, nil
 }
 
 // RecordSubscription inserts a subscription into the subscription database
-func (s *SubscriptionStore) RecordSubscription(subscription Subscription) error {
-	_, err := s.database.ExecContext(context.Background(), "INSERT INTO subscriptions (name, amount, date_due) VALUES ($1, $2, $3)", subscription.Name, subscription.Amount, subscription.DateDue)
+func (d *Database) RecordSubscription(subscription Subscription) error {
+	_, err := d.database.ExecContext(context.Background(), "INSERT INTO subscriptions (name, amount, date_due) VALUES ($1, $2, $3)", subscription.Name, subscription.Amount, subscription.DateDue)
 	if err != nil {
 		return fmt.Errorf("unexpected insert error: %w", err)
 	}
@@ -55,8 +44,8 @@ func (s *SubscriptionStore) RecordSubscription(subscription Subscription) error 
 }
 
 // GetSubscriptions retrieves all subscriptions from the subscription database
-func (s *SubscriptionStore) GetSubscriptions() ([]Subscription, error) {
-	rows, err := s.database.QueryContext(context.Background(), "SELECT * FROM subscriptions;")
+func (d *Database) GetSubscriptions() ([]Subscription, error) {
+	rows, err := d.database.QueryContext(context.Background(), "SELECT * FROM subscriptions;")
 	if err != nil {
 		return nil, fmt.Errorf("unexpected retrieve error: %w", err)
 	}
