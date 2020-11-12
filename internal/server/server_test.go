@@ -25,9 +25,9 @@ func (s *StubDataStore) GetSubscriptions() ([]subscription.Subscription, error) 
 	return []subscription.Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}}, nil
 }
 
-func (s *StubDataStore) RecordSubscription(subscription subscription.Subscription) (subscription.Subscription, error) {
+func (s *StubDataStore) RecordSubscription(subscription subscription.Subscription) (*subscription.Subscription, error) {
 	s.subscriptions = append(s.subscriptions, subscription)
-	return subscription, nil
+	return &subscription, nil
 }
 
 func TestGETSubscriptions(t *testing.T) {

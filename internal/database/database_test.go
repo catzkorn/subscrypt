@@ -112,6 +112,6 @@ func clearSubscriptionsTable() error {
 func assertDatabaseError(t *testing.T, err error) {
 	t.Helper()
 	if err != nil {
-		t.Errorf("unexpected database error: %v", err)
+		t.Fatalf("unexpected database error: %v", err)
 	}
 }
