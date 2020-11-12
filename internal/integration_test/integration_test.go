@@ -18,6 +18,8 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+var DatabaseConnTestString = database.GetDatabaseEnvVariable()
+
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
 	server := subscription.NewSubscriptionServer(store)
@@ -71,11 +73,14 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 }
 
 func clearSubscriptionsTable() error {
-	db, err := sql.Open("pgx", "user=farhaan  host=localhost port=5432 database=subscryptdb sslmode=disable")
+	db, err := sql.Open("pgx", DatabaseConnTestString)
 	if err != nil {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
-	db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
+	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
+	if err != nil {
+		return fmt.Errorf("unexpected connection error: %w", err)
+	}
 
 	return err
 }

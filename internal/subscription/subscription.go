@@ -25,24 +25,28 @@ func NewSubscriptionServer(store SubscriptionStore) *SubscriptionServer {
 func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		s.processGetSubscription(w)
+		err := s.processGetSubscription(w)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	case http.MethodPost:
 		s.processPostSubscription(w, r)
 	}
 }
 
 // processGetSubscription processes the GET subscription request, returning the store subscriptions as json
-func (s *SubscriptionServer) processGetSubscription(w http.ResponseWriter) {
+func (s *SubscriptionServer) processGetSubscription(w http.ResponseWriter) error {
 	w.Header().Set("content-type", JsonContentType)
 	subscriptions, err := s.store.GetSubscriptions()
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	err = json.NewEncoder(w).Encode(subscriptions)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
+	return nil
 }
 
 // processPostSubscription tells the SubscriptionStore to record the subscription from the post body
