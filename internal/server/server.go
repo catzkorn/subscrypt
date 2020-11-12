@@ -1,9 +1,11 @@
 package server
 
 import (
-	"encoding/json"
-	"log"
+	"fmt"
+	"github.com/shopspring/decimal"
+	"html/template"
 	"net/http"
+	"time"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 )
@@ -12,6 +14,11 @@ import (
 type Server struct {
 	dataStore DataStore
 	http.Handler
+}
+
+type IndexPageData struct {
+	PageTitle string
+	Subscriptions []subscription.Subscription
 }
 
 // DataStore provides an interface to store information about individual subscriptions
@@ -47,27 +54,52 @@ const JsonContentType = "application/json"
 
 // processGetSubscription processes the GET subscription request, returning the store subscriptions as json
 func (s *Server) processGetSubscription(w http.ResponseWriter) error {
-	w.Header().Set("content-type", JsonContentType)
+	tmpl := template.Must(template.ParseFiles("./web/templates/index.html"))
+
 	subscriptions, err := s.dataStore.GetSubscriptions()
+
 	if err != nil {
 		return err
 	}
 
-	err = json.NewEncoder(w).Encode(subscriptions)
+	data := IndexPageData{
+		PageTitle: "My Subscriptions List",
+		Subscriptions: subscriptions,
+	}
+
+	err = tmpl.Execute(w, data)
+
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 // processPostSubscription tells the SubscriptionStore to record the subscription from the post body
 func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request) {
-	var subscription subscription.Subscription
 
-	err := json.NewDecoder(r.Body).Decode(&subscription)
+	amount, _ := decimal.NewFromString(r.FormValue("amount"))
+
+	layout := "2006-01-02T15:04:05.000Z"
+	str := r.FormValue("date")
+	t, err := time.Parse(layout, str)
+
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Println(err)
 	}
-	s.dataStore.RecordSubscription(subscription)
-	w.WriteHeader(http.StatusAccepted)
+
+	entry := subscription.Subscription{
+		Name:   r.FormValue("name"),
+		Amount: amount,
+		DateDue: t,
+	}
+
+	err = s.dataStore.RecordSubscription(entry)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
