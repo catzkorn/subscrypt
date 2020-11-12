@@ -15,13 +15,14 @@ import (
 	"time"
 
 	"github.com/Catzkorn/subscrypt/internal/database"
+	"github.com/Catzkorn/subscrypt/internal/server"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
 )
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-	server := subscription.NewSubscriptionServer(store)
+	server := server.NewServer(store)
 	amount, _ := decimal.NewFromString("100")
 	subscriptionFML := subscription.Subscription{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
 
@@ -37,7 +38,7 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	server := subscription.NewSubscriptionServer(store)
+	server := server.NewServer(store)
 	amount, _ := decimal.NewFromString("100")
 	subscriptionFML := subscription.Subscription{
 		Name:    "Netflix",
