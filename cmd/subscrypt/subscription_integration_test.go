@@ -1,48 +1,49 @@
-package subscription
+package main
 
 import (
-	"github.com/Catzkorn/subscrypt/internal/database"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/Catzkorn/subscrypt/internal/database"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
 )
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-	server := NewSubscriptionServer(store)
+	server := subscription.NewSubscriptionServer(store)
 	amount, _ := decimal.NewFromString("100")
-	subscription := Subscription{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
+	subscription := subscription.Subscription{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
 
-	server.ServeHTTP(httptest.NewRecorder(), newPostSubscriptionRequest(subscription))
+	server.ServeHTTP(httptest.NewRecorder(), subscription.newPostSubscriptionRequest(subscription))
 
 	response := httptest.NewRecorder()
-	server.ServeHTTP(response, newGetSubscriptionRequest())
-	assertStatus(t, response.Code, http.StatusOK)
+	server.ServeHTTP(response, subscription.NewGetSubscriptionRequest())
+	subscription.assertStatus(t, response.Code, http.StatusOK)
 
-	got := getSubscriptionsFromResponse(t, response.Body)
-	assertSubscriptions(t, got, []Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}})
+	got := subscription.getSubscriptionsFromResponse(t, response.Body)
+	subscription.assertSubscriptions(t, got, []subscription.Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}})
 }
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(database.DatabaseConnTestString)
-	server := NewSubscriptionServer(store)
+	server := subscription.NewSubscriptionServer(store)
 	amount, _ := decimal.NewFromString("100")
-	subscription := Subscription{
+	subscription := subscription.Subscription{
 		Name:    "Netflix",
 		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
 
-	server.ServeHTTP(httptest.NewRecorder(), newPostSubscriptionRequest(subscription))
+	server.ServeHTTP(httptest.NewRecorder(), subscription.newPostSubscriptionRequest(subscription))
 
 	response := httptest.NewRecorder()
-	server.ServeHTTP(response, newGetSubscriptionRequest())
+	server.ServeHTTP(response, subscription.NewGetSubscriptionRequest())
 	assertStatus(t, response.Code, http.StatusOK)
 
-	got := getSubscriptionsFromResponse(t, response.Body)
+	got := subscription.getSubscriptionsFromResponse(t, response.Body)
 	if got[0].ID == 0 {
 		t.Errorf("Database did not return an ID, got %v want %v", 0, got[0].ID)
 	}
@@ -59,5 +60,5 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 		t.Errorf("Database did not return correct subscription date, got %s want %s", got[0].DateDue, subscription.DateDue)
 	}
 
-	database.clearSubscriptionsTable()
+	database.ClearSubscriptionsTable()
 }

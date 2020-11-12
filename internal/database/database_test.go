@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"testing"
 	"time"
+
+	"github.com/Catzkorn/subscrypt/internal/subscription"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/shopspring/decimal"
@@ -64,13 +65,13 @@ func TestDatabaseFunctionality(t *testing.T) {
 			t.Errorf("Database did not return correct subscription date, got %s want %s", subscriptions[0].DateDue, subscription.DateDue)
 		}
 
-		clearSubscriptionsTable()
+		ClearSubscriptionsTable()
 
 	})
 
 }
 
-func clearSubscriptionsTable() error {
+func ClearSubscriptionsTable() error {
 	db, err := sql.Open("pgx", DatabaseConnTestString)
 	if err != nil {
 		return fmt.Errorf("unexpected connection error: %w", err)

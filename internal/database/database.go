@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"log"
 	"os"
 	"time"
+
+	"github.com/Catzkorn/subscrypt/internal/subscription"
 
 	"github.com/jackc/pgtype"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -24,9 +25,9 @@ var DatabaseConnTestString = GetDatabaseEnvVariable()
 
 // GetDatabaseEnvVariable retrieves the database string from .env
 func GetDatabaseEnvVariable() string {
-	
-	dbEnvString := os.Getenv("DATABASE_CONN_STRING")
 
+	dbEnvString := os.Getenv("DATABASE_CONN_STRING")
+	fmt.Println(dbEnvString)
 	return dbEnvString
 }
 
