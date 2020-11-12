@@ -25,14 +25,14 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	amount, _ := decimal.NewFromString("100")
 	subscriptionFML := subscription.Subscription{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
 
-	server.ServeHTTP(httptest.NewRecorder(), NewPostSubscriptionRequest(subscriptionFML))
+	server.ServeHTTP(httptest.NewRecorder(), newPostSubscriptionRequest(subscriptionFML))
 
 	response := httptest.NewRecorder()
-	server.ServeHTTP(response, NewGetSubscriptionRequest())
-	AssertStatus(t, response.Code, http.StatusOK)
+	server.ServeHTTP(response, newGetSubscriptionRequest())
+	assertStatus(t, response.Code, http.StatusOK)
 
-	got := GetSubscriptionsFromResponse(t, response.Body)
-	AssertSubscriptions(t, got, []subscription.Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}})
+	got := getSubscriptionsFromResponse(t, response.Body)
+	assertSubscriptions(t, got, []subscription.Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}})
 }
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
@@ -45,13 +45,13 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
 
-	server.ServeHTTP(httptest.NewRecorder(), NewPostSubscriptionRequest(subscriptionFML))
+	server.ServeHTTP(httptest.NewRecorder(), newPostSubscriptionRequest(subscriptionFML))
 
 	response := httptest.NewRecorder()
-	server.ServeHTTP(response, NewGetSubscriptionRequest())
-	AssertStatus(t, response.Code, http.StatusOK)
+	server.ServeHTTP(response, newGetSubscriptionRequest())
+	assertStatus(t, response.Code, http.StatusOK)
 
-	got := GetSubscriptionsFromResponse(t, response.Body)
+	got := getSubscriptionsFromResponse(t, response.Body)
 	if got[0].ID == 0 {
 		t.Errorf("Database did not return an ID, got %v want %v", 0, got[0].ID)
 	}
