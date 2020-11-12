@@ -62,5 +62,4 @@ jobs:
       env: 
         DATABASE_CONN_STRING: "user=postgres  host=localhost password=postgres port=5432 database=postgres sslmode=disable"
 
-    - name: CodeCov 
-      run: bash <(curl -s https://codecov.io/bash)   
+  
