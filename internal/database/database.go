@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
@@ -18,17 +17,6 @@ import (
 // Database allows the user to store and read back subscriptions
 type Database struct {
 	database *sql.DB
-}
-
-// DatabaseConnTestString holds the value of the database connection string
-var DatabaseConnTestString = GetDatabaseEnvVariable()
-
-// GetDatabaseEnvVariable retrieves the database string from .env
-func GetDatabaseEnvVariable() string {
-
-	dbEnvString := os.Getenv("DATABASE_CONN_STRING")
-	fmt.Println(dbEnvString)
-	return dbEnvString
 }
 
 // NewDatabaseConnection starts connection with database

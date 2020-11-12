@@ -1,15 +1,17 @@
 package main
 
 import (
-	"github.com/Catzkorn/subscrypt/internal/database"
-	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/Catzkorn/subscrypt/internal/database"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
 )
 
 func main() {
 
-	database, _ := database.NewDatabaseConnection(database.DatabaseConnTestString)
+	database, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 
 	server := subscription.NewSubscriptionServer(database)
 	if err := http.ListenAndServe(":5000", server); err != nil {

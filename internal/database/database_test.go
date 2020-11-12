@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 func TestDatabaseConnection(t *testing.T) {
 
 	t.Run("tests a successful database connection", func(t *testing.T) {
-		_, err := NewDatabaseConnection(DatabaseConnTestString)
+		_, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 		assertDatabaseError(t, err)
 	})
 
@@ -31,7 +32,7 @@ func TestDatabaseConnection(t *testing.T) {
 }
 
 func TestDatabaseFunctionality(t *testing.T) {
-	store, err := NewDatabaseConnection(DatabaseConnTestString)
+	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
 
 	t.Run("adds a subscription and retrieves all added subscriptions", func(t *testing.T) {
@@ -72,7 +73,7 @@ func TestDatabaseFunctionality(t *testing.T) {
 }
 
 func ClearSubscriptionsTable() error {
-	db, err := sql.Open("pgx", DatabaseConnTestString)
+	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_STRING"))
 	if err != nil {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}

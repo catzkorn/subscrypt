@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -17,8 +18,6 @@ import (
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
 )
-
-var DatabaseConnTestString = database.GetDatabaseEnvVariable()
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
@@ -37,7 +36,7 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 }
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
-	store, _ := database.NewDatabaseConnection(database.DatabaseConnTestString)
+	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	server := subscription.NewSubscriptionServer(store)
 	amount, _ := decimal.NewFromString("100")
 	subscriptionFML := subscription.Subscription{
@@ -73,7 +72,7 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 }
 
 func clearSubscriptionsTable() error {
-	db, err := sql.Open("pgx", DatabaseConnTestString)
+	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_STRING"))
 	if err != nil {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
