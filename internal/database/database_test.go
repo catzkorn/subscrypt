@@ -1,9 +1,10 @@
-package main
+package database
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"testing"
 	"time"
 
@@ -35,7 +36,7 @@ func TestDatabaseFunctionality(t *testing.T) {
 	t.Run("adds a subscription and retrieves all added subscriptions", func(t *testing.T) {
 		amount, _ := decimal.NewFromString("8.00")
 
-		subscription := Subscription{
+		subscription := subscription.Subscription{
 			Name:    "Netflix",
 			Amount:  amount,
 			DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
@@ -78,7 +79,6 @@ func clearSubscriptionsTable() error {
 	db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
 
 	return err
-
 }
 
 func assertDatabaseError(t *testing.T, err error) {

@@ -1,6 +1,7 @@
-package main
+package subscription
 
 import (
+	"github.com/Catzkorn/subscrypt/internal/database"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,7 +11,7 @@ import (
 )
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
-	store := NewInMemorySubscriptionStore()
+	store := database.NewInMemorySubscriptionStore()
 	server := NewSubscriptionServer(store)
 	amount, _ := decimal.NewFromString("100")
 	subscription := Subscription{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
@@ -26,7 +27,7 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 }
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
-	store, _ := NewDatabaseConnection(DatabaseConnTestString)
+	store, _ := database.NewDatabaseConnection(database.DatabaseConnTestString)
 	server := NewSubscriptionServer(store)
 	amount, _ := decimal.NewFromString("100")
 	subscription := Subscription{
@@ -58,5 +59,5 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 		t.Errorf("Database did not return correct subscription date, got %s want %s", got[0].DateDue, subscription.DateDue)
 	}
 
-	clearSubscriptionsTable()
+	database.clearSubscriptionsTable()
 }
