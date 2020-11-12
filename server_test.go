@@ -3,25 +3,28 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/shopspring/decimal"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 type StubSubscriptionStore struct {
 	subscriptions []Subscription
 }
 
-func (s *StubSubscriptionStore) GetSubscriptions() []Subscription {
+func (s *StubSubscriptionStore) GetSubscriptions() ([]Subscription, error) {
 	amount, _ := decimal.NewFromString("100.99")
-	return []Subscription{{1, "Netflix", amount, "30"},}
+	return []Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}}, nil
 }
 
-func (s *StubSubscriptionStore) RecordSubscription(subscription Subscription) {
+func (s *StubSubscriptionStore) RecordSubscription(subscription Subscription) error {
 	s.subscriptions = append(s.subscriptions, subscription)
+	return nil
 }
 
 func TestGETSubscriptions(t *testing.T) {
@@ -29,7 +32,7 @@ func TestGETSubscriptions(t *testing.T) {
 	t.Run("return a JSON of subscription", func(t *testing.T) {
 		amount, _ := decimal.NewFromString("100.99")
 		wantedSubscriptions := []Subscription{
-			{1, "Netflix", amount, "30"},
+			{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
 		}
 
 		store := StubSubscriptionStore{wantedSubscriptions}
@@ -52,7 +55,7 @@ func TestStoreSubscription(t *testing.T) {
 
 	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
 		amount, _ := decimal.NewFromString("100.99")
-		subscription := Subscription{1, "Netflix", amount, "30"}
+		subscription := Subscription{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
 
 		store := &StubSubscriptionStore{}
 		server := NewSubscriptionServer(store)

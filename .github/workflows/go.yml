@@ -11,6 +11,28 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+
+
     steps:
 
     - name: Set up Go 1.x
@@ -29,8 +51,16 @@ jobs:
             dep ensure
         fi
 
+    - name: Run migrations
+      run: psql -f db/migrations/database_setup.sql postgresql://postgres:postgres@localhost:5432/postgres
+
     - name: Build
       run: go build -v .
 
     - name: Test
-      run: go test -v .
+      run: go test -v -race -coverprofile=coverage.txt -covermode=atomic .
+      env: 
+        DATABASE_CONN_STRING: "user=postgres  host=localhost password=postgres port=5432 database=postgres sslmode=disable"
+
+    - name: CodeCov 
+      run: bash <(curl -s https://codecov.io/bash)   

@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/shopspring/decimal"
 	"log"
 	"net/http"
+	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 const JsonContentType = "application/json"
@@ -32,7 +34,12 @@ func (s *SubscriptionServer) subscriptionHandler(w http.ResponseWriter, r *http.
 // processGetSubscription processes the GET subscription request, returning the store subscriptions as json
 func (s *SubscriptionServer) processGetSubscription(w http.ResponseWriter) {
 	w.Header().Set("content-type", JsonContentType)
-	err := json.NewEncoder(w).Encode(s.store.GetSubscriptions())
+	subscriptions, err := s.store.GetSubscriptions()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = json.NewEncoder(w).Encode(subscriptions)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -58,14 +65,17 @@ type SubscriptionServer struct {
 
 // SubscriptionStore provides an interface to store information about individual subscriptions
 type SubscriptionStore interface {
-	GetSubscriptions() []Subscription
-	RecordSubscription(subscription Subscription)
+	GetSubscriptions() ([]Subscription, error)
+	RecordSubscription(subscription Subscription) error
 }
 
-// Subscription stores the id, name, amount and datedue of an individual subscription
+// Subscription defines a subscription. ID is unique per subscription.
+// Name is the name of the subscription stored as a string.
+// Amount is the cost of the subscription, stored as a decimal.
+// DateDue is the date that the subscription is due on, stored as a date.
 type Subscription struct {
-	ID int
-	Name string
-	Amount decimal.Decimal
-	DateDue string
+	ID      int
+	Name    string
+	Amount  decimal.Decimal
+	DateDue time.Time
 }
