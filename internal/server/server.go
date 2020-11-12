@@ -7,10 +7,10 @@ import (
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 )
 
-// SubscriptionServer is the HTTP interface for subscription information
+// Server is the HTTP interface for subscription information
 type Server struct {
 	dataStore DataStore
-	http.Handler
+	router    *http.ServeMux
 }
 
 // DataStore provides an interface to store information about individual subscriptions
@@ -19,13 +19,11 @@ type DataStore interface {
 	RecordSubscription(subscription subscription.Subscription) (*subscription.Subscription, error)
 }
 
-// NewSubscriptionServer returns a instance of a SubscriptionServer
+// NewServer returns a instance of a Server
 func NewServer(dataStore DataStore) *Server {
-	s := new(Server)
-	s.dataStore = dataStore
-	router := http.NewServeMux()
-	router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
-	s.Handler = router
+	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
+	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
+
 	return s
 }
 
