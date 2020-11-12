@@ -1,12 +1,13 @@
-package main
+package database
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"time"
+
+	"github.com/Catzkorn/subscrypt/internal/subscription"
 
 	"github.com/jackc/pgtype"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -16,17 +17,6 @@ import (
 // Database allows the user to store and read back subscriptions
 type Database struct {
 	database *sql.DB
-}
-
-// DatabaseConnTestString holds the value of the database connection string
-var DatabaseConnTestString = GetDatabaseEnvVariable()
-
-// GetDatabaseEnvVariable retrieves the database string from .env
-func GetDatabaseEnvVariable() string {
-	
-	dbEnvString := os.Getenv("DATABASE_CONN_STRING")
-
-	return dbEnvString
 }
 
 // NewDatabaseConnection starts connection with database
@@ -45,7 +35,7 @@ func NewDatabaseConnection(databaseDSN string) (*Database, error) {
 }
 
 // RecordSubscription inserts a subscription into the subscription database
-func (d *Database) RecordSubscription(subscription Subscription) error {
+func (d *Database) RecordSubscription(subscription subscription.Subscription) error {
 	_, err := d.database.ExecContext(context.Background(), "INSERT INTO subscriptions (name, amount, date_due) VALUES ($1, $2, $3)", subscription.Name, subscription.Amount, subscription.DateDue)
 	if err != nil {
 		return fmt.Errorf("unexpected insert error: %w", err)
@@ -56,13 +46,13 @@ func (d *Database) RecordSubscription(subscription Subscription) error {
 }
 
 // GetSubscriptions retrieves all subscriptions from the subscription database
-func (d *Database) GetSubscriptions() ([]Subscription, error) {
+func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
 	rows, err := d.database.QueryContext(context.Background(), "SELECT * FROM subscriptions;")
 	if err != nil {
 		return nil, fmt.Errorf("unexpected retrieve error: %w", err)
 	}
 
-	var subscriptions []Subscription
+	var subscriptions []subscription.Subscription
 
 	for rows.Next() {
 		var id int
@@ -72,7 +62,7 @@ func (d *Database) GetSubscriptions() ([]Subscription, error) {
 		if err := rows.Scan(&id, &name, &amount, &dateDue); err != nil {
 			log.Fatal(err)
 		}
-		subscriptions = append(subscriptions, Subscription{
+		subscriptions = append(subscriptions, subscription.Subscription{
 			ID:      id,
 			Name:    name,
 			Amount:  decimal.NewFromBigInt(amount.Int, amount.Exp),

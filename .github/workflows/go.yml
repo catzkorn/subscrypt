@@ -55,10 +55,10 @@ jobs:
       run: psql -f db/migrations/database_setup.sql postgresql://postgres:postgres@localhost:5432/postgres
 
     - name: Build
-      run: go build -v .
+      run: go build -v ./...
 
     - name: Test
-      run: go test -v -race -coverprofile=coverage.txt -covermode=atomic .
+      run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
       env: 
         DATABASE_CONN_STRING: "user=postgres  host=localhost password=postgres port=5432 database=postgres sslmode=disable"
 

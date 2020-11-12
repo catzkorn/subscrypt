@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"bytes"
@@ -10,19 +10,22 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
 )
 
-type StubSubscriptionStore struct {
-	subscriptions []Subscription
+const jsonContentType = "application/json"
+
+type StubDataStore struct {
+	subscriptions []subscription.Subscription
 }
 
-func (s *StubSubscriptionStore) GetSubscriptions() ([]Subscription, error) {
+func (s *StubDataStore) GetSubscriptions() ([]subscription.Subscription, error) {
 	amount, _ := decimal.NewFromString("100.99")
-	return []Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}}, nil
+	return []subscription.Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}}, nil
 }
 
-func (s *StubSubscriptionStore) RecordSubscription(subscription Subscription) error {
+func (s *StubDataStore) RecordSubscription(subscription subscription.Subscription) error {
 	s.subscriptions = append(s.subscriptions, subscription)
 	return nil
 }
@@ -31,12 +34,12 @@ func TestGETSubscriptions(t *testing.T) {
 
 	t.Run("return a JSON of subscription", func(t *testing.T) {
 		amount, _ := decimal.NewFromString("100.99")
-		wantedSubscriptions := []Subscription{
+		wantedSubscriptions := []subscription.Subscription{
 			{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
 		}
 
-		store := StubSubscriptionStore{wantedSubscriptions}
-		server := NewSubscriptionServer(&store)
+		store := StubDataStore{wantedSubscriptions}
+		server := NewServer(&store)
 
 		request := newGetSubscriptionRequest()
 		response := httptest.NewRecorder()
@@ -47,7 +50,7 @@ func TestGETSubscriptions(t *testing.T) {
 
 		assertStatus(t, response.Code, http.StatusOK)
 		assertSubscriptions(t, got, wantedSubscriptions)
-		assertContentType(t, response, JsonContentType)
+		assertContentType(t, response, jsonContentType)
 	})
 }
 
@@ -55,10 +58,10 @@ func TestStoreSubscription(t *testing.T) {
 
 	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
 		amount, _ := decimal.NewFromString("100.99")
-		subscription := Subscription{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
+		subscription := subscription.Subscription{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
 
-		store := &StubSubscriptionStore{}
-		server := NewSubscriptionServer(store)
+		store := &StubDataStore{}
+		server := NewServer(store)
 
 		request := newPostSubscriptionRequest(subscription)
 		response := httptest.NewRecorder()
@@ -84,7 +87,7 @@ func assertStatus(t *testing.T, got, want int) {
 	}
 }
 
-func assertSubscriptions(t *testing.T, got, want []Subscription) {
+func assertSubscriptions(t *testing.T, got, want []subscription.Subscription) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v want %v", got, want)
@@ -98,7 +101,7 @@ func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want s
 	}
 }
 
-func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions []Subscription) {
+func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions []subscription.Subscription) {
 	t.Helper()
 	err := json.NewDecoder(body).Decode(&subscriptions)
 
@@ -114,7 +117,7 @@ func newGetSubscriptionRequest() *http.Request {
 	return req
 }
 
-func newPostSubscriptionRequest(subscription Subscription) *http.Request {
+func newPostSubscriptionRequest(subscription subscription.Subscription) *http.Request {
 	postBody, _ := json.Marshal(subscription)
 	req, _ := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(postBody))
 

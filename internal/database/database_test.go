@@ -1,11 +1,14 @@
-package main
+package database
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
 	"testing"
 	"time"
+
+	"github.com/Catzkorn/subscrypt/internal/subscription"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/shopspring/decimal"
@@ -14,7 +17,7 @@ import (
 func TestDatabaseConnection(t *testing.T) {
 
 	t.Run("tests a successful database connection", func(t *testing.T) {
-		_, err := NewDatabaseConnection(DatabaseConnTestString)
+		_, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 		assertDatabaseError(t, err)
 	})
 
@@ -29,13 +32,13 @@ func TestDatabaseConnection(t *testing.T) {
 }
 
 func TestDatabaseFunctionality(t *testing.T) {
-	store, err := NewDatabaseConnection(DatabaseConnTestString)
+	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
 
 	t.Run("adds a subscription and retrieves all added subscriptions", func(t *testing.T) {
 		amount, _ := decimal.NewFromString("8.00")
 
-		subscription := Subscription{
+		subscription := subscription.Subscription{
 			Name:    "Netflix",
 			Amount:  amount,
 			DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
@@ -70,7 +73,7 @@ func TestDatabaseFunctionality(t *testing.T) {
 }
 
 func clearSubscriptionsTable() error {
-	db, err := sql.Open("pgx", DatabaseConnTestString)
+	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_STRING"))
 	if err != nil {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
@@ -78,7 +81,6 @@ func clearSubscriptionsTable() error {
 	db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
 
 	return err
-
 }
 
 func assertDatabaseError(t *testing.T, err error) {
