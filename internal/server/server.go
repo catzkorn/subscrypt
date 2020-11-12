@@ -17,7 +17,7 @@ type Server struct {
 // DataStore provides an interface to store information about individual subscriptions
 type DataStore interface {
 	GetSubscriptions() ([]subscription.Subscription, error)
-	RecordSubscription(subscription subscription.Subscription) error
+	RecordSubscription(subscription subscription.Subscription) (*subscription.Subscription, error)
 }
 
 // NewSubscriptionServer returns a instance of a SubscriptionServer

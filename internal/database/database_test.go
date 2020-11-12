@@ -36,28 +36,25 @@ func TestAddingSubscriptionToDB(t *testing.T) {
 	assertDatabaseError(t, err)
 
 	t.Run("adds a subscription and retrieves all added subscriptions", func(t *testing.T) {
-		subscription := createTestSubscription()
+		wantedSubscription := createTestSubscription()
 
-		err := store.RecordSubscription(subscription)
+		subscription, err := store.RecordSubscription(wantedSubscription)
 		assertDatabaseError(t, err)
 
-		subscriptions, err := store.GetSubscriptions()
-		assertDatabaseError(t, err)
-
-		if subscriptions[0].ID == 0 {
-			t.Errorf("Database did not return an ID, got %v want %v", 0, subscriptions[0].ID)
+		if subscription.ID == 0 {
+			t.Errorf("Database did not return an ID, got %v want %v", 0, subscription.ID)
 		}
 
-		if subscriptions[0].Name != subscription.Name {
-			t.Errorf("Database did not return correct subscription name, got %s want %s", subscriptions[0].Name, subscription.Name)
+		if subscription.Name != wantedSubscription.Name {
+			t.Errorf("Database did not return correct subscription name, got %s want %s", subscription.Name, wantedSubscription.Name)
 		}
 
-		if !subscriptions[0].Amount.Equal(subscription.Amount) {
-			t.Errorf("Database did not return correct amount, got %#v want %#v", subscriptions[0].Amount, subscription.Amount)
+		if !subscription.Amount.Equal(subscription.Amount) {
+			t.Errorf("Database did not return correct amount, got %#v want %#v", subscription.Amount, wantedSubscription.Amount)
 		}
 
-		if !subscriptions[0].DateDue.Equal(subscription.DateDue) {
-			t.Errorf("Database did not return correct subscription date, got %s want %s", subscriptions[0].DateDue, subscription.DateDue)
+		if !subscription.DateDue.Equal(wantedSubscription.DateDue) {
+			t.Errorf("Database did not return correct subscription date, got %s want %s", subscription.DateDue, wantedSubscription.DateDue)
 		}
 
 		clearSubscriptionsTable()
@@ -69,21 +66,18 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
 
-	t.Run("deletes the subscription from the database", func (t *testing.T) {
+	t.Run("deletes the subscription from the database", func(t *testing.T) {
 		subscription := createTestSubscription()
 
-		err := store.RecordSubscription(subscription)
+		gotSubscription, err := store.RecordSubscription(subscription)
 		assertDatabaseError(t, err)
 
-		subscriptions, err := store.GetSubscriptions()
-		assertDatabaseError(t, err)
-
-		subscriptionID := subscriptions[0].ID
+		subscriptionID := gotSubscription.ID
 
 		err = store.DeleteSubscription(subscriptionID)
 		assertDatabaseError(t, err)
 
-		subscriptions, err = store.GetSubscriptions()
+		subscriptions, err := store.GetSubscriptions()
 		assertDatabaseError(t, err)
 
 		if len(subscriptions) != 0 {

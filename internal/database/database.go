@@ -35,13 +35,31 @@ func NewDatabaseConnection(databaseDSN string) (*Database, error) {
 }
 
 // RecordSubscription inserts a subscription into the subscription database
-func (d *Database) RecordSubscription(subscription subscription.Subscription) error {
-	_, err := d.database.ExecContext(context.Background(), "INSERT INTO subscriptions (name, amount, date_due) VALUES ($1, $2, $3)", subscription.Name, subscription.Amount, subscription.DateDue)
+func (d *Database) RecordSubscription(sub subscription.Subscription) (*subscription.Subscription, error) {
+	var id int
+	var name string
+	var amount pgtype.Numeric
+	var dateDue time.Time
+
+	err := d.database.QueryRowContext(context.Background(), "INSERT INTO subscriptions (name, amount, date_due) VALUES ($1, $2, $3)", sub.Name, sub.Amount, sub.DateDue).Scan(&id, &name, &amount, &dateDue)
 	if err != nil {
-		return fmt.Errorf("unexpected insert error: %w", err)
+		return nil, fmt.Errorf("unexpected insert error: %w", err)
 	}
 
-	return nil
+	switch {
+	case err == sql.ErrNoRows:
+		return nil, fmt.Errorf("no user with id %d\n", id)
+	case err != nil:
+		return nil, fmt.Errorf("query error: %v\n", err)
+	default:
+		newSubscription := subscription.Subscription{
+			ID:      id,
+			Name:    name,
+			Amount:  decimal.NewFromBigInt(amount.Int, amount.Exp),
+			DateDue: dateDue,
+		}
+		return &newSubscription, nil
+	}
 
 }
 
