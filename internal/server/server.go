@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
@@ -66,7 +65,7 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 
 	err := json.NewDecoder(r.Body).Decode(&subscription)
 	if err != nil {
-		log.Fatalln(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	s.dataStore.RecordSubscription(subscription)
 	w.WriteHeader(http.StatusAccepted)

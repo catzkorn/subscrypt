@@ -33,7 +33,7 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	assertStatus(t, response.Code, http.StatusOK)
 
 	got := getSubscriptionsFromResponse(t, response.Body)
-	assertSubscriptions(t, got, []subscription.Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}})
+	assertSubscriptions(t, got, []subscription.Subscription{{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}})
 }
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
