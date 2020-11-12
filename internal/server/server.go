@@ -81,7 +81,7 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 
 	amount, _ := decimal.NewFromString(r.FormValue("amount"))
 
-	layout := "2006-01-02T15:04:05.000Z"
+	layout := "2006-01-02"
 	str := r.FormValue("date")
 	t, err := time.Parse(layout, str)
 
