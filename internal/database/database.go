@@ -59,19 +59,17 @@ func (d *Database) RecordSubscription(sub subscription.Subscription) (*subscript
 		&dateDue,
 	)
 
-	switch {
-	case err != nil:
+	if err != nil {
 		return nil, fmt.Errorf("unexpected insert error: %w", err)
-	default:
-		newSubscription := subscription.Subscription{
-			ID:      id,
-			Name:    name,
-			Amount:  decimal.NewFromBigInt(amount.Int, amount.Exp),
-			DateDue: dateDue,
-		}
-		return &newSubscription, nil
 	}
 
+	newSubscription := subscription.Subscription{
+		ID:      id,
+		Name:    name,
+		Amount:  decimal.NewFromBigInt(amount.Int, amount.Exp),
+		DateDue: dateDue,
+	}
+	return &newSubscription, nil
 }
 
 // GetSubscriptions retrieves all subscriptions from the subscription database
