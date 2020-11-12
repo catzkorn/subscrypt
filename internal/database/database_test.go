@@ -31,7 +31,7 @@ func TestDatabaseConnection(t *testing.T) {
 	})
 }
 
-func TestDatabaseFunctionality(t *testing.T) {
+func TestAddingSubscriptionToDB(t *testing.T) {
 	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
 
@@ -70,6 +70,40 @@ func TestDatabaseFunctionality(t *testing.T) {
 
 	})
 
+}
+
+func TestDeletingSubscriptionFromDB(t *testing.T) {
+	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+	assertDatabaseError(t, err)
+
+	t.Run("deletes the subscription from the database", func (t *testing.T) {
+		amount, _ := decimal.NewFromString("8.00")
+		subscription := subscription.Subscription{
+			Name:    "Netflix",
+			Amount:  amount,
+			DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
+		}
+
+		err := store.RecordSubscription(subscription)
+		assertDatabaseError(t, err)
+
+		subscriptions, err := store.GetSubscriptions()
+		assertDatabaseError(t, err)
+
+		subscriptionID := subscriptions[0].ID
+
+		err = store.DeleteSubscription(subscriptionID)
+		assertDatabaseError(t, err)
+
+		subscriptions, err = store.GetSubscriptions()
+		assertDatabaseError(t, err)
+
+		if len(subscriptions) != 0 {
+			t.Errorf("database did not delete subscription, got %v, wanted no subscriptions", subscriptions)
+		}
+
+		clearSubscriptionsTable()
+	})
 }
 
 func clearSubscriptionsTable() error {

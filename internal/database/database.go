@@ -71,3 +71,12 @@ func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
 	}
 	return subscriptions, nil
 }
+
+func (d *Database) DeleteSubscription(subscriptionID int) error {
+	_, err := d.database.ExecContext(context.Background(), "DELETE FROM subscriptions WHERE id = $1;", subscriptionID)
+	if err != nil {
+		return fmt.Errorf("unexpected insert error: %w", err)
+	}
+
+	return nil
+}
