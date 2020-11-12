@@ -36,13 +36,7 @@ func TestAddingSubscriptionToDB(t *testing.T) {
 	assertDatabaseError(t, err)
 
 	t.Run("adds a subscription and retrieves all added subscriptions", func(t *testing.T) {
-		amount, _ := decimal.NewFromString("8.00")
-
-		subscription := subscription.Subscription{
-			Name:    "Netflix",
-			Amount:  amount,
-			DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
-		}
+		subscription := createTestSubscription()
 
 		err := store.RecordSubscription(subscription)
 		assertDatabaseError(t, err)
@@ -67,7 +61,6 @@ func TestAddingSubscriptionToDB(t *testing.T) {
 		}
 
 		clearSubscriptionsTable()
-
 	})
 
 }
@@ -77,12 +70,7 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 	assertDatabaseError(t, err)
 
 	t.Run("deletes the subscription from the database", func (t *testing.T) {
-		amount, _ := decimal.NewFromString("8.00")
-		subscription := subscription.Subscription{
-			Name:    "Netflix",
-			Amount:  amount,
-			DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
-		}
+		subscription := createTestSubscription()
 
 		err := store.RecordSubscription(subscription)
 		assertDatabaseError(t, err)
@@ -104,6 +92,16 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 
 		clearSubscriptionsTable()
 	})
+}
+
+func createTestSubscription() subscription.Subscription {
+	amount, _ := decimal.NewFromString("8.00")
+	subscription := subscription.Subscription{
+		Name:    "Netflix",
+		Amount:  amount,
+		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
+	}
+	return subscription
 }
 
 func clearSubscriptionsTable() error {
