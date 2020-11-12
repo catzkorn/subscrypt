@@ -27,6 +27,11 @@ func NewServer(dataStore DataStore) *Server {
 	return s
 }
 
+// ServeHTTP implements the http handler interface
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.router.ServeHTTP(w, r)
+}
+
 // subscriptionHandler handles the routing logic for the index
 func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -40,6 +45,7 @@ func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// JsonContentType defines application/json
 const JsonContentType = "application/json"
 
 // processGetSubscription processes the GET subscription request, returning the store subscriptions as json
@@ -63,8 +69,14 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 
 	err := json.NewDecoder(r.Body).Decode(&subscription)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
-	s.dataStore.RecordSubscription(subscription)
+	_, err = s.dataStore.RecordSubscription(subscription)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusAccepted)
 }

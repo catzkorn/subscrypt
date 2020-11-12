@@ -57,7 +57,8 @@ func TestAddingSubscriptionToDB(t *testing.T) {
 			t.Errorf("Database did not return correct subscription date, got %s want %s", subscription.DateDue, wantedSubscription.DateDue)
 		}
 
-		clearSubscriptionsTable()
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
 	})
 
 }
@@ -91,7 +92,8 @@ func TestGetSubscriptionsFromDB(t *testing.T) {
 			t.Errorf("Database did not return correct subscription date, got %s want %s", subscription.DateDue, subscription.DateDue)
 		}
 
-		clearSubscriptionsTable()
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
 	})
 
 }
@@ -118,7 +120,8 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 			t.Errorf("database did not delete subscription, got %v, wanted no subscriptions", subscriptions)
 		}
 
-		clearSubscriptionsTable()
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
 	})
 
 	t.Run("attempts to delete a subscription by an invalid ID", func(t *testing.T) {
@@ -146,7 +149,7 @@ func clearSubscriptionsTable() error {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
 
-	db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
+	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
 
 	return err
 }

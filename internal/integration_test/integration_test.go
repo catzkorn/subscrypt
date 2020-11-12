@@ -69,7 +69,8 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 		t.Errorf("Database did not return correct subscription date, got %s want %s", got[0].DateDue, subscriptionFML.DateDue)
 	}
 
-	clearSubscriptionsTable()
+	err := clearSubscriptionsTable()
+	assertDatabaseError(t, err)
 }
 
 func clearSubscriptionsTable() error {
@@ -99,12 +100,12 @@ func assertSubscriptions(t *testing.T, got, want []subscription.Subscription) {
 	}
 }
 
-func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want string) {
-	t.Helper()
-	if response.Result().Header.Get("content-type") != want {
-		t.Errorf("response did not have content-type of %s, got %v", want, response.Result().Header)
-	}
-}
+// func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want string) {
+// 	t.Helper()
+// 	if response.Result().Header.Get("content-type") != want {
+// 		t.Errorf("response did not have content-type of %s, got %v", want, response.Result().Header)
+// 	}
+// }
 
 func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions []subscription.Subscription) {
 	t.Helper()
@@ -127,4 +128,11 @@ func newPostSubscriptionRequest(subscription subscription.Subscription) *http.Re
 	req, _ := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(postBody))
 
 	return req
+}
+
+func assertDatabaseError(t *testing.T, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatalf("unexpected database error: %v", err)
+	}
 }
