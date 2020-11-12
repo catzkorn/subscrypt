@@ -38,16 +38,16 @@ func TestGETSubscriptions(t *testing.T) {
 		store := StubSubscriptionStore{wantedSubscriptions}
 		server := NewSubscriptionServer(&store)
 
-		request := NewGetSubscriptionRequest()
+		request := newGetSubscriptionRequest()
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
-		got := GetSubscriptionsFromResponse(t, response.Body)
+		got := getSubscriptionsFromResponse(t, response.Body)
 
-		AssertStatus(t, response.Code, http.StatusOK)
-		AssertSubscriptions(t, got, wantedSubscriptions)
-		AssertContentType(t, response, JsonContentType)
+		assertStatus(t, response.Code, http.StatusOK)
+		assertSubscriptions(t, got, wantedSubscriptions)
+		assertContentType(t, response, JsonContentType)
 	})
 }
 
@@ -60,12 +60,12 @@ func TestStoreSubscription(t *testing.T) {
 		store := &StubSubscriptionStore{}
 		server := NewSubscriptionServer(store)
 
-		request := NewPostSubscriptionRequest(subscription)
+		request := newPostSubscriptionRequest(subscription)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
-		AssertStatus(t, response.Code, http.StatusAccepted)
+		assertStatus(t, response.Code, http.StatusAccepted)
 
 		if len(store.subscriptions) != 1 {
 			t.Errorf("got %d calls to RecordSubscription want %d", len(store.subscriptions), 1)
@@ -77,28 +77,28 @@ func TestStoreSubscription(t *testing.T) {
 	})
 }
 
-func AssertStatus(t *testing.T, got, want int) {
+func assertStatus(t *testing.T, got, want int) {
 	t.Helper()
 	if got != want {
 		t.Errorf("did not get correct status, got %d, want %d", got, want)
 	}
 }
 
-func AssertSubscriptions(t *testing.T, got, want []Subscription) {
+func assertSubscriptions(t *testing.T, got, want []Subscription) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v want %v", got, want)
 	}
 }
 
-func AssertContentType(t *testing.T, response *httptest.ResponseRecorder, want string) {
+func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want string) {
 	t.Helper()
 	if response.Result().Header.Get("content-type") != want {
 		t.Errorf("response did not have content-type of %s, got %v", want, response.Result().Header)
 	}
 }
 
-func GetSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions []Subscription) {
+func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions []Subscription) {
 	t.Helper()
 	err := json.NewDecoder(body).Decode(&subscriptions)
 
@@ -109,12 +109,12 @@ func GetSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions [
 	return
 }
 
-func NewGetSubscriptionRequest() *http.Request {
+func newGetSubscriptionRequest() *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
 	return req
 }
 
-func NewPostSubscriptionRequest(subscription Subscription) *http.Request {
+func newPostSubscriptionRequest(subscription Subscription) *http.Request {
 	postBody, _ := json.Marshal(subscription)
 	req, _ := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(postBody))
 

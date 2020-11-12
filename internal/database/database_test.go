@@ -66,13 +66,13 @@ func TestDatabaseFunctionality(t *testing.T) {
 			t.Errorf("Database did not return correct subscription date, got %s want %s", subscriptions[0].DateDue, subscription.DateDue)
 		}
 
-		ClearSubscriptionsTable()
+		clearSubscriptionsTable()
 
 	})
 
 }
 
-func ClearSubscriptionsTable() error {
+func clearSubscriptionsTable() error {
 	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_STRING"))
 	if err != nil {
 		return fmt.Errorf("unexpected connection error: %w", err)
