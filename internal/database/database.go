@@ -41,7 +41,23 @@ func (d *Database) RecordSubscription(sub subscription.Subscription) (*subscript
 	var amount pgtype.Numeric
 	var dateDue time.Time
 
-	err := d.database.QueryRowContext(context.Background(), "INSERT INTO subscriptions (name, amount, date_due) VALUES ($1, $2, $3) RETURNING id, name, amount, date_due", sub.Name, sub.Amount, sub.DateDue).Scan(&id, &name, &amount, &dateDue)
+	insertQuery := `
+	INSERT INTO subscriptions (name, amount, date_due) 
+	VALUES ($1, $2, $3) 
+	RETURNING id, name, amount, date_due`
+
+	err := d.database.QueryRowContext(
+		context.Background(),
+		insertQuery,
+		sub.Name,
+		sub.Amount,
+		sub.DateDue,
+	).Scan(
+		&id,
+		&name,
+		&amount,
+		&dateDue,
+	)
 
 	switch {
 	case err != nil:
