@@ -120,6 +120,14 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 
 		clearSubscriptionsTable()
 	})
+
+	t.Run("attempts to delete a subscription by an invalid ID", func(t *testing.T) {
+		err := store.DeleteSubscription(0)
+
+		if err == nil {
+			t.Errorf("deleting invalid subscription did not error")
+		}
+	})
 }
 
 func createTestSubscription() subscription.Subscription {

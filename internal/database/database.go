@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
@@ -86,8 +85,9 @@ func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
 		var name string
 		var amount pgtype.Numeric
 		var dateDue time.Time
-		if err := rows.Scan(&id, &name, &amount, &dateDue); err != nil {
-			log.Fatal(err)
+		err := rows.Scan(&id, &name, &amount, &dateDue)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
 		subscriptions = append(subscriptions, subscription.Subscription{
 			ID:      id,
@@ -99,10 +99,20 @@ func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
 	return subscriptions, nil
 }
 
+// DeleteSubscription deletes a subscription from the database by ID
 func (d *Database) DeleteSubscription(subscriptionID int) error {
-	_, err := d.database.ExecContext(context.Background(), "DELETE FROM subscriptions WHERE id = $1;", subscriptionID)
+	result, err := d.database.ExecContext(context.Background(), "DELETE FROM subscriptions WHERE id = $1;", subscriptionID)
 	if err != nil {
 		return fmt.Errorf("unexpected insert error: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error getting rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no rows were affected by deletion request")
 	}
 
 	return nil
