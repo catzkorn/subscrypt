@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
@@ -101,7 +100,6 @@ func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
 	return subscriptions, nil
 }
 
-
 // DeleteSubscription deletes a subscription from the database by ID
 func (d *Database) DeleteSubscription(subscriptionID int) error {
 	result, err := d.database.ExecContext(context.Background(), "DELETE FROM subscriptions WHERE id = $1;", subscriptionID)
@@ -120,4 +118,3 @@ func (d *Database) DeleteSubscription(subscriptionID int) error {
 
 	return nil
 }
-

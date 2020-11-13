@@ -2,12 +2,10 @@ package server
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 )
-
 
 // Server is the HTTP interface for subscription information
 type Server struct {
