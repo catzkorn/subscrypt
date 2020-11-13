@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
-	"html/template"
 	"net/http"
 	"time"
 )
@@ -57,7 +56,6 @@ const JsonContentType = "application/json"
 
 // processGetSubscription processes the GET subscription request, returning the store subscriptions as json
 func (s *Server) processGetSubscription(w http.ResponseWriter) error {
-	tmpl := template.Must(template.ParseFiles("./web/templates/index.html"))
 
 	subscriptions, err := s.dataStore.GetSubscriptions()
 
@@ -70,7 +68,7 @@ func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 		Subscriptions: subscriptions,
 	}
 
-	err = tmpl.Execute(w, data)
+	err = ParsedIndexTemplate.Execute(w, data)
 
 	if err != nil {
 		return err
@@ -86,6 +84,7 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 
 	layout := "2006-01-02"
 	str := r.FormValue("date")
+
 	t, err := time.Parse(layout, str)
 
 	if err != nil {
@@ -109,6 +108,4 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusFound)
-	w.WriteHeader(http.StatusAccepted)
-
 }

@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -32,7 +35,7 @@ func (s *StubDataStore) RecordSubscription(subscription subscription.Subscriptio
 
 func TestGETSubscriptions(t *testing.T) {
 
-	t.Run("return a JSON of subscription", func(t *testing.T) {
+	t.Run("return a subscription", func(t *testing.T) {
 		amount, _ := decimal.NewFromString("100.99")
 		wantedSubscriptions := []subscription.Subscription{
 			{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -45,37 +48,33 @@ func TestGETSubscriptions(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
+		body, _ := ioutil.ReadAll(response.Body)
+		bodyString := string(body)
+		got := bodyString
 
-		got := getSubscriptionsFromResponse(t, response.Body)
+		res := strings.Contains(got, wantedSubscriptions[0].Name)
 
-		assertStatus(t, response.Code, http.StatusOK)
-		assertSubscriptions(t, got, wantedSubscriptions)
-		assertContentType(t, response, jsonContentType)
+		if res != true {
+			t.Errorf("webpage did not contain subscription of name %v", wantedSubscriptions[0].Name)
+		}
 	})
 }
 
 func TestStoreSubscription(t *testing.T) {
 
 	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
-		amount, _ := decimal.NewFromString("100.99")
-		subscription := subscription.Subscription{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
-
 		store := &StubDataStore{}
 		server := NewServer(store)
 
-		request := newPostSubscriptionRequest(subscription)
+
+		request := newPostFormRequest(url.Values{"name": {"Netflix"}, "amount": {"9.98"}, "date": {"2020-11-12"}})
+
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
-		assertStatus(t, response.Code, http.StatusAccepted)
-
 		if len(store.subscriptions) != 1 {
 			t.Errorf("got %d calls to RecordSubscription want %d", len(store.subscriptions), 1)
-		}
-
-		if !reflect.DeepEqual(store.subscriptions[0], subscription) {
-			t.Errorf("did not store correct winner got %v want %v", store.subscriptions[0], subscription)
 		}
 	})
 }
@@ -121,5 +120,15 @@ func newPostSubscriptionRequest(subscription subscription.Subscription) *http.Re
 	postBody, _ := json.Marshal(subscription)
 	req, _ := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(postBody))
 
+	return req
+}
+
+func newPostFormRequest(url url.Values) *http.Request {
+	var bodyStr = []byte(url.Encode())
+	req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(bodyStr))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	return req
 }

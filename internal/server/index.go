@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+package server
+
+import "html/template"
+
+const indexTemplate = `<!DOCTYPE html>
 <html>
 <style>
     table, td {
@@ -35,4 +39,6 @@
 
 
 </body>
-</html>
+</html>`
+
+var ParsedIndexTemplate = template.Must(template.New("index").Parse(indexTemplate))
