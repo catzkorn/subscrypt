@@ -2,18 +2,17 @@ package server
 
 import (
 	"fmt"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
 	"html/template"
 	"net/http"
 	"time"
-
-	"github.com/Catzkorn/subscrypt/internal/subscription"
 )
 
-// SubscriptionServer is the HTTP interface for subscription information
+// Server is the HTTP interface for subscription information
 type Server struct {
 	dataStore DataStore
-	http.Handler
+	router    *http.ServeMux
 }
 
 type IndexPageData struct {
@@ -24,17 +23,20 @@ type IndexPageData struct {
 // DataStore provides an interface to store information about individual subscriptions
 type DataStore interface {
 	GetSubscriptions() ([]subscription.Subscription, error)
-	RecordSubscription(subscription subscription.Subscription) error
+	RecordSubscription(subscription subscription.Subscription) (*subscription.Subscription, error)
 }
 
-// NewSubscriptionServer returns a instance of a SubscriptionServer
+// NewServer returns a instance of a Server
 func NewServer(dataStore DataStore) *Server {
-	s := new(Server)
-	s.dataStore = dataStore
-	router := http.NewServeMux()
-	router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
-	s.Handler = router
+	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
+	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
+
 	return s
+}
+
+// ServeHTTP implements the http handler interface
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.router.ServeHTTP(w, r)
 }
 
 // subscriptionHandler handles the routing logic for the index
@@ -50,6 +52,7 @@ func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// JsonContentType defines application/json
 const JsonContentType = "application/json"
 
 // processGetSubscription processes the GET subscription request, returning the store subscriptions as json
@@ -95,11 +98,17 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 		DateDue: t,
 	}
 
-	err = s.dataStore.RecordSubscription(entry)
-
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
+	_, err = s.dataStore.RecordSubscription(entry)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	http.Redirect(w, r, "/", http.StatusFound)
+	w.WriteHeader(http.StatusAccepted)
+
 }
