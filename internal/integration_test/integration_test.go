@@ -35,7 +35,12 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	response = httptest.NewRecorder()
 
 	testServer.ServeHTTP(response, request)
-	body, _ := ioutil.ReadAll(response.Body)
+	body, err := ioutil.ReadAll(response.Body)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	bodyString := string(body)
 	got := bodyString
 
@@ -63,7 +68,12 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	response = httptest.NewRecorder()
 
 	testServer.ServeHTTP(response, request)
-	body, _ := ioutil.ReadAll(response.Body)
+	body, err := ioutil.ReadAll(response.Body)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	bodyString := string(body)
 	got := bodyString
 
@@ -73,7 +83,7 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 		t.Errorf("webpage did not contain subscription of name %v", wantedSubscriptions[0].Name)
 	}
 
-	err := clearSubscriptionsTable()
+	err = clearSubscriptionsTable()
 	assertDatabaseError(t, err)
 }
 

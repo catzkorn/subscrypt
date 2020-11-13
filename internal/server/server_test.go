@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -43,7 +44,12 @@ func TestGETSubscriptions(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-		body, _ := ioutil.ReadAll(response.Body)
+		body, err := ioutil.ReadAll(response.Body)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		bodyString := string(body)
 		got := bodyString
 
