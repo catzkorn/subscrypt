@@ -93,11 +93,11 @@ func TestCreateReminder(t *testing.T) {
 		store := &StubDataStore{subscriptions}
 		server := NewServer(store)
 
-		request := newPostReminderRequest("test@test.com", subscriptions[0].ID, time.Date(2020, time.November, 6, 0, 0, 0, 0, time.UTC))
+		request := newPostReminderRequest("test@test.com", fmt.Sprint(subscriptions[0].ID), "2020-11-13")
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-		assertStatus(t, response.Code, http.StatusAccepted)
+		assertStatus(t, response.Code, http.StatusOK)
 
 	})
 
@@ -150,9 +150,11 @@ func newPostFormRequest(url url.Values) *http.Request {
 	return req
 }
 
-func newPostReminderRequest(email string, subscriptionID int, reminderDate time.Time) *http.Request {
-	var bodyStr = []byte(fmt.Sprintf("email=%s&subscriptionID=%v&date=%v", email, subscriptionID, reminderDate))
+func newPostReminderRequest(email string, subscriptionID string, reminderDate string) *http.Request {
+	urlValues := url.Values{"email": {email}, "subscriptionID": {subscriptionID}, "reminderDate": {reminderDate}}
+	var bodyStr = []byte(urlValues.Encode())
 	req, err := http.NewRequest(http.MethodPost, "/reminder", bytes.NewBuffer(bodyStr))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	if err != nil {
 		panic(err)
 	}

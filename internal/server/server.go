@@ -2,10 +2,13 @@ package server
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/Catzkorn/subscrypt/internal/reminder"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
-	"net/http"
-	"time"
 )
 
 // Server is the HTTP interface for subscription information
@@ -15,7 +18,7 @@ type Server struct {
 }
 
 type IndexPageData struct {
-	PageTitle string
+	PageTitle     string
 	Subscriptions []subscription.Subscription
 }
 
@@ -28,7 +31,8 @@ type DataStore interface {
 // NewServer returns a instance of a Server
 func NewServer(dataStore DataStore) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
-	s.router.Handle("/", http.HandlerFunc(s.templateHandler))
+	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
+	s.router.Handle("/reminder", http.HandlerFunc(s.reminderHandler))
 	// s.router.Handle("/api", http.HandlerFunc(s.apiHandler))
 
 	return s
@@ -40,7 +44,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // subscriptionHandler handles the routing logic for the index
-func (s *Server) templateHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		err := s.processGetSubscription(w)
@@ -49,6 +53,13 @@ func (s *Server) templateHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case http.MethodPost:
 		s.processPostSubscription(w, r)
+	}
+}
+
+func (s *Server) reminderHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		s.processPostReminder(w, r)
 	}
 }
 
@@ -78,7 +89,7 @@ func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 	}
 
 	data := IndexPageData{
-		PageTitle: "My Subscriptions List",
+		PageTitle:     "My Subscriptions List",
 		Subscriptions: subscriptions,
 	}
 
@@ -106,8 +117,8 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 	}
 
 	entry := subscription.Subscription{
-		Name:   r.FormValue("name"),
-		Amount: amount,
+		Name:    r.FormValue("name"),
+		Amount:  amount,
 		DateDue: t,
 	}
 
@@ -122,4 +133,32 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+// processPostReminder creates an ics file
+// TODO: then emails it to the user's email
+func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
+	var newReminder reminder.Reminder
+
+	subscriptionID, err := strconv.Atoi(r.FormValue("subscriptionID"))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	reminderDate, err := time.Parse("2006-01-02", r.FormValue("reminderDate"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	newReminder = reminder.Reminder{
+		Email:          r.FormValue("email"),
+		SubscriptionID: subscriptionID,
+		ReminderDate:   reminderDate,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Println(newReminder)
 }
