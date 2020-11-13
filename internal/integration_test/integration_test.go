@@ -136,3 +136,4 @@ func assertDatabaseError(t *testing.T, err error) {
 		t.Fatalf("unexpected database error: %v", err)
 	}
 }
+

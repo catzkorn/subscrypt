@@ -31,6 +31,7 @@ func TestDatabaseConnection(t *testing.T) {
 	})
 }
 
+
 func TestAddingSubscriptionToDB(t *testing.T) {
 	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
@@ -141,6 +142,7 @@ func createTestSubscription() subscription.Subscription {
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
 	return subscription
+
 }
 
 func clearSubscriptionsTable() error {
@@ -148,7 +150,6 @@ func clearSubscriptionsTable() error {
 	if err != nil {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
-
 	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
 
 	return err

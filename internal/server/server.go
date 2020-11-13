@@ -2,10 +2,12 @@ package server
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 )
+
 
 // Server is the HTTP interface for subscription information
 type Server struct {
@@ -77,6 +79,5 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	w.WriteHeader(http.StatusAccepted)
 }

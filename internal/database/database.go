@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
@@ -85,6 +86,7 @@ func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
 		var name string
 		var amount pgtype.Numeric
 		var dateDue time.Time
+
 		err := rows.Scan(&id, &name, &amount, &dateDue)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
@@ -98,6 +100,7 @@ func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
 	}
 	return subscriptions, nil
 }
+
 
 // DeleteSubscription deletes a subscription from the database by ID
 func (d *Database) DeleteSubscription(subscriptionID int) error {
@@ -117,3 +120,4 @@ func (d *Database) DeleteSubscription(subscriptionID int) error {
 
 	return nil
 }
+
