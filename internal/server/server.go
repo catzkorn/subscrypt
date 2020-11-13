@@ -28,7 +28,8 @@ type DataStore interface {
 // NewServer returns a instance of a Server
 func NewServer(dataStore DataStore) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
-	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
+	s.router.Handle("/", http.HandlerFunc(s.templateHandler))
+	// s.router.Handle("/api", http.HandlerFunc(s.apiHandler))
 
 	return s
 }
@@ -39,7 +40,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // subscriptionHandler handles the routing logic for the index
-func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) templateHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		err := s.processGetSubscription(w)
@@ -50,6 +51,19 @@ func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 		s.processPostSubscription(w, r)
 	}
 }
+
+// // subscriptionHandler handles the routing logic for the index
+// func (s *Server) apiHandler(w http.ResponseWriter, r *http.Request) {
+// 	switch r.Method {
+// 	case http.MethodGet:
+// 		err := s.processGetSubscription(w)
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		}
+// 	case http.MethodPost:
+// 		s.processPostSubscription(w, r)
+// 	}
+// }
 
 // JsonContentType defines application/json
 const JsonContentType = "application/json"
