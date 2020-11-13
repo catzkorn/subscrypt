@@ -18,7 +18,8 @@ func (i *InMemorySubscriptionStore) GetSubscriptions() ([]subscription.Subscript
 }
 
 // RecordSubscription is a method that stores a subscription into the store
-func (i *InMemorySubscriptionStore) RecordSubscription(subscription subscription.Subscription) error {
+
+func (i *InMemorySubscriptionStore) RecordSubscription(subscription subscription.Subscription) (*subscription.Subscription, error) {
 	i.subscriptions = append(i.subscriptions, subscription)
-	return nil
+	return &subscription, nil
 }

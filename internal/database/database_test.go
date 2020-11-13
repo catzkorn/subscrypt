@@ -31,44 +31,117 @@ func TestDatabaseConnection(t *testing.T) {
 	})
 }
 
-func TestDatabaseFunctionality(t *testing.T) {
+
+func TestAddingSubscriptionToDB(t *testing.T) {
 	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
 
 	t.Run("adds a subscription and retrieves all added subscriptions", func(t *testing.T) {
-		amount, _ := decimal.NewFromString("8.00")
+		wantedSubscription := createTestSubscription()
 
-		subscription := subscription.Subscription{
-			Name:    "Netflix",
-			Amount:  amount,
-			DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
+		subscription, err := store.RecordSubscription(wantedSubscription)
+		assertDatabaseError(t, err)
+
+		if subscription.ID == 0 {
+			t.Errorf("Database did not return an ID, got %v want %v", 0, subscription.ID)
 		}
 
-		err := store.RecordSubscription(subscription)
+		if subscription.Name != wantedSubscription.Name {
+			t.Errorf("Database did not return correct subscription name, got %s want %s", subscription.Name, wantedSubscription.Name)
+		}
+
+		if !subscription.Amount.Equal(subscription.Amount) {
+			t.Errorf("Database did not return correct amount, got %#v want %#v", subscription.Amount, wantedSubscription.Amount)
+		}
+
+		if !subscription.DateDue.Equal(wantedSubscription.DateDue) {
+			t.Errorf("Database did not return correct subscription date, got %s want %s", subscription.DateDue, wantedSubscription.DateDue)
+		}
+
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
+	})
+
+}
+
+func TestGetSubscriptionsFromDB(t *testing.T) {
+	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+	assertDatabaseError(t, err)
+
+	t.Run("gets all the subscriptions from the database", func(t *testing.T) {
+		subscription := createTestSubscription()
+
+		_, err := store.RecordSubscription(subscription)
+		assertDatabaseError(t, err)
+
+		gotSubscriptions, err := store.GetSubscriptions()
+		assertDatabaseError(t, err)
+
+		if gotSubscriptions[0].ID == 0 {
+			t.Errorf("Database did not return an ID, got %v want %v", 0, subscription.ID)
+		}
+
+		if gotSubscriptions[0].Name != subscription.Name {
+			t.Errorf("Database did not return correct subscription name, got %s want %s", subscription.Name, subscription.Name)
+		}
+
+		if !gotSubscriptions[0].Amount.Equal(subscription.Amount) {
+			t.Errorf("Database did not return correct amount, got %#v want %#v", subscription.Amount, subscription.Amount)
+		}
+
+		if !gotSubscriptions[0].DateDue.Equal(subscription.DateDue) {
+			t.Errorf("Database did not return correct subscription date, got %s want %s", subscription.DateDue, subscription.DateDue)
+		}
+
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
+	})
+
+}
+
+func TestDeletingSubscriptionFromDB(t *testing.T) {
+	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+	assertDatabaseError(t, err)
+
+	t.Run("deletes the subscription from the database", func(t *testing.T) {
+		subscription := createTestSubscription()
+
+		gotSubscription, err := store.RecordSubscription(subscription)
+		assertDatabaseError(t, err)
+
+		subscriptionID := gotSubscription.ID
+
+		err = store.DeleteSubscription(subscriptionID)
 		assertDatabaseError(t, err)
 
 		subscriptions, err := store.GetSubscriptions()
 		assertDatabaseError(t, err)
 
-		if subscriptions[0].ID == 0 {
-			t.Errorf("Database did not return an ID, got %v want %v", 0, subscriptions[0].ID)
+		if len(subscriptions) != 0 {
+			t.Errorf("database did not delete subscription, got %v, wanted no subscriptions", subscriptions)
 		}
 
-		if subscriptions[0].Name != subscription.Name {
-			t.Errorf("Database did not return correct subscription name, got %s want %s", subscriptions[0].Name, subscription.Name)
-		}
-
-		if !subscriptions[0].Amount.Equal(subscription.Amount) {
-			t.Errorf("Database did not return correct amount, got %#v want %#v", subscriptions[0].Amount, subscription.Amount)
-		}
-
-		if !subscriptions[0].DateDue.Equal(subscription.DateDue) {
-			t.Errorf("Database did not return correct subscription date, got %s want %s", subscriptions[0].DateDue, subscription.DateDue)
-		}
-
-		clearSubscriptionsTable()
-
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
 	})
+
+	t.Run("attempts to delete a subscription by an invalid ID", func(t *testing.T) {
+		err := store.DeleteSubscription(0)
+
+		if err == nil {
+			t.Errorf("deleting invalid subscription did not error")
+		}
+	})
+}
+
+func createTestSubscription() subscription.Subscription {
+	amount, _ := decimal.NewFromString("8.00")
+	subscription := subscription.Subscription{
+		Name:    "Netflix",
+		Amount:  amount,
+		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
+	}
+	return subscription
 
 }
 
@@ -77,8 +150,7 @@ func clearSubscriptionsTable() error {
 	if err != nil {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
-
-	db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
+	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
 
 	return err
 }
@@ -86,6 +158,6 @@ func clearSubscriptionsTable() error {
 func assertDatabaseError(t *testing.T, err error) {
 	t.Helper()
 	if err != nil {
-		t.Errorf("unexpected database error: %v", err)
+		t.Fatalf("unexpected database error: %v", err)
 	}
 }

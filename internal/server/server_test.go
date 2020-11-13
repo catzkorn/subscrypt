@@ -22,12 +22,12 @@ type StubDataStore struct {
 
 func (s *StubDataStore) GetSubscriptions() ([]subscription.Subscription, error) {
 	amount, _ := decimal.NewFromString("100.99")
-	return []subscription.Subscription{{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}}, nil
+	return []subscription.Subscription{{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}}, nil
 }
 
-func (s *StubDataStore) RecordSubscription(subscription subscription.Subscription) error {
+func (s *StubDataStore) RecordSubscription(subscription subscription.Subscription) (*subscription.Subscription, error) {
 	s.subscriptions = append(s.subscriptions, subscription)
-	return nil
+	return &subscription, nil
 }
 
 func TestGETSubscriptions(t *testing.T) {
@@ -35,7 +35,7 @@ func TestGETSubscriptions(t *testing.T) {
 	t.Run("return a JSON of subscription", func(t *testing.T) {
 		amount, _ := decimal.NewFromString("100.99")
 		wantedSubscriptions := []subscription.Subscription{
-			{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
+			{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
 		}
 
 		store := StubDataStore{wantedSubscriptions}
@@ -58,7 +58,7 @@ func TestStoreSubscription(t *testing.T) {
 
 	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
 		amount, _ := decimal.NewFromString("100.99")
-		subscription := subscription.Subscription{1, "Netflix", amount, time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
+		subscription := subscription.Subscription{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
 
 		store := &StubDataStore{}
 		server := NewServer(store)
