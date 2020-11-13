@@ -104,7 +104,7 @@ func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
 func (d *Database) DeleteSubscription(subscriptionID int) error {
 	result, err := d.database.ExecContext(context.Background(), "DELETE FROM subscriptions WHERE id = $1;", subscriptionID)
 	if err != nil {
-		return fmt.Errorf("unexpected insert error: %w", err)
+		return fmt.Errorf("unexpected database error: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
