@@ -2,13 +2,10 @@ package server
 
 import (
 	"bytes"
-	"encoding/json"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -16,8 +13,6 @@ import (
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
 )
-
-const jsonContentType = "application/json"
 
 type StubDataStore struct {
 	subscriptions []subscription.Subscription
@@ -79,47 +74,8 @@ func TestStoreSubscription(t *testing.T) {
 	})
 }
 
-func assertStatus(t *testing.T, got, want int) {
-	t.Helper()
-	if got != want {
-		t.Errorf("did not get correct status, got %d, want %d", got, want)
-	}
-}
-
-func assertSubscriptions(t *testing.T, got, want []subscription.Subscription) {
-	t.Helper()
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v want %v", got, want)
-	}
-}
-
-func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want string) {
-	t.Helper()
-	if response.Result().Header.Get("content-type") != want {
-		t.Errorf("response did not have content-type of %s, got %v", want, response.Result().Header)
-	}
-}
-
-func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions []subscription.Subscription) {
-	t.Helper()
-	err := json.NewDecoder(body).Decode(&subscriptions)
-
-	if err != nil {
-		t.Fatalf("Unable to parse response from server %q into slice of Subscription, '%v'", body, err)
-	}
-
-	return
-}
-
 func newGetSubscriptionRequest() *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
-	return req
-}
-
-func newPostSubscriptionRequest(subscription subscription.Subscription) *http.Request {
-	postBody, _ := json.Marshal(subscription)
-	req, _ := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(postBody))
-
 	return req
 }
 
