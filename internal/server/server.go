@@ -1,16 +1,22 @@
 package server
 
 import (
-	"encoding/json"
-	"net/http"
-
+	"fmt"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/shopspring/decimal"
+	"net/http"
+	"time"
 )
 
 // Server is the HTTP interface for subscription information
 type Server struct {
 	dataStore DataStore
 	router    *http.ServeMux
+}
+
+type IndexPageData struct {
+	PageTitle string
+	Subscriptions []subscription.Subscription
 }
 
 // DataStore provides an interface to store information about individual subscriptions
@@ -50,32 +56,56 @@ const JsonContentType = "application/json"
 
 // processGetSubscription processes the GET subscription request, returning the store subscriptions as json
 func (s *Server) processGetSubscription(w http.ResponseWriter) error {
-	w.Header().Set("content-type", JsonContentType)
+
 	subscriptions, err := s.dataStore.GetSubscriptions()
+
 	if err != nil {
 		return err
 	}
 
-	err = json.NewEncoder(w).Encode(subscriptions)
+	data := IndexPageData{
+		PageTitle: "My Subscriptions List",
+		Subscriptions: subscriptions,
+	}
+
+	err = ParsedIndexTemplate.Execute(w, data)
+
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 // processPostSubscription tells the SubscriptionStore to record the subscription from the post body
 func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request) {
-	var subscription subscription.Subscription
 
-	err := json.NewDecoder(r.Body).Decode(&subscription)
+	amount, _ := decimal.NewFromString(r.FormValue("amount"))
+
+	layout := "2006-01-02"
+	str := r.FormValue("date")
+
+	t, err := time.Parse(layout, str)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	entry := subscription.Subscription{
+		Name:   r.FormValue("name"),
+		Amount: amount,
+		DateDue: t,
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	_, err = s.dataStore.RecordSubscription(subscription)
+
+	_, err = s.dataStore.RecordSubscription(entry)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusAccepted)
+	http.Redirect(w, r, "/", http.StatusFound)
 }
