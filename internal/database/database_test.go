@@ -31,7 +31,6 @@ func TestDatabaseConnection(t *testing.T) {
 	})
 }
 
-
 func TestAddingSubscriptionToDB(t *testing.T) {
 	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
@@ -132,6 +131,40 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 			t.Errorf("deleting invalid subscription did not error")
 		}
 	})
+}
+
+func TestGetSubscriptionFromDB(t *testing.T) {
+
+	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+	assertDatabaseError(t, err)
+
+	t.Run("deletes the subscription from the database", func(t *testing.T) {
+		subscription := createTestSubscription()
+
+		returnedSubscription, err := store.RecordSubscription(subscription)
+		assertDatabaseError(t, err)
+
+		gotSubscription, err := store.GetSubscription(returnedSubscription.ID)
+		assertDatabaseError(t, err)
+
+		if gotSubscription.ID != returnedSubscription.ID {
+			t.Errorf("Database did not return an ID, got %v want %v", gotSubscription.ID, returnedSubscription.ID)
+		}
+
+		if gotSubscription.Name != subscription.Name {
+			t.Errorf("Database did not return correct subscription name, got %s want %s", gotSubscription.Name, returnedSubscription.Name)
+		}
+
+		if !gotSubscription.Amount.Equal(subscription.Amount) {
+			t.Errorf("Database did not return correct amount, got %#v want %#v", gotSubscription.Amount, returnedSubscription.Amount)
+		}
+
+		if !gotSubscription.DateDue.Equal(subscription.DateDue) {
+			t.Errorf("Database did not return correct subscription date, got %s want %s", gotSubscription.DateDue, returnedSubscription.DateDue)
+		}
+
+	})
+
 }
 
 func createTestSubscription() subscription.Subscription {

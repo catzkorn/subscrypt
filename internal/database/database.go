@@ -45,18 +45,7 @@ func (d *Database) RecordSubscription(sub subscription.Subscription) (*subscript
 	VALUES ($1, $2, $3) 
 	RETURNING id, name, amount, date_due`
 
-	err := d.database.QueryRowContext(
-		context.Background(),
-		insertQuery,
-		sub.Name,
-		sub.Amount,
-		sub.DateDue,
-	).Scan(
-		&id,
-		&name,
-		&amount,
-		&dateDue,
-	)
+	err := d.database.QueryRowContext(context.Background(), insertQuery, sub.Name, sub.Amount, sub.DateDue).Scan(&id, &name, &amount, &dateDue)
 
 	if err != nil {
 		return nil, fmt.Errorf("unexpected insert error: %w", err)
@@ -117,4 +106,26 @@ func (d *Database) DeleteSubscription(subscriptionID int) error {
 	}
 
 	return nil
+}
+
+// GetSubscription gets and returns a single subscription by subscription ID
+func (d *Database) GetSubscription(subscriptionID int) (*subscription.Subscription, error) {
+	var id int
+	var name string
+	var amount pgtype.Numeric
+	var dateDue time.Time
+
+	err := d.database.QueryRowContext(context.Background(), "SELECT * FROM subscriptions WHERE id = $1", subscriptionID).Scan(&id, &name, &amount, &dateDue)
+
+	if err != nil {
+		return nil, fmt.Errorf("unexpected insert error: %w", err)
+	}
+
+	subscription := subscription.Subscription{
+		ID:      id,
+		Name:    name,
+		Amount:  decimal.NewFromBigInt(amount.Int, amount.Exp),
+		DateDue: dateDue,
+	}
+	return &subscription, nil
 }

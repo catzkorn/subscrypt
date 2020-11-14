@@ -5,10 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/Catzkorn/subscrypt/internal/database"
-	"github.com/Catzkorn/subscrypt/internal/server"
-	"github.com/Catzkorn/subscrypt/internal/subscription"
-	"github.com/shopspring/decimal"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -17,6 +13,11 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Catzkorn/subscrypt/internal/database"
+	"github.com/Catzkorn/subscrypt/internal/server"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/shopspring/decimal"
 )
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
@@ -70,13 +71,10 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	testServer.ServeHTTP(response, request)
 	body, err := ioutil.ReadAll(response.Body)
 
-	if err != nil {
-		fmt.Println(err)
-	}
-
 	bodyString := string(body)
 	got := bodyString
 
+	t.Logf(bodyString)
 	res := strings.Contains(got, wantedSubscriptions[0].Name)
 
 	if res != true {
