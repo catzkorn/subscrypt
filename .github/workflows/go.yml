@@ -61,5 +61,5 @@ jobs:
       run: go test -v ./...
       env: 
         DATABASE_CONN_STRING: "user=postgres  host=localhost password=postgres port=5432 database=postgres sslmode=disable"
-
+        EMAIL: "ce.aldred@gmail.com"
   
