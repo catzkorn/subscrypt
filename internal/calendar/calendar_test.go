@@ -1,6 +1,7 @@
 package calendar
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -30,22 +31,37 @@ func TestCalendarInviteCreation(t *testing.T) {
 	t.Run("checks that a .ics file is containing the correct information", func(t *testing.T) {
 
 		cal := CreateReminderInvite(subscription, reminder)
+		if len(cal.Components) != 1 {
+			t.Errorf("did not have the expected number of components got %v, want %v", cal.Components, 1)
+		}
 
-		t.Log(len(cal.Components))
-		for _, component := range cal.Components {
+		event, ok := cal.Components[0].(*ics.VEvent)
 
-			switch c := component.(type) {
-			case *ics.VEvent:
-				t.Log(c)
-			default:
-				t.Errorf("did not create a VEvent")
+		if !ok {
+			t.Errorf("did not create a VEvent")
+		}
+
+		var uid string
+		var attendee string
+
+		for _, property := range event.Properties {
+
+			switch property.IANAToken {
+			case string(ics.PropertyUid):
+				uid = property.Value
+			case string(ics.PropertyAttendee):
+				attendee = property.Value
+				t.Logf(attendee)
 			}
 		}
 
-		// calfile := strings.NewReader(cal.Serialize())
+		if uid != fmt.Sprintf("%v@subscrypt.com", subscription.ID) {
+			t.Errorf("incorrect UID got %v want %v@subscrypt.com", uid, subscription.ID)
+		}
 
-		// _, err := ics.ParseCalendar(calfile)
-
+		if attendee != fmt.Sprintf("mailto:%v", reminder.Email) {
+			t.Errorf("incorrect attendee got %v want mailto:%v", attendee, reminder.Email)
+		}
 	})
 
 }
