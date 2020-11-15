@@ -113,6 +113,8 @@ func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	bodyString := string(body)
 	got := bodyString
 
+	assertStatus(t, response.Code, http.StatusFound)
+
 	res := !strings.Contains(got, storedSubscription.Name)
 
 	if res != true {
@@ -141,6 +143,13 @@ func assertDatabaseError(t *testing.T, err error) {
 	t.Helper()
 	if err != nil {
 		t.Fatalf("unexpected database error: %v", err)
+	}
+}
+
+func assertStatus(t *testing.T, got, want int) {
+	t.Helper()
+	if got != want {
+		t.Errorf("did not get correct status, got %d, want %d", got, want)
 	}
 }
 
