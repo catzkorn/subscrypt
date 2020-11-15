@@ -23,10 +23,7 @@ const indexTemplate = `<!DOCTYPE html>
             <td>{{.Name}}</td>
             <td>{{.Amount}}</td>
             <td>{{.DateDue}}</td>
-			<td><form action="/delete"  method="post">
-			<input type ="hidden" name="ID" value={{.ID}}>
-			<input type="submit" value="Delete">
-			</form>
+			<td><button type="button" id="delete-{{.ID}}" onclick="deleteSubscription({{.ID}})">Delete</button>
         </tr>
     {{end}}
 </table>
@@ -40,6 +37,20 @@ const indexTemplate = `<!DOCTYPE html>
     <input type="date" name="date"><br>
     <input type="submit" value="Submit">
 </form>
+
+<script>
+	function deleteSubscription(id) {
+		let xhttp = new XMLHttpRequest();
+		let url = "/api/subscriptions/" + id
+		xhttp.onreadystatechange = function () {
+			if (xhttp.readyState === 4 && xhttp.status === 200) {
+				window.location.href = "/";
+			}
+		}
+		xhttp.open("DELETE", url, true);
+		xhttp.send();
+	}
+</script>
 
 </body>
 </html>`
