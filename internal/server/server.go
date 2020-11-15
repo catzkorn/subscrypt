@@ -6,6 +6,7 @@ import (
 	"github.com/shopspring/decimal"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -32,7 +33,8 @@ type DataStore interface {
 func NewServer(dataStore DataStore) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
-	s.router.Handle("/delete", http.HandlerFunc(s.deleteSubscriptionHandler))
+	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
+
 	return s
 }
 
@@ -54,10 +56,18 @@ func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// deleteSubscriptionHandler handles the routing logic for the /delete path
-func (s *Server) deleteSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost{
-		s.processDeleteSubscription(w, r)
+// subscriptionsAPIHandler handles the routing logic for the '/api/subscriptions' paths
+func (s *Server) subscriptionsAPIHandler(w http.ResponseWriter, r *http.Request) {
+	urlID := strings.TrimPrefix(r.URL.Path, "/api/subscriptions/")
+	ID, err := strconv.Atoi(urlID)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if r.Method == http.MethodDelete{
+		s.processDeleteSubscription(w, ID)
 	}
 }
 
@@ -121,15 +131,10 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 }
 
 // processDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID
-func (s *Server) processDeleteSubscription(w http.ResponseWriter, r *http.Request) {
-	ID, err := strconv.Atoi(r.FormValue("ID"))
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+func (s *Server) processDeleteSubscription(w http.ResponseWriter, ID int) {
 
 	retrievedSubscription, err := s.dataStore.GetSubscription(ID)
+
 	switch {
 	case err != nil:
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -144,6 +149,6 @@ func (s *Server) processDeleteSubscription(w http.ResponseWriter, r *http.Reques
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		http.Redirect(w, r, "/", http.StatusFound)
+		w.WriteHeader(http.StatusOK)
 	}
 }

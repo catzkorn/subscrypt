@@ -95,14 +95,14 @@ func TestStoreSubscription(t *testing.T) {
 	})
 }
 
-func TestDeleteSubscription(t *testing.T) {
+func TestDeleteSubscriptionAPI(t *testing.T) {
 
-	t.Run("deletes the specified subscription from the data store", func(t *testing.T) {
+	t.Run("deletes the specified subscription from the data store and returns 200", func(t *testing.T) {
 		subscriptions := []subscription.Subscription{{ID: 1}}
 		store := &StubDataStore{subscriptions: subscriptions}
 		server := NewServer(store)
 
-		request := newPostDeleteRequest(url.Values{"ID": {"1"}})
+		request := newDeleteSubscriptionRequest(1)
 
 		response := httptest.NewRecorder()
 
@@ -118,7 +118,7 @@ func TestDeleteSubscription(t *testing.T) {
 		store := &StubDataStore{subscriptions: subscriptions}
 		server := NewServer(store)
 
-		request := newPostDeleteRequest(url.Values{"ID": {"2"}})
+		request := newDeleteSubscriptionRequest(2)
 
 		response := httptest.NewRecorder()
 
@@ -143,13 +143,13 @@ func newPostFormRequest(url url.Values) *http.Request {
 	return req
 }
 
-func newPostDeleteRequest(url url.Values) *http.Request {
-	var bodyStr = []byte(url.Encode())
-	req, err := http.NewRequest(http.MethodPost, "/delete", bytes.NewBuffer(bodyStr))
+func newDeleteSubscriptionRequest(ID int) *http.Request {
+	bodyStr := []byte(fmt.Sprintf("{\"id\": %v}", ID))
+	url := fmt.Sprintf("/api/subscriptions/%v", ID)
+	req, err := http.NewRequest(http.MethodDelete, url, bytes.NewBuffer(bodyStr))
 	if err != nil {
 		panic(err)
 	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	return req
 }
 

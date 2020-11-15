@@ -93,38 +93,34 @@ func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 
 	amount, _ := decimal.NewFromString("100")
 	subscription := subscription.Subscription{
-		ID: 1,
 		Name: "Netflix",
 		Amount: amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
 	storedSubscription, err := store.RecordSubscription(subscription)
-
-	request := newPostDeleteRequest(url.Values{"ID": {fmt.Sprint(storedSubscription.ID)}})
-	response := httptest.NewRecorder()
-
-	testServer.ServeHTTP(response, request)
-	body, err := ioutil.ReadAll(response.Body)
-
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	bodyString := string(body)
-	got := bodyString
+	request := newDeleteSubscriptionRequest(storedSubscription.ID)
+	response := httptest.NewRecorder()
 
-	assertStatus(t, response.Code, http.StatusFound)
+	testServer.ServeHTTP(response, request)
 
-	res := !strings.Contains(got, storedSubscription.Name)
+	assertStatus(t, response.Code, http.StatusOK)
 
-	if res != true {
-		t.Errorf("subscription not deleted, webpage contained subscription of name %v", storedSubscription.Name)
+	gotSubscription, err := store.GetSubscription(1)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if gotSubscription != nil {
+		t.Errorf("subscription not deleted, got %v for given id, want nil", gotSubscription)
 	}
 
 	err = clearSubscriptionsTable()
 	assertDatabaseError(t, err)
 }
-
 
 func clearSubscriptionsTable() error {
 	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_STRING"))
@@ -168,12 +164,12 @@ func newPostFormRequest(url url.Values) *http.Request {
 	return req
 }
 
-func newPostDeleteRequest(url url.Values) *http.Request {
-	var bodyStr = []byte(url.Encode())
-	req, err := http.NewRequest(http.MethodPost, "/delete", bytes.NewBuffer(bodyStr))
+func newDeleteSubscriptionRequest(ID int) *http.Request {
+	bodyStr := []byte(fmt.Sprintf("{\"id\": %v}", ID))
+	url := fmt.Sprintf("/api/subscriptions/%v", ID)
+	req, err := http.NewRequest(http.MethodDelete, url, bytes.NewBuffer(bodyStr))
 	if err != nil {
 		panic(err)
 	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	return req
 }
