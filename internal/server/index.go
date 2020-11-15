@@ -23,6 +23,10 @@ const indexTemplate = `<!DOCTYPE html>
             <td>{{.Name}}</td>
             <td>{{.Amount}}</td>
             <td>{{.DateDue}}</td>
+			<td><form action="/delete"  method="post">
+			<input type ="hidden" name="ID" value={{.ID}}>
+			<input type="submit" value="Delete">
+			</form>
         </tr>
     {{end}}
 </table>
@@ -36,7 +40,6 @@ const indexTemplate = `<!DOCTYPE html>
     <input type="date" name="date"><br>
     <input type="submit" value="Submit">
 </form>
-
 
 </body>
 </html>`
