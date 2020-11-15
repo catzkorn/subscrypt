@@ -5,6 +5,7 @@ import (
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -23,13 +24,14 @@ type IndexPageData struct {
 type DataStore interface {
 	GetSubscriptions() ([]subscription.Subscription, error)
 	RecordSubscription(subscription subscription.Subscription) (*subscription.Subscription, error)
+	DeleteSubscription(ID int) error
 }
 
 // NewServer returns a instance of a Server
 func NewServer(dataStore DataStore) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
-
+	s.router.Handle("/delete", http.HandlerFunc(s.deleteSubscriptionHandler))
 	return s
 }
 
@@ -48,6 +50,13 @@ func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case http.MethodPost:
 		s.processPostSubscription(w, r)
+	}
+}
+
+// deleteSubscriptionHandler handles the routing logic for the /delete path
+func (s *Server) deleteSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost{
+		s.processPostDeleteSubscription(w, r)
 	}
 }
 
@@ -103,6 +112,23 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 	}
 
 	_, err = s.dataStore.RecordSubscription(entry)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+// processPostDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID
+func (s *Server) processPostDeleteSubscription(w http.ResponseWriter, r *http.Request) {
+	ID, err := strconv.Atoi(r.FormValue("ID"))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = s.dataStore.DeleteSubscription(ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -17,6 +17,7 @@ import (
 
 type StubDataStore struct {
 	subscriptions []subscription.Subscription
+	deleteCount []int
 }
 
 func (s *StubDataStore) GetSubscriptions() ([]subscription.Subscription, error) {
@@ -29,6 +30,11 @@ func (s *StubDataStore) RecordSubscription(subscription subscription.Subscriptio
 	return &subscription, nil
 }
 
+func (s *StubDataStore) DeleteSubscription(ID int) error {
+	s.deleteCount = append(s.deleteCount, ID)
+	return nil
+}
+
 func TestGETSubscriptions(t *testing.T) {
 
 	t.Run("return a subscription", func(t *testing.T) {
@@ -37,8 +43,8 @@ func TestGETSubscriptions(t *testing.T) {
 			{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
 		}
 
-		store := StubDataStore{wantedSubscriptions}
-		server := NewServer(&store)
+		store := &StubDataStore{subscriptions: wantedSubscriptions}
+		server := NewServer(store)
 
 		request := newGetSubscriptionRequest()
 		response := httptest.NewRecorder()
@@ -80,6 +86,25 @@ func TestStoreSubscription(t *testing.T) {
 	})
 }
 
+func TestDeleteSubscription(t *testing.T) {
+
+	t.Run("deletes the specified subscription from the data store", func(t *testing.T) {
+		subscriptions := []subscription.Subscription{{ID: 1}}
+		store := &StubDataStore{subscriptions: subscriptions}
+		server := NewServer(store)
+
+		request := newPostDeleteRequest(url.Values{"ID": {"1"}})
+
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		if len(store.deleteCount) != 1 {
+			t.Errorf("got %d calls to DeleteSubscription want %d", len(store.deleteCount), 1)
+		}
+	})
+}
+
 func newGetSubscriptionRequest() *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
 	return req
@@ -88,6 +113,16 @@ func newGetSubscriptionRequest() *http.Request {
 func newPostFormRequest(url url.Values) *http.Request {
 	var bodyStr = []byte(url.Encode())
 	req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(bodyStr))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	return req
+}
+
+func newPostDeleteRequest(url url.Values) *http.Request {
+	var bodyStr = []byte(url.Encode())
+	req, err := http.NewRequest(http.MethodPost, "/delete", bytes.NewBuffer(bodyStr))
 	if err != nil {
 		panic(err)
 	}
