@@ -30,6 +30,15 @@ func (s *StubDataStore) RecordSubscription(subscription subscription.Subscriptio
 	return &subscription, nil
 }
 
+func (s *StubDataStore) GetSubscription(ID int) (*subscription.Subscription, error) {
+	amount, _ := decimal.NewFromString("100.99")
+	retrievedSubscription := subscription.Subscription{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
+	if ID != 1 {
+		return nil, nil
+	}
+	return &retrievedSubscription, nil
+}
+
 func (s *StubDataStore) DeleteSubscription(ID int) error {
 	s.deleteCount = append(s.deleteCount, ID)
 	return nil
@@ -103,6 +112,20 @@ func TestDeleteSubscription(t *testing.T) {
 			t.Errorf("got %d calls to DeleteSubscription want %d", len(store.deleteCount), 1)
 		}
 	})
+
+	t.Run("returns 404 if given subscription ID doesn't exist", func(t *testing.T) {
+		subscriptions := []subscription.Subscription{{ID: 1}}
+		store := &StubDataStore{subscriptions: subscriptions}
+		server := NewServer(store)
+
+		request := newPostDeleteRequest(url.Values{"ID": {"2"}})
+
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusNotFound)
+	})
 }
 
 func newGetSubscriptionRequest() *http.Request {
@@ -128,4 +151,11 @@ func newPostDeleteRequest(url url.Values) *http.Request {
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	return req
+}
+
+func assertStatus(t *testing.T, got, want int) {
+	t.Helper()
+	if got != want {
+		t.Errorf("did not get correct status, got %d, want %d", got, want)
+	}
 }

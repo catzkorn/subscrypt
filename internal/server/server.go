@@ -25,6 +25,7 @@ type DataStore interface {
 	GetSubscriptions() ([]subscription.Subscription, error)
 	RecordSubscription(subscription subscription.Subscription) (*subscription.Subscription, error)
 	DeleteSubscription(ID int) error
+	GetSubscription(ID int) (*subscription.Subscription, error)
 }
 
 // NewServer returns a instance of a Server
@@ -56,7 +57,7 @@ func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 // deleteSubscriptionHandler handles the routing logic for the /delete path
 func (s *Server) deleteSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost{
-		s.processPostDeleteSubscription(w, r)
+		s.processDeleteSubscription(w, r)
 	}
 }
 
@@ -119,8 +120,8 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-// processPostDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID
-func (s *Server) processPostDeleteSubscription(w http.ResponseWriter, r *http.Request) {
+// processDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID
+func (s *Server) processDeleteSubscription(w http.ResponseWriter, r *http.Request) {
 	ID, err := strconv.Atoi(r.FormValue("ID"))
 
 	if err != nil {
@@ -128,10 +129,21 @@ func (s *Server) processPostDeleteSubscription(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = s.dataStore.DeleteSubscription(ID)
-	if err != nil {
+	retrievedSubscription, err := s.dataStore.GetSubscription(ID)
+	switch {
+	case err != nil:
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	case retrievedSubscription == nil:
+		errorMessage := "Failed to delete subscription - subscription not found"
+		http.Error(w, errorMessage, http.StatusNotFound)
+		return
+	default:
+		err = s.dataStore.DeleteSubscription(ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
-	http.Redirect(w, r, "/", http.StatusFound)
 }
