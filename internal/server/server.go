@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"path"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -134,7 +137,11 @@ func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 		Userprofile:   userInfo,
 	}
 
-	err = s.parsedIndexTemplate.Execute(w, data)
+	_, file, _, _ := runtime.Caller(0)
+	path := filepath.Join(path.Dir(file), "../../web/index.html")
+	parsedIndexTemplate := template.Must(template.New("index.html").ParseFiles(path))
+
+	err = parsedIndexTemplate.Execute(w, data)
 
 	if err != nil {
 		return err
