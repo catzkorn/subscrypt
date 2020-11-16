@@ -40,11 +40,13 @@ func (i *InMemorySubscriptionStore) RecordSubscription(subscription subscription
 func (i *InMemorySubscriptionStore) DeleteSubscription(subscriptionID int) error {
 
 	index := i.findSubscriptionIndex(subscriptionID)
+	lastIndex := len(i.subscriptions)-1
+
 	if index == -1 {
 		return fmt.Errorf("failed to delete subscription with ID %v", subscriptionID)
 	}
-	i.subscriptions[len(i.subscriptions)-1], i.subscriptions[index] = i.subscriptions[index], i.subscriptions[len(i.subscriptions)-1]
-	i.subscriptions = i.subscriptions[:len(i.subscriptions)-1]
+	i.subscriptions[lastIndex], i.subscriptions[index] = i.subscriptions[index], i.subscriptions[lastIndex]
+	i.subscriptions = i.subscriptions[:lastIndex]
 	return nil
 }
 
