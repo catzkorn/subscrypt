@@ -31,6 +31,9 @@ func SendEmail(reminder reminder.Reminder, event *ics.Calendar, mailer Mailer, d
 	if err != nil {
 		return fmt.Errorf("failed to get subscription: %w", err)
 	}
+	if subscription == nil {
+		return fmt.Errorf("no subscription found for ID: %v", reminder.SubscriptionID)
+	}
 
 	from := mail.NewEmail("Subscrypt Team", "team@subscrypt.com")
 	subject := fmt.Sprintf("Your %s subscription is due for renewal on %v", subscription.Name, reminder.ReminderDate.Format(timeLayout))
@@ -61,7 +64,7 @@ func createAttachment(event *ics.Calendar) *mail.Attachment {
 	encoded := base64.StdEncoding.EncodeToString([]byte(event.Serialize()))
 	calendarInvite.SetContent(encoded)
 	calendarInvite.SetType("text/plain")
-	calendarInvite.SetFilename("subscriptionreminder.ics")
+	calendarInvite.SetFilename("subscryptreminder.ics")
 	calendarInvite.SetDisposition("attachment")
 
 	return calendarInvite

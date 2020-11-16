@@ -7,11 +7,14 @@ import (
 	"time"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
 
 	"github.com/jackc/pgtype"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/shopspring/decimal"
 )
+
+const timeLayout = "January 2, 2006"
 
 // Database allows the user to store and read back subscriptions
 type Database struct {
@@ -146,4 +149,59 @@ func (d *Database) DeleteSubscription(subscriptionID int) error {
 	}
 
 	return nil
+}
+
+// RecordUserDetails records a users name and email
+func (d *Database) RecordUserDetails(name string, email string) (*userprofile.Userprofile, error) {
+
+	insertQuery := `
+	INSERT INTO users (name, email) 
+	VALUES ($1, $2) 
+	ON CONFLICT (id)
+	DO UPDATE SET name=EXCLUDED.name, email=EXCLUDED.email
+`
+
+	_, err := d.database.ExecContext(context.Background(), insertQuery, name, email)
+
+	if err != nil {
+		return nil, fmt.Errorf("unexpected insert error: %v", err)
+	}
+
+	newUserprofile := userprofile.Userprofile{
+		Name:  name,
+		Email: email,
+	}
+	return &newUserprofile, nil
+
+}
+
+// GetUserDetails retrieves a users details
+func (d *Database) GetUserDetails() (*userprofile.Userprofile, error) {
+	var usersName string
+	var usersEmail string
+
+	selectQuery := `
+	SELECT name, email FROM users
+	LIMIT 1`
+
+	err := d.database.QueryRowContext(
+		context.Background(),
+		selectQuery,
+	).Scan(
+		&usersName,
+		&usersEmail,
+	)
+
+	switch {
+	case err == sql.ErrNoRows:
+		return nil, nil
+	case err != nil:
+		return nil, fmt.Errorf("unexpected database error: %w", err)
+	default:
+		newUserprofile := userprofile.Userprofile{
+			Name:  usersName,
+			Email: usersEmail,
+		}
+		return &newUserprofile, nil
+	}
 }
