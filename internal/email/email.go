@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Catzkorn/subscrypt/internal/reminder"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
 	ics "github.com/arran4/golang-ical"
 	"github.com/sendgrid/rest"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
@@ -16,15 +17,24 @@ type Mailer interface {
 	Send(email *mail.SGMailV3) (*rest.Response, error)
 }
 
+// DataStore defines the interface required to get a subscription
+type DataStore interface {
+	GetSubscription(subscriptionID int) (*subscription.Subscription, error)
+}
+
+const timeLayout = "January 2, 2006"
+
 // SendEmail sends a reminder email
-func SendEmail(reminder reminder.Reminder, event *ics.Calendar, mailer Mailer) error {
-	email := reminder.Email
-	subscription := reminder.SubscriptionID
-	reminderDate := reminder.ReminderDate
+func SendEmail(reminder reminder.Reminder, event *ics.Calendar, mailer Mailer, datastore DataStore) error {
+
+	subscription, err := datastore.GetSubscription(reminder.SubscriptionID)
+	if err != nil {
+		return fmt.Errorf("failed to get subscription: %w", err)
+	}
 
 	from := mail.NewEmail("Subscrypt Team", "team@subscrypt.com")
-	subject := fmt.Sprintf("Your %d subscription is due for renewal on %v", subscription, reminderDate)
-	to := mail.NewEmail("Subscryptee", email)
+	subject := fmt.Sprintf("Your %s subscription is due for renewal on %v", subscription.Name, reminder.ReminderDate.Format(timeLayout))
+	to := mail.NewEmail("Subscryptee", reminder.Email)
 	plainTextContent := "Hey there Subscryptee!\nYou asked for a reminder and here it is!"
 	htmlContent := "<strong>Hey there Subscryptee!\nYou asked for a reminder and here it is!</strong>"
 

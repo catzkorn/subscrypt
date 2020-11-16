@@ -24,6 +24,15 @@ func (s *StubMailer) Send(email *mail.SGMailV3) (*rest.Response, error) {
 	return &rest.Response{StatusCode: http.StatusAccepted}, nil
 }
 
+type StubDataStore struct {
+	subscription subscription.Subscription
+}
+
+func (s *StubDataStore) GetSubscription(subscriptionID int) (*subscription.Subscription, error) {
+
+	return &s.subscription, nil
+}
+
 func TestSendingAnEmail(t *testing.T) {
 
 	reminder := reminder.Reminder{
@@ -43,7 +52,8 @@ func TestSendingAnEmail(t *testing.T) {
 
 		cal := calendar.CreateReminderInvite(subscription, reminder)
 		client := &StubMailer{}
-		err := SendEmail(reminder, cal, client)
+		datastore := &StubDataStore{subscription: subscription}
+		err := SendEmail(reminder, cal, client, datastore)
 
 		if err != nil {
 			t.Errorf("there was an error sending the email %v", err)
@@ -53,9 +63,11 @@ func TestSendingAnEmail(t *testing.T) {
 			t.Errorf("no attachment recognised")
 		}
 
-		fmt.Println(client.sentEmail.Headers)
+		expectedSubject := fmt.Sprintf("Your %s subscription is due for renewal on %v", subscription.Name, reminder.ReminderDate.Format("January 2, 2006"))
 
-		// if client.sentEmail.SendAt
+		if client.sentEmail.Subject != "Your Netflix subscription is due for renewal on November 11, 2020" {
+			t.Errorf("did not get expected subject format, got %v want %v", client.sentEmail.Subject, expectedSubject)
+		}
 
 	})
 

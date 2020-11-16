@@ -9,6 +9,8 @@ import (
 	ics "github.com/arran4/golang-ical"
 )
 
+const timeLayout = "January 2, 2006"
+
 // CreateReminderInvite creates a new calendar invite
 func CreateReminderInvite(subscription subscription.Subscription, reminder reminder.Reminder) *ics.Calendar {
 	cal := ics.NewCalendar()
@@ -18,7 +20,7 @@ func CreateReminderInvite(subscription subscription.Subscription, reminder remin
 	event.SetDtStampTime(time.Now())
 	event.SetModifiedAt(time.Now())
 	event.SetAllDayStartAt(reminder.ReminderDate)
-	event.SetSummary(fmt.Sprintf("Your %s subscription is due to renew on %v", subscription.Name, subscription.DateDue))
+	event.SetSummary(fmt.Sprintf("Your %s subscription is due to renew on %v", subscription.Name, subscription.DateDue.Format(timeLayout)))
 	event.SetLocation("")
 	event.SetDescription(fmt.Sprintf("Hey! Your %s subscription is due to renew on %v and you asked us to remind you about that!",
 		subscription.Name, subscription.DateDue))
