@@ -20,6 +20,7 @@ import (
 
 type StubDataStore struct {
 	subscriptions []subscription.Subscription
+	deleteCount   []int
 }
 
 func (s *StubDataStore) GetSubscriptions() ([]subscription.Subscription, error) {
@@ -32,6 +33,20 @@ func (s *StubDataStore) RecordSubscription(subscription subscription.Subscriptio
 	return &subscription, nil
 }
 
+func (s *StubDataStore) GetSubscription(ID int) (*subscription.Subscription, error) {
+	amount, _ := decimal.NewFromString("100.99")
+	retrievedSubscription := subscription.Subscription{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
+	if ID != 1 {
+		return nil, nil
+	}
+	return &retrievedSubscription, nil
+}
+
+func (s *StubDataStore) DeleteSubscription(ID int) error {
+	s.deleteCount = append(s.deleteCount, ID)
+	return nil
+}
+
 func TestGETSubscriptions(t *testing.T) {
 
 	t.Run("return a subscription", func(t *testing.T) {
@@ -40,8 +55,8 @@ func TestGETSubscriptions(t *testing.T) {
 			{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
 		}
 
-		store := StubDataStore{wantedSubscriptions}
-		server := NewServer(&store)
+		store := &StubDataStore{subscriptions: wantedSubscriptions}
+		server := NewServer(store)
 
 		request := newGetSubscriptionRequest()
 		response := httptest.NewRecorder()
@@ -90,7 +105,7 @@ func TestCreateReminder(t *testing.T) {
 			{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
 		}
 
-		store := &StubDataStore{subscriptions}
+		store := &StubDataStore{subscriptions: subscriptions}
 		server := NewServer(store)
 
 		request := newPostReminderRequest("test@test.com", fmt.Sprint(subscriptions[0].ID), "2020-11-13")
@@ -133,6 +148,39 @@ func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions [
 	}
 
 	return
+
+}
+func TestDeleteSubscriptionAPI(t *testing.T) {
+
+	t.Run("deletes the specified subscription from the data store and returns 200", func(t *testing.T) {
+		subscriptions := []subscription.Subscription{{ID: 1}}
+		store := &StubDataStore{subscriptions: subscriptions}
+		server := NewServer(store)
+
+		request := newDeleteSubscriptionRequest(1)
+
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		if len(store.deleteCount) != 1 {
+			t.Errorf("got %d calls to DeleteSubscription want %d", len(store.deleteCount), 1)
+		}
+	})
+
+	t.Run("returns 404 if given subscription ID doesn't exist", func(t *testing.T) {
+		subscriptions := []subscription.Subscription{{ID: 1}}
+		store := &StubDataStore{subscriptions: subscriptions}
+		server := NewServer(store)
+
+		request := newDeleteSubscriptionRequest(2)
+
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusNotFound)
+	})
 }
 
 func newGetSubscriptionRequest() *http.Request {
@@ -155,6 +203,16 @@ func newPostReminderRequest(email string, subscriptionID string, reminderDate st
 	var bodyStr = []byte(urlValues.Encode())
 	req, err := http.NewRequest(http.MethodPost, "/reminder", bytes.NewBuffer(bodyStr))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	if err != nil {
+		panic(err)
+	}
+	return req
+}
+
+func newDeleteSubscriptionRequest(ID int) *http.Request {
+	bodyStr := []byte(fmt.Sprintf("{\"id\": %v}", ID))
+	url := fmt.Sprintf("/api/subscriptions/%v", ID)
+	req, err := http.NewRequest(http.MethodDelete, url, bytes.NewBuffer(bodyStr))
 	if err != nil {
 		panic(err)
 	}

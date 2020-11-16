@@ -89,6 +89,46 @@ func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
 	return subscriptions, nil
 }
 
+// GetSubscription retrieves a single subscription that has the given ID from the subscription database
+// If no subscription is found with the given ID, it returns a nil pointer
+func (d *Database) GetSubscription(subscriptionID int) (*subscription.Subscription, error) {
+
+	var id int
+	var name string
+	var amount pgtype.Numeric
+	var dateDue time.Time
+
+	selectQuery := `
+	SELECT id, name, amount, date_due FROM subscriptions
+	WHERE id=$1`
+
+	err := d.database.QueryRowContext(
+		context.Background(),
+		selectQuery,
+		subscriptionID,
+	).Scan(
+		&id,
+		&name,
+		&amount,
+		&dateDue,
+	)
+
+	switch {
+	case err == sql.ErrNoRows:
+		return nil, nil
+	case err != nil:
+		return nil, fmt.Errorf("unexpected database error: %w", err)
+	default:
+		retrievedSubscription := subscription.Subscription{
+			ID:      id,
+			Name:    name,
+			Amount:  decimal.NewFromBigInt(amount.Int, amount.Exp),
+			DateDue: dateDue,
+		}
+		return &retrievedSubscription, nil
+	}
+}
+
 // DeleteSubscription deletes a subscription from the database by ID
 func (d *Database) DeleteSubscription(subscriptionID int) error {
 	result, err := d.database.ExecContext(context.Background(), "DELETE FROM subscriptions WHERE id = $1;", subscriptionID)
@@ -106,26 +146,4 @@ func (d *Database) DeleteSubscription(subscriptionID int) error {
 	}
 
 	return nil
-}
-
-// GetSubscription gets and returns a single subscription by subscription ID
-func (d *Database) GetSubscription(subscriptionID int) (*subscription.Subscription, error) {
-	var id int
-	var name string
-	var amount pgtype.Numeric
-	var dateDue time.Time
-
-	err := d.database.QueryRowContext(context.Background(), "SELECT * FROM subscriptions WHERE id = $1", subscriptionID).Scan(&id, &name, &amount, &dateDue)
-
-	if err != nil {
-		return nil, fmt.Errorf("unexpected insert error: %w", err)
-	}
-
-	subscription := subscription.Subscription{
-		ID:      id,
-		Name:    name,
-		Amount:  decimal.NewFromBigInt(amount.Int, amount.Exp),
-		DateDue: dateDue,
-	}
-	return &subscription, nil
 }
