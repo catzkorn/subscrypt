@@ -1,56 +1,55 @@
 <!DOCTYPE html>
 <html>
-<style>
-    table, td {
-        border: 1px solid black;
-    }
-</style>
+    <style>
+        table,
+        td {
+            border: 1px solid black;
+        }
+    </style>
 
-<body>
-<h1>{{.PageTitle}}</h1>
+    <body>
+        <h1>{{.PageTitle}}</h1>
 
-<form action="/new/user/" method="post">
-    <label for="name">Name:</label>
-    <input type="text" name="username"><br>
-    <label for="email">Email:</label>
-    <input type="text" name="email"><br>
-    <input type="submit" value="Submit">
-</form>
-
-  
-    Name: {{.Userprofile.Name}}<br>
-    Email: {{.Userprofile.Email}}
-          
+        <form action="/new/user/" method="post">
+            <label for="name">Name:</label>
+            <input type="text" name="username"><br>
+            <label for="email">Email:</label>
+            <input type="text" name="email"><br>
+            <input type="submit" value="Submit">
+        </form>
 
 
+        Name: {{.Userprofile.Name}}<br>
+        Email: {{.Userprofile.Email}}
 
-<table style="width:100%">
-    <tr>
-        <td>Name Of Subscription</td>
-        <td>Amount Due Monthly</td>
-        <td>Date Due Monthly</td>
-    </tr>
-    {{range .Subscriptions}}
-        <tr>
-            <td>{{.Name}}</td>
-            <td>{{.Amount}}</td>
-            <td>{{.DateDue}}</td>
-            <td><button type="button" id="delete-{{.ID}}" onclick="deleteSubscription({{.ID}})">Delete</button>
-        </tr>
-    {{end}}
-</table>
+        <table style="width:100%">
+            <tr>
+                <td>Name Of Subscription</td>
+                <td>Amount Due Monthly</td>
+                <td>Date Due Monthly</td>
+            </tr>
+            {{range .Subscriptions}}
+            <tr>
+                <td>{{.Name}}</td>
+                <td>{{.Amount}}</td>
+                <td>{{.DateDue}}</td>
+                <td><button type="button" id="delete-{{.ID}}" onclick="deleteSubscription({{.ID}})">Delete</button>
+            </tr>
+            {{end}}
+        </table>
 
-<form action="/" method="post">
-    <label for="name">Name Of Subscription:</label>
-    <input type="text" name="name"><br>
-    <label for="amount">Amount Due Monthly:</label>
-    <input type="text" name="amount"><br>
-    <label for="date">Date Due Monthly:</label>
-    <input type="date" name="date"><br>
-    <input type="submit" value="Submit">
-</form>
+        <form action="/" method="post">
+            <label for="name">Name Of Subscription:</label>
+            <input type="text" name="name"><br>
+            <label for="amount">Amount Due Monthly:</label>
+            <input type="text" name="amount"><br>
+            <label for="date">Date Due Monthly:</label>
+            <input type="date" name="date"><br>
+            <input type="submit" value="Submit">
+        </form>
 
-<script src="web/subscriptions.js"></script>
+        <script src="web/subscriptions.js"></script>
 
-</body>
+    </body>
+
 </html>

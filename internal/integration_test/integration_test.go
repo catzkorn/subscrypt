@@ -20,6 +20,8 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+const indexTemplatePath = "../../web/index.html"
+
 // func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 // 	store := database.NewInMemorySubscriptionStore()
 // 	testServer := server.NewServer(store)
@@ -89,7 +91,7 @@ import (
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	testServer := server.NewServer(store)
+	testServer := server.NewServer(store, indexTemplatePath)
 	amount, _ := decimal.NewFromString("100")
 	wantedSubscriptions := []subscription.Subscription{
 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -120,7 +122,7 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 
 func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	testServer := server.NewServer(store)
+	testServer := server.NewServer(store, indexTemplatePath)
 
 	amount, _ := decimal.NewFromString("100")
 	subscription := subscription.Subscription{

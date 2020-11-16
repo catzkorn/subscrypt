@@ -16,8 +16,9 @@ import (
 
 // Server is the HTTP interface for subscription information
 type Server struct {
-	dataStore DataStore
-	router    *http.ServeMux
+	dataStore           DataStore
+	router              *http.ServeMux
+	parsedIndexTemplate *template.Template
 }
 
 // IndexPageData defines data shown on the page
@@ -38,14 +39,15 @@ type DataStore interface {
 }
 
 // NewServer returns a instance of a Server
-func NewServer(dataStore DataStore) *Server {
+func NewServer(dataStore DataStore, indexTemplatePath string) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
-
 	s.router.Handle("/reminder", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
 	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
+
+	s.parsedIndexTemplate = template.Must(template.New("index.html").ParseFiles(indexTemplatePath))
 
 	return s
 }
@@ -132,9 +134,7 @@ func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 		Userprofile:   userInfo,
 	}
 
-	parsedIndexTemplate := template.Must(template.New("index.html").ParseFiles("web/index.html"))
-
-	err = parsedIndexTemplate.Execute(w, data)
+	err = s.parsedIndexTemplate.Execute(w, data)
 
 	if err != nil {
 		return err
