@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
 	"net/http"
@@ -14,6 +15,11 @@ import (
 type Server struct {
 	dataStore DataStore
 	router    *http.ServeMux
+	transactionAPI TransactionAPI
+}
+
+type TransactionAPI interface {
+	GetTransactions() (plaid.TransactionList, error)
 }
 
 type IndexPageData struct {
@@ -30,12 +36,24 @@ type DataStore interface {
 }
 
 // NewServer returns a instance of a Server
-func NewServer(dataStore DataStore) *Server {
-	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
+func NewServer(dataStore DataStore, transactionAPI TransactionAPI) *Server {
+	s := &Server{dataStore: dataStore, router: http.NewServeMux(), transactionAPI: transactionAPI}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
+	s.router.Handle("/api/transactions/", http.HandlerFunc(s.transactionAPIHandler))
 
 	return s
+}
+
+func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	case http.MethodGet:
+		_ , err := s.transactionAPI.GetTransactions()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
 }
 
 // ServeHTTP implements the http handler interface

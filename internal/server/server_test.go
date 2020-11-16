@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"fmt"
+	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -44,6 +45,33 @@ func (s *StubDataStore) DeleteSubscription(ID int) error {
 	return nil
 }
 
+type stubTransactionAPI struct{
+
+}
+
+func (s * stubTransactionAPI) GetTransactions() (plaid.TransactionList, error){
+	transactions := plaid.TransactionList{Transactions: []plaid.Transaction{{Amount: 9.99, Date: "2020-09-12", MerchantName: "Netflix", Name: "Netflix"}}}
+	return transactions, nil
+}
+
+func TestGetTransactions(t *testing.T) {
+	t.Run("Successfully calls the transactionAPI", func(t *testing.T) {
+		store := &StubDataStore{}
+		transactionAPI := &stubTransactionAPI{}
+		server := NewServer(store, transactionAPI)
+
+		request, _ := http.NewRequest(http.MethodGet, "/api/transactions/", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+
+
+	})
+}
+
+
 func TestGETSubscriptions(t *testing.T) {
 
 	t.Run("return a subscription", func(t *testing.T) {
@@ -53,7 +81,8 @@ func TestGETSubscriptions(t *testing.T) {
 		}
 
 		store := &StubDataStore{subscriptions: wantedSubscriptions}
-		server := NewServer(store)
+		transactionAPI := &stubTransactionAPI{}
+		server := NewServer(store, transactionAPI)
 
 		request := newGetSubscriptionRequest()
 		response := httptest.NewRecorder()
@@ -80,7 +109,8 @@ func TestStoreSubscription(t *testing.T) {
 
 	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
 		store := &StubDataStore{}
-		server := NewServer(store)
+		transactionAPI := &stubTransactionAPI{}
+		server := NewServer(store, transactionAPI)
 
 
 		request := newPostFormRequest(url.Values{"name": {"Netflix"}, "amount": {"9.98"}, "date": {"2020-11-12"}})
@@ -100,7 +130,8 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 	t.Run("deletes the specified subscription from the data store and returns 200", func(t *testing.T) {
 		subscriptions := []subscription.Subscription{{ID: 1}}
 		store := &StubDataStore{subscriptions: subscriptions}
-		server := NewServer(store)
+		transactionAPI := &stubTransactionAPI{}
+		server := NewServer(store, transactionAPI)
 
 		request := newDeleteSubscriptionRequest(1)
 
@@ -116,7 +147,8 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 	t.Run("returns 404 if given subscription ID doesn't exist", func(t *testing.T) {
 		subscriptions := []subscription.Subscription{{ID: 1}}
 		store := &StubDataStore{subscriptions: subscriptions}
-		server := NewServer(store)
+		transactionAPI := &stubTransactionAPI{}
+		server := NewServer(store, transactionAPI)
 
 		request := newDeleteSubscriptionRequest(2)
 
