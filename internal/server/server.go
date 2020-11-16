@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
@@ -40,6 +41,8 @@ type DataStore interface {
 func NewServer(dataStore DataStore) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
+	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
+
 	s.router.Handle("/reminder", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
 	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
@@ -129,7 +132,9 @@ func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 		Userprofile:   userInfo,
 	}
 
-	err = ParsedIndexTemplate.Execute(w, data)
+	parsedIndexTemplate := template.Must(template.New("index.html").ParseFiles("web/index.html"))
+
+	err = parsedIndexTemplate.Execute(w, data)
 
 	if err != nil {
 		return err
