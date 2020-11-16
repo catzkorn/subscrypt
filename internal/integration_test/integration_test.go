@@ -74,7 +74,6 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	bodyString := string(body)
 	got := bodyString
 
-	t.Logf(bodyString)
 	res := strings.Contains(got, wantedSubscriptions[0].Name)
 
 	if res != true {
