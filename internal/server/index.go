@@ -13,7 +13,7 @@ const indexTemplate = `<!DOCTYPE html>
 <body>
 <h1>{{.PageTitle}}</h1>
 
-<form action="/new/user" method="post">
+<form action="/new/user/" method="post">
     <label for="name">Name:</label>
     <input type="text" name="username"><br>
     <label for="email">Email:</label>

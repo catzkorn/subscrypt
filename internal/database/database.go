@@ -153,25 +153,23 @@ func (d *Database) DeleteSubscription(subscriptionID int) error {
 
 // RecordUserDetails records a users name and email
 func (d *Database) RecordUserDetails(name string, email string) (*userprofile.Userprofile, error) {
-	var id pgtype.UUID
-	var usersName string
-	var usersEmail string
 
 	insertQuery := `
 	INSERT INTO users (name, email) 
 	VALUES ($1, $2) 
-	RETURNING id, name, email`
+	ON CONFLICT (id)
+	DO UPDATE SET name=EXCLUDED.name, email=EXCLUDED.email
+`
 
-	err := d.database.QueryRowContext(context.Background(), insertQuery, name, email).Scan(&id, &usersName, &usersEmail)
+	_, err := d.database.ExecContext(context.Background(), insertQuery, name, email)
 
 	if err != nil {
-		return nil, fmt.Errorf("unexpected insert error: %w", err)
+		return nil, fmt.Errorf("unexpected insert error: %v", err)
 	}
 
 	newUserprofile := userprofile.Userprofile{
-		ID:    id,
-		Name:  usersName,
-		Email: usersEmail,
+		Name:  name,
+		Email: email,
 	}
 	return &newUserprofile, nil
 
@@ -179,19 +177,17 @@ func (d *Database) RecordUserDetails(name string, email string) (*userprofile.Us
 
 // GetUserDetails retrieves a users details
 func (d *Database) GetUserDetails() (*userprofile.Userprofile, error) {
-	var id pgtype.UUID
 	var usersName string
 	var usersEmail string
 
 	selectQuery := `
-	SELECT id, name, email FROM users
+	SELECT name, email FROM users
 	LIMIT 1`
 
 	err := d.database.QueryRowContext(
 		context.Background(),
 		selectQuery,
 	).Scan(
-		&id,
 		&usersName,
 		&usersEmail,
 	)
@@ -203,7 +199,6 @@ func (d *Database) GetUserDetails() (*userprofile.Userprofile, error) {
 		return nil, fmt.Errorf("unexpected database error: %w", err)
 	default:
 		newUserprofile := userprofile.Userprofile{
-			ID:    id,
 			Name:  usersName,
 			Email: usersEmail,
 		}

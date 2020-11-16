@@ -245,14 +245,11 @@ func TestUserprofilesDatabase(t *testing.T) {
 
 	t.Run("get name and email from database", func(t *testing.T) {
 
-		returnedDetails, err := store.RecordUserDetails(usersName, usersEmail)
+		_, err := store.RecordUserDetails(usersName, usersEmail)
 		assertDatabaseError(t, err)
 
 		gotDetails, err := store.GetUserDetails()
-
-		if gotDetails.ID != returnedDetails.ID {
-			t.Errorf("id retrieved is incorrect got %v want %v", gotDetails.ID, returnedDetails.ID)
-		}
+		assertDatabaseError(t, err)
 
 		if gotDetails.Name != usersName {
 			t.Errorf("incorrect name retrieved got %v want %v", gotDetails.Name, usersName)
