@@ -23,12 +23,11 @@ func (i *InMemorySubscriptionStore) GetSubscriptions() ([]subscription.Subscript
 // GetSubscription retrieves a single subscription that has the given ID from the InMemoryDataStore
 // If no subscription is found with the given ID, it returns a nil pointer
 func (i *InMemorySubscriptionStore) GetSubscription(ID int) (*subscription.Subscription, error) {
-	for _, value := range i.subscriptions {
-		if value.ID == ID {
-			return &value, nil
-		}
+	index := i.findSubscriptionIndex(ID)
+	if index == -1 {
+		return nil, nil
 	}
-	return nil, nil
+	return &i.subscriptions[index], nil
 }
 
 // RecordSubscription is a method that stores a subscription into the store
