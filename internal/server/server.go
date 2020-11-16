@@ -5,6 +5,8 @@ import (
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -23,12 +25,15 @@ type IndexPageData struct {
 type DataStore interface {
 	GetSubscriptions() ([]subscription.Subscription, error)
 	RecordSubscription(subscription subscription.Subscription) (*subscription.Subscription, error)
+	DeleteSubscription(ID int) error
+	GetSubscription(ID int) (*subscription.Subscription, error)
 }
 
 // NewServer returns a instance of a Server
 func NewServer(dataStore DataStore) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
+	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
 
 	return s
 }
@@ -48,6 +53,21 @@ func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case http.MethodPost:
 		s.processPostSubscription(w, r)
+	}
+}
+
+// subscriptionsAPIHandler handles the routing logic for the '/api/subscriptions' paths
+func (s *Server) subscriptionsAPIHandler(w http.ResponseWriter, r *http.Request) {
+	urlID := strings.TrimPrefix(r.URL.Path, "/api/subscriptions/")
+	ID, err := strconv.Atoi(urlID)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if r.Method == http.MethodDelete{
+		s.processDeleteSubscription(w, ID)
 	}
 }
 
@@ -108,4 +128,27 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+// processDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID
+func (s *Server) processDeleteSubscription(w http.ResponseWriter, ID int) {
+
+	retrievedSubscription, err := s.dataStore.GetSubscription(ID)
+
+	switch {
+	case err != nil:
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	case retrievedSubscription == nil:
+		errorMessage := "Failed to delete subscription - subscription not found"
+		http.Error(w, errorMessage, http.StatusNotFound)
+		return
+	default:
+		err = s.dataStore.DeleteSubscription(ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
 }
