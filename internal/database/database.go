@@ -178,19 +178,18 @@ func (d *Database) RecordUserDetails(name string, email string) (*userprofile.Us
 }
 
 // GetUserDetails retrieves a users details
-func (d *Database) GetUserDetails(userID pgtype.UUID) (*userprofile.Userprofile, error) {
+func (d *Database) GetUserDetails() (*userprofile.Userprofile, error) {
 	var id pgtype.UUID
 	var usersName string
 	var usersEmail string
 
 	selectQuery := `
 	SELECT id, name, email FROM users
-	WHERE id=$1`
+	LIMIT 1`
 
 	err := d.database.QueryRowContext(
 		context.Background(),
 		selectQuery,
-		userID,
 	).Scan(
 		&id,
 		&usersName,

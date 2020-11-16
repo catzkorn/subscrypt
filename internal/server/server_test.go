@@ -16,7 +16,6 @@ import (
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/Catzkorn/subscrypt/internal/userprofile"
-	"github.com/jackc/pgtype"
 	"github.com/shopspring/decimal"
 )
 
@@ -54,8 +53,8 @@ func (s *StubDataStore) RecordUserDetails(name string, email string) (*userprofi
 
 	return &userprofile, nil
 }
-func (s *StubDataStore) GetUserDetails(userID pgtype.UUID) (*userprofile.Userprofile, error) {
-	userprofile := userprofile.Userprofile{ID: userID}
+func (s *StubDataStore) GetUserDetails() (*userprofile.Userprofile, error) {
+	userprofile := userprofile.Userprofile{}
 
 	return &userprofile, nil
 }

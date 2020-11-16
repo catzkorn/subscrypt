@@ -210,7 +210,8 @@ func TestGetSubscriptionFromDB(t *testing.T) {
 		if !gotSubscription.DateDue.Equal(subscription.DateDue) {
 			t.Errorf("Database did not return correct subscription date, got %s want %s", gotSubscription.DateDue, returnedSubscription.DateDue)
 		}
-
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
 	})
 }
 
@@ -247,7 +248,7 @@ func TestUserprofilesDatabase(t *testing.T) {
 		returnedDetails, err := store.RecordUserDetails(usersName, usersEmail)
 		assertDatabaseError(t, err)
 
-		gotDetails, err := store.GetUserDetails(returnedDetails.ID)
+		gotDetails, err := store.GetUserDetails()
 
 		if gotDetails.ID != returnedDetails.ID {
 			t.Errorf("id retrieved is incorrect got %v want %v", gotDetails.ID, returnedDetails.ID)

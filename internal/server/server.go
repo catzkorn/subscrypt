@@ -10,7 +10,6 @@ import (
 	"github.com/Catzkorn/subscrypt/internal/reminder"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/Catzkorn/subscrypt/internal/userprofile"
-	"github.com/jackc/pgtype"
 	"github.com/shopspring/decimal"
 )
 
@@ -20,9 +19,11 @@ type Server struct {
 	router    *http.ServeMux
 }
 
+// IndexPageData defines data shown on the page
 type IndexPageData struct {
 	PageTitle     string
 	Subscriptions []subscription.Subscription
+	Userprofile   *userprofile.Userprofile
 }
 
 // DataStore provides an interface to store information about individual subscriptions
@@ -32,7 +33,7 @@ type DataStore interface {
 	DeleteSubscription(ID int) error
 	GetSubscription(ID int) (*subscription.Subscription, error)
 	RecordUserDetails(name string, email string) (*userprofile.Userprofile, error)
-	GetUserDetails(userID pgtype.UUID) (*userprofile.Userprofile, error)
+	GetUserDetails() (*userprofile.Userprofile, error)
 }
 
 // NewServer returns a instance of a Server
@@ -41,6 +42,7 @@ func NewServer(dataStore DataStore) *Server {
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
 	s.router.Handle("/reminder", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
+	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
 
 	return s
 }
@@ -57,6 +59,7 @@ func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 		err := s.processGetSubscription(w)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	case http.MethodPost:
 		s.processPostSubscription(w, r)
@@ -85,6 +88,25 @@ func (s *Server) subscriptionsAPIHandler(w http.ResponseWriter, r *http.Request)
 	}
 }
 
+func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		s.processPostUser(w, r)
+
+	}
+}
+
+func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
+
+	_, err := s.dataStore.RecordUserDetails(r.FormValue("username"), r.FormValue("email"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
 // JsonContentType defines application/json
 const JsonContentType = "application/json"
 
@@ -92,7 +114,11 @@ const JsonContentType = "application/json"
 func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 
 	subscriptions, err := s.dataStore.GetSubscriptions()
+	if err != nil {
+		return err
+	}
 
+	userInfo, err := s.dataStore.GetUserDetails()
 	if err != nil {
 		return err
 	}
@@ -100,6 +126,7 @@ func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 	data := IndexPageData{
 		PageTitle:     "My Subscriptions List",
 		Subscriptions: subscriptions,
+		Userprofile:   userInfo,
 	}
 
 	err = ParsedIndexTemplate.Execute(w, data)
