@@ -15,6 +15,8 @@ import (
 	"time"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
+	"github.com/jackc/pgtype"
 	"github.com/shopspring/decimal"
 )
 
@@ -45,6 +47,17 @@ func (s *StubDataStore) GetSubscription(ID int) (*subscription.Subscription, err
 func (s *StubDataStore) DeleteSubscription(ID int) error {
 	s.deleteCount = append(s.deleteCount, ID)
 	return nil
+}
+
+func (s *StubDataStore) RecordUserDetails(name string, email string) (*userprofile.Userprofile, error) {
+	userprofile := userprofile.Userprofile{Name: name, Email: email}
+
+	return &userprofile, nil
+}
+func (s *StubDataStore) GetUserDetails(userID pgtype.UUID) (*userprofile.Userprofile, error) {
+	userprofile := userprofile.Userprofile{ID: userID}
+
+	return &userprofile, nil
 }
 
 func TestGETSubscriptions(t *testing.T) {

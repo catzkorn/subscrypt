@@ -23,7 +23,7 @@ const indexTemplate = `<!DOCTYPE html>
             <td>{{.Name}}</td>
             <td>{{.Amount}}</td>
             <td>{{.DateDue}}</td>
-			<td><button type="button" id="delete-{{.ID}}" onclick="deleteSubscription({{.ID}})">Delete</button>
+            <td><button type="button" id="delete-{{.ID}}" onclick="deleteSubscription({{.ID}})">Delete</button>
         </tr>
     {{end}}
 </table>

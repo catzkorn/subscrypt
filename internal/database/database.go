@@ -7,11 +7,14 @@ import (
 	"time"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
 
 	"github.com/jackc/pgtype"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/shopspring/decimal"
 )
+
+const timeLayout = "January 2, 2006"
 
 // Database allows the user to store and read back subscriptions
 type Database struct {
@@ -146,4 +149,65 @@ func (d *Database) DeleteSubscription(subscriptionID int) error {
 	}
 
 	return nil
+}
+
+// RecordUserDetails records a users name and email
+func (d *Database) RecordUserDetails(name string, email string) (*userprofile.Userprofile, error) {
+	var id pgtype.UUID
+	var usersName string
+	var usersEmail string
+
+	insertQuery := `
+	INSERT INTO users (name, email) 
+	VALUES ($1, $2) 
+	RETURNING id, name, email`
+
+	err := d.database.QueryRowContext(context.Background(), insertQuery, name, email).Scan(&id, &usersName, &usersEmail)
+
+	if err != nil {
+		return nil, fmt.Errorf("unexpected insert error: %w", err)
+	}
+
+	newUserprofile := userprofile.Userprofile{
+		ID:    id,
+		Name:  usersName,
+		Email: usersEmail,
+	}
+	return &newUserprofile, nil
+
+}
+
+// GetUserDetails retrieves a users details
+func (d *Database) GetUserDetails(userID pgtype.UUID) (*userprofile.Userprofile, error) {
+	var id pgtype.UUID
+	var usersName string
+	var usersEmail string
+
+	selectQuery := `
+	SELECT id, name, email FROM users
+	WHERE id=$1`
+
+	err := d.database.QueryRowContext(
+		context.Background(),
+		selectQuery,
+		userID,
+	).Scan(
+		&id,
+		&usersName,
+		&usersEmail,
+	)
+
+	switch {
+	case err == sql.ErrNoRows:
+		return nil, nil
+	case err != nil:
+		return nil, fmt.Errorf("unexpected database error: %w", err)
+	default:
+		newUserprofile := userprofile.Userprofile{
+			ID:    id,
+			Name:  usersName,
+			Email: usersEmail,
+		}
+		return &newUserprofile, nil
+	}
 }

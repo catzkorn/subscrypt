@@ -212,6 +212,57 @@ func TestGetSubscriptionFromDB(t *testing.T) {
 		}
 
 	})
+}
+
+func TestUserprofilesDatabase(t *testing.T) {
+	usersName := "Gary Gopher"
+	usersEmail := os.Getenv("EMAIL")
+
+	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+	assertDatabaseError(t, err)
+
+	t.Run("add name and email", func(t *testing.T) {
+
+		returnedDetails, err := store.RecordUserDetails(usersName, usersEmail)
+		assertDatabaseError(t, err)
+
+		if returnedDetails == nil {
+			t.Errorf("no user details recorded: %w", err)
+		}
+
+		if returnedDetails.Name != "Gary Gopher" {
+			t.Errorf("incorrect user name returned got %v want %v", returnedDetails.Name, usersName)
+		}
+
+		if returnedDetails.Email != usersEmail {
+			t.Errorf("incorrect email returned got %v want %v", returnedDetails.Name, usersEmail)
+		}
+		err = clearUsersTable()
+		assertDatabaseError(t, err)
+
+	})
+
+	t.Run("get name and email from database", func(t *testing.T) {
+
+		returnedDetails, err := store.RecordUserDetails(usersName, usersEmail)
+		assertDatabaseError(t, err)
+
+		gotDetails, err := store.GetUserDetails(returnedDetails.ID)
+
+		if gotDetails.ID != returnedDetails.ID {
+			t.Errorf("id retrieved is incorrect got %v want %v", gotDetails.ID, returnedDetails.ID)
+		}
+
+		if gotDetails.Name != usersName {
+			t.Errorf("incorrect name retrieved got %v want %v", gotDetails.Name, usersName)
+		}
+
+		if gotDetails.Email != usersEmail {
+			t.Errorf("incorrect email retrieved got %v want %v", gotDetails.Email, usersEmail)
+		}
+		err = clearUsersTable()
+		assertDatabaseError(t, err)
+	})
 
 }
 
@@ -232,6 +283,16 @@ func clearSubscriptionsTable() error {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
 	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
+
+	return err
+}
+
+func clearUsersTable() error {
+	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_STRING"))
+	if err != nil {
+		return fmt.Errorf("unexpected connection error: %w", err)
+	}
+	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE users;")
 
 	return err
 }

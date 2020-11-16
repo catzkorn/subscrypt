@@ -9,6 +9,8 @@ import (
 
 	"github.com/Catzkorn/subscrypt/internal/reminder"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
+	"github.com/jackc/pgtype"
 	"github.com/shopspring/decimal"
 )
 
@@ -29,6 +31,8 @@ type DataStore interface {
 	RecordSubscription(subscription subscription.Subscription) (*subscription.Subscription, error)
 	DeleteSubscription(ID int) error
 	GetSubscription(ID int) (*subscription.Subscription, error)
+	RecordUserDetails(name string, email string) (*userprofile.Userprofile, error)
+	GetUserDetails(userID pgtype.UUID) (*userprofile.Userprofile, error)
 }
 
 // NewServer returns a instance of a Server
@@ -36,7 +40,6 @@ func NewServer(dataStore DataStore) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
 	s.router.Handle("/reminder", http.HandlerFunc(s.reminderHandler))
-
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
 
 	return s
