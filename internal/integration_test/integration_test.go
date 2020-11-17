@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/Catzkorn/subscrypt/internal/database"
+	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"github.com/Catzkorn/subscrypt/internal/server"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
@@ -21,7 +22,8 @@ import (
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-	testServer := server.NewServer(store)
+	api := &plaid.PlaidAPI{}
+	testServer := server.NewServer(store, api)
 	amount, _ := decimal.NewFromString("100")
 	wantedSubscriptions := []subscription.Subscription{
 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -53,7 +55,8 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 
 func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-	testServer := server.NewServer(store)
+	api := &plaid.PlaidAPI{}
+	testServer := server.NewServer(store, api)
 
 	amount, _ := decimal.NewFromString("100")
 	subscription := subscription.Subscription{
@@ -88,7 +91,8 @@ func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	testServer := server.NewServer(store)
+	api := &plaid.PlaidAPI{}
+	testServer := server.NewServer(store, api)
 	amount, _ := decimal.NewFromString("100")
 	wantedSubscriptions := []subscription.Subscription{
 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -123,7 +127,8 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 
 func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	testServer := server.NewServer(store)
+	api := &plaid.PlaidAPI{}
+	testServer := server.NewServer(store, api)
 
 	amount, _ := decimal.NewFromString("100")
 	subscription := subscription.Subscription{
