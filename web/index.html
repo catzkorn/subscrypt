@@ -18,9 +18,12 @@
             <input type="submit" value="Submit">
         </form>
 
+        {{ if .Userprofile }}
 
         Name: {{.Userprofile.Name}}<br>
         Email: {{.Userprofile.Email}}
+
+        {{end}}
 
         <table style="width:100%">
             <tr>
