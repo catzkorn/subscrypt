@@ -19,6 +19,32 @@ type Subscription struct {
 }
 
 func ProcessTransactions(transactions plaid.TransactionList) []Subscription {
+
 	var subscriptions []Subscription
+
+	for _, transaction := range transactions.Transactions {
+		amount := decimal.NewFromFloat32(transaction.Amount)
+		subscriptionDate := processDate(transaction.Date)
+		subscription := Subscription{Name: transaction.Name, Amount: amount, DateDue: subscriptionDate }
+		subscriptions = append(subscriptions, subscription)
+	}
+
 	return subscriptions
+}
+
+func processDate(date string) time.Time {
+	layout := "2006-01-02"
+	str := date
+	t, _ := time.Parse(layout, str)
+
+	var subscriptionDate time.Time
+
+	if t.Day() <= time.Now().Day() {
+		subscriptionDate = time.Date(time.Now().Year(), time.Now().Month() + 1, t.Day(), 0, 0, 0, 0, time.UTC)
+	} else {
+		// next month date
+		subscriptionDate = time.Date(time.Now().Year(), time.Now().Month(), t.Day(), 0, 0, 0, 0, time.UTC)
+	}
+
+	return subscriptionDate
 }
