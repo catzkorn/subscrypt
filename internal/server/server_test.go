@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
-	"strings"
 	"testing"
 	"time"
 
@@ -93,13 +91,12 @@ func TestGetTransactions(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusOK)
-
 	})
 }
 
 func TestGETSubscriptions(t *testing.T) {
 
-	t.Run("return a subscription", func(t *testing.T) {
+	t.Run("return subscriptions in JSON format", func(t *testing.T) {
 		amount, _ := decimal.NewFromString("100.99")
 		wantedSubscriptions := []subscription.Subscription{
 			{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -114,20 +111,12 @@ func TestGETSubscriptions(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-		body, err := ioutil.ReadAll(response.Body)
 
-		if err != nil {
-			fmt.Println(err)
-		}
+		got := getSubscriptionsFromResponse(t, response.Body)
 
-		bodyString := string(body)
-		got := bodyString
-
-		res := strings.Contains(got, wantedSubscriptions[0].Name)
-
-		if res != true {
-			t.Errorf("webpage did not contain subscription of name %v", wantedSubscriptions[0].Name)
-		}
+		assertStatus(t, response.Code, http.StatusOK)
+		assertSubscriptions(t, got, wantedSubscriptions)
+		assertContentType(t, response, JSONContentType)
 	})
 }
 
@@ -214,8 +203,8 @@ func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions [
 	}
 
 	return
-
 }
+
 func TestDeleteSubscriptionAPI(t *testing.T) {
 
 	t.Run("deletes the specified subscription from the data store and returns 200", func(t *testing.T) {
@@ -254,7 +243,7 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 }
 
 func newGetSubscriptionRequest() *http.Request {
-	req, _ := http.NewRequest(http.MethodGet, "/", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/api/subscriptions", nil)
 	return req
 }
 
