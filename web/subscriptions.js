@@ -4,12 +4,34 @@ function loadSubscriptions() {
     _getSubscriptions(_showSubscriptions)
 }
 
+function createSubscription() {
+    let name = document.getElementById('subscription-name').value;
+    let amount = document.getElementById('subscription-amount').value;
+    let dateDue = _formatDateForJSON(document.getElementById('subscription-date').value);
+
+    if (_validateSubscriptionValues(name, amount, dateDue) !== false) {
+        _postSubscription(name, amount, dateDue)
+    }
+}
+
+function deleteSubscription(id) {
+    let xhttp = new XMLHttpRequest();
+    let url = "/api/subscriptions/" + id
+    xhttp.onreadystatechange = function () {
+        if (xhttp.readyState === 4 && xhttp.status === 200) {
+            loadSubscriptions();
+        }
+    }
+    xhttp.open("DELETE", url, true);
+    xhttp.send();
+}
+
 function _getSubscriptions(callback) {
     let xhttp = new XMLHttpRequest();
     let path = '/api/subscriptions';
     xhttp.onreadystatechange = function () {
         if (xhttp.readyState === 4 && xhttp.status === 200) {
-            let subscriptions = convertToSubscriptions(xhttp.responseText);
+            let subscriptions = _convertToSubscriptions(xhttp.responseText);
             callback(subscriptions);
         }
     };
@@ -46,23 +68,12 @@ function _formatSubscriptionsTable(subscriptions) {
 function _formatSubscription(subscription) {
     return `<tr>
             <td>${subscription.name}</td>
-            <td>${subscription.amount}</td>
-            <td>${subscription.date}</td>
+            <td>${parseFloat(subscription.amount).toFixed(2)}</td>
+            <td>${subscription.dateDue.getDate()}</td>
             <td><button type="button" id="reminder-${subscription.id}" onclick="sendReminder(${subscription.id})">Reminder</button></td>
             <td><button type="button" id="delete-${subscription.id}" onclick="deleteSubscription(${subscription.id})">Delete</button></td>
             </tr>`
 }
-
-function createSubscription() {
-    let name = document.getElementById('subscription-name').value;
-    let amount = document.getElementById('subscription-amount').value;
-    let dateDue = formatDateForJSON(document.getElementById('subscription-date').value);
-
-    if (validateSubscriptionValues(name, amount, dateDue) !== false) {
-        _postSubscription(name, amount, dateDue)
-    }
-}
-
 
 function _postSubscription(name, amount, dateDue) {
     let xhttp = new XMLHttpRequest();
@@ -78,7 +89,7 @@ function _postSubscription(name, amount, dateDue) {
     xhttp.send(data);
 }
 
-function validateSubscriptionValues(name, amount, dateDue) {
+function _validateSubscriptionValues(name, amount, dateDue) {
     if (name === "" || amount === "" || dateDue === "") {
         document.getElementById("subscription-error").innerHTML = "Please enter subscription details";
         return false
@@ -87,7 +98,7 @@ function validateSubscriptionValues(name, amount, dateDue) {
     }
 }
 
-function convertToSubscriptions(res) {
+function _convertToSubscriptions(res) {
     let resSubscriptions = JSON.parse(res);
     let subscriptions = [];
     if (resSubscriptions === null) {
@@ -101,18 +112,8 @@ function convertToSubscriptions(res) {
     }
 }
 
-function deleteSubscription(id) {
-    let xhttp = new XMLHttpRequest();
-    let url = "/api/subscriptions/" + id
-    xhttp.onreadystatechange = function () {
-        if (xhttp.readyState === 4 && xhttp.status === 200) {
-            loadSubscriptions();
-        }
-    }
-    xhttp.open("DELETE", url, true);
-    xhttp.send();
-}
 
-function formatDateForJSON(date) {
+
+function _formatDateForJSON(date) {
     return date + "T00:00:00Z"
 }

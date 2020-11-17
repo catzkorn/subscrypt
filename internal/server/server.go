@@ -242,7 +242,6 @@ func (s *Server) processGetSubscriptions(w http.ResponseWriter) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
 }
 
 // processPostSubscription tells the SubscriptionStore to record the subscription from the post body
@@ -258,7 +257,7 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	defer r.Body.Close()
 }
 
 // processDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID

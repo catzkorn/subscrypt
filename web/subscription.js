@@ -3,6 +3,6 @@ class Subscription {
         this.id = id
         this.name = name
         this.amount = amount
-        this.dateDue = dateDue
+        this.dateDue = new Date(dateDue)
     }
 }
