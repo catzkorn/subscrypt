@@ -22,72 +22,72 @@ import (
 
 const indexTemplatePath = "../../web/index.html"
 
-// func TestCreatingSubsAndRetrievingThem(t *testing.T) {
-// 	store := database.NewInMemorySubscriptionStore()
-// 	testServer := server.NewServer(store)
-// 	amount, _ := decimal.NewFromString("100")
-// 	wantedSubscriptions := []subscription.Subscription{
-// 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
-// 	}
+func TestCreatingSubsAndRetrievingThem(t *testing.T) {
+	store := database.NewInMemorySubscriptionStore()
+	testServer := server.NewServer(store, indexTemplatePath)
+	amount, _ := decimal.NewFromString("100")
+	wantedSubscriptions := []subscription.Subscription{
+		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
+	}
 
-// 	request := newPostFormRequest(url.Values{"name": {"Netflix"}, "amount": {"9.98"}, "date": {"2020-11-12"}})
-// 	response := httptest.NewRecorder()
-// 	testServer.ServeHTTP(response, request)
+	request := newPostFormRequest(url.Values{"name": {"Netflix"}, "amount": {"9.98"}, "date": {"2020-11-12"}})
+	response := httptest.NewRecorder()
+	testServer.ServeHTTP(response, request)
 
-// 	request = newGetSubscriptionRequest()
-// 	response = httptest.NewRecorder()
+	request = newGetSubscriptionRequest()
+	response = httptest.NewRecorder()
 
-// 	testServer.ServeHTTP(response, request)
-// 	body, err := ioutil.ReadAll(response.Body)
+	testServer.ServeHTTP(response, request)
+	body, err := ioutil.ReadAll(response.Body)
 
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
+	if err != nil {
+		fmt.Println(err)
+	}
 
-// 	bodyString := string(body)
-// 	got := bodyString
+	bodyString := string(body)
+	got := bodyString
 
-// 	res := strings.Contains(got, wantedSubscriptions[0].Name)
+	res := strings.Contains(got, wantedSubscriptions[0].Name)
 
-// 	if res != true {
-// 		t.Errorf("webpage did not contain subscription of name %v", wantedSubscriptions[0].Name)
-// 	}
-// }
+	if res != true {
+		t.Errorf("webpage did not contain subscription of name %v", wantedSubscriptions[0].Name)
+	}
+}
 
-// func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
-// 	store := database.NewInMemorySubscriptionStore()
-// 	testServer := server.NewServer(store)
+func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
+	store := database.NewInMemorySubscriptionStore()
+	testServer := server.NewServer(store, indexTemplatePath)
 
-// 	amount, _ := decimal.NewFromString("100")
-// 	subscription := subscription.Subscription{
-// 		Name: "Netflix",
-// 		Amount: amount,
-// 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
-// 	}
-// 	storedSubscription, err := store.RecordSubscription(subscription)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
+	amount, _ := decimal.NewFromString("100")
+	subscription := subscription.Subscription{
+		Name:    "Netflix",
+		Amount:  amount,
+		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
+	}
+	storedSubscription, err := store.RecordSubscription(subscription)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-// 	request := newDeleteSubscriptionRequest(storedSubscription.ID)
-// 	response := httptest.NewRecorder()
+	request := newDeleteSubscriptionRequest(storedSubscription.ID)
+	response := httptest.NewRecorder()
 
-// 	testServer.ServeHTTP(response, request)
+	testServer.ServeHTTP(response, request)
 
-// 	assertStatus(t, response.Code, http.StatusOK)
+	assertStatus(t, response.Code, http.StatusOK)
 
-// 	gotSubscription, err := store.GetSubscription(storedSubscription.ID)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
+	gotSubscription, err := store.GetSubscription(storedSubscription.ID)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-// 	if gotSubscription != nil {
-// 		t.Errorf("subscription not deleted, got %v for given id, want nil", gotSubscription)
-// 	}
+	if gotSubscription != nil {
+		t.Errorf("subscription not deleted, got %v for given id, want nil", gotSubscription)
+	}
 
-// 	err = clearSubscriptionsTable()
-// 	assertDatabaseError(t, err)
-// }
+	err = clearSubscriptionsTable()
+	assertDatabaseError(t, err)
+}
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
