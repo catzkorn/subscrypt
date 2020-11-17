@@ -17,14 +17,25 @@ import (
 	"github.com/Catzkorn/subscrypt/internal/database"
 	"github.com/Catzkorn/subscrypt/internal/server"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/sendgrid/rest"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"github.com/shopspring/decimal"
 )
 
 const indexTemplatePath = "../../web/index.html"
 
+type StubMailer struct {
+	sentEmail *mail.SGMailV3
+}
+
+func (s *StubMailer) Send(email *mail.SGMailV3) (*rest.Response, error) {
+	s.sentEmail = email
+	return &rest.Response{StatusCode: http.StatusAccepted}, nil
+}
+
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-	testServer := server.NewServer(store, indexTemplatePath)
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{})
 	amount, _ := decimal.NewFromString("100")
 	wantedSubscriptions := []subscription.Subscription{
 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -56,7 +67,7 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 
 func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-	testServer := server.NewServer(store, indexTemplatePath)
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{})
 
 	amount, _ := decimal.NewFromString("100")
 	subscription := subscription.Subscription{
@@ -91,7 +102,7 @@ func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	testServer := server.NewServer(store, indexTemplatePath)
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{})
 	amount, _ := decimal.NewFromString("100")
 	wantedSubscriptions := []subscription.Subscription{
 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -124,7 +135,7 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 
 func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	testServer := server.NewServer(store, indexTemplatePath)
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{})
 
 	amount, _ := decimal.NewFromString("100")
 	subscription := subscription.Subscription{

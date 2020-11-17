@@ -2,13 +2,14 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Catzkorn/subscrypt/internal/calendar"
+	"github.com/Catzkorn/subscrypt/internal/email"
 	"github.com/Catzkorn/subscrypt/internal/reminder"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/Catzkorn/subscrypt/internal/userprofile"
@@ -20,6 +21,7 @@ type Server struct {
 	dataStore           DataStore
 	router              *http.ServeMux
 	parsedIndexTemplate *template.Template
+	mailer              email.Mailer
 }
 
 // IndexPageData defines data shown on the page
@@ -40,7 +42,7 @@ type DataStore interface {
 }
 
 // NewServer returns a instance of a Server
-func NewServer(dataStore DataStore, indexTemplatePath string) *Server {
+func NewServer(dataStore DataStore, indexTemplatePath string, mailer email.Mailer) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
@@ -49,6 +51,8 @@ func NewServer(dataStore DataStore, indexTemplatePath string) *Server {
 	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
 
 	s.parsedIndexTemplate = template.Must(template.New("index.html").ParseFiles(indexTemplatePath))
+
+	s.mailer = mailer
 
 	return s
 }
@@ -84,9 +88,9 @@ func (s *Server) reminderHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 	var newReminder reminder.Reminder
 	var newSubscription subscription.Subscription
+	var userInformation userprofile.Userprofile
 
 	err := json.NewDecoder(r.Body).Decode(&newSubscription)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -94,21 +98,32 @@ func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 
 	subscription, err := s.dataStore.GetSubscription(newSubscription.ID)
 	if err != nil {
-		fmt.Errorf("subscription not retrieved: %w", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	newSubscription.Name = subscription.Name
 	newSubscription.Amount = subscription.Amount
 	newSubscription.DateDue = subscription.DateDue
 
-	// newReminder = reminder.Reminder{
-	// 	Email:          r.FormValue("email"),
-	// 	SubscriptionID: subscriptionID,
-	// 	ReminderDate:   reminderDate,
-	// }
+	user, err := s.dataStore.GetUserDetails()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	userInformation.Name = user.Name
+	userInformation.Email = user.Name
+
+	newReminder = reminder.Reminder{
+		Email:          userInformation.Email,
+		SubscriptionID: newSubscription.ID,
+		ReminderDate:   newSubscription.DateDue.AddDate(0, 0, -5),
+	}
+
+	cal := calendar.CreateReminderInvite(newSubscription, newReminder)
+	email.SendEmail(newReminder, userInformation, cal, s.mailer, s.dataStore)
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Println(newReminder)
 
 }
 
@@ -188,7 +203,8 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 	t, err := time.Parse(layout, str)
 
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	entry := subscription.Subscription{

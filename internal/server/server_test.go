@@ -16,10 +16,21 @@ import (
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/Catzkorn/subscrypt/internal/userprofile"
+	"github.com/sendgrid/rest"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"github.com/shopspring/decimal"
 )
 
 const indexTemplatePath = "../../web/index.html"
+
+type StubMailer struct {
+	sentEmail *mail.SGMailV3
+}
+
+func (s *StubMailer) Send(email *mail.SGMailV3) (*rest.Response, error) {
+	s.sentEmail = email
+	return &rest.Response{StatusCode: http.StatusAccepted}, nil
+}
 
 type StubDataStore struct {
 	subscriptions []subscription.Subscription
@@ -70,7 +81,7 @@ func TestGETSubscriptions(t *testing.T) {
 		}
 
 		store := &StubDataStore{subscriptions: wantedSubscriptions}
-		server := NewServer(store, indexTemplatePath)
+		server := NewServer(store, indexTemplatePath, &StubMailer{})
 
 		request := newGetSubscriptionRequest()
 		response := httptest.NewRecorder()
@@ -97,7 +108,7 @@ func TestStoreSubscription(t *testing.T) {
 
 	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
 		store := &StubDataStore{}
-		server := NewServer(store, indexTemplatePath)
+		server := NewServer(store, indexTemplatePath, &StubMailer{})
 
 		request := newPostFormRequest(url.Values{"name": {"Netflix"}, "amount": {"9.98"}, "date": {"2020-11-12"}})
 
@@ -120,12 +131,14 @@ func TestCreateReminder(t *testing.T) {
 		}
 
 		store := &StubDataStore{subscriptions: subscriptions}
-		server := NewServer(store, indexTemplatePath)
+		server := NewServer(store, indexTemplatePath, &StubMailer{})
 
-		request := newPostReminderRequest("test@test.com", fmt.Sprint(subscriptions[0].ID), "2020-11-13")
+		request := newPostReminderRequest(t, subscriptions[0].ID)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
+
+		fmt.Println(response.Body.String())
 		assertStatus(t, response.Code, http.StatusOK)
 
 	})
@@ -169,7 +182,7 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 	t.Run("deletes the specified subscription from the data store and returns 200", func(t *testing.T) {
 		subscriptions := []subscription.Subscription{{ID: 1}}
 		store := &StubDataStore{subscriptions: subscriptions}
-		server := NewServer(store, indexTemplatePath)
+		server := NewServer(store, indexTemplatePath, &StubMailer{})
 
 		request := newDeleteSubscriptionRequest(1)
 
@@ -185,7 +198,7 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 	t.Run("returns 404 if given subscription ID doesn't exist", func(t *testing.T) {
 		subscriptions := []subscription.Subscription{{ID: 1}}
 		store := &StubDataStore{subscriptions: subscriptions}
-		server := NewServer(store, indexTemplatePath)
+		server := NewServer(store, indexTemplatePath, &StubMailer{})
 
 		request := newDeleteSubscriptionRequest(2)
 
@@ -212,14 +225,21 @@ func newPostFormRequest(url url.Values) *http.Request {
 	return req
 }
 
-func newPostReminderRequest(email string, subscriptionID string, reminderDate string) *http.Request {
-	urlValues := url.Values{"email": {email}, "subscriptionID": {subscriptionID}, "reminderDate": {reminderDate}}
-	var bodyStr = []byte(urlValues.Encode())
-	req, err := http.NewRequest(http.MethodPost, "/reminder", bytes.NewBuffer(bodyStr))
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	if err != nil {
-		panic(err)
+func newPostReminderRequest(t testing.TB, id int) *http.Request {
+
+	t.Helper()
+	subscription := subscription.Subscription{
+		ID: id,
 	}
+	bodyStr, err := json.Marshal(&subscription)
+	if err != nil {
+		t.Fatalf("fail to marshal subscription: %v", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, "/api/reminders", bytes.NewBuffer(bodyStr))
+	if err != nil {
+		t.Fatalf("fail to marshal subscription: %v", err)
+	}
+	req.Header.Add("Content-Type", "application/json")
 	return req
 }
 
