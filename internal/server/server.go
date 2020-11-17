@@ -112,7 +112,7 @@ func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userInformation.Name = user.Name
-	userInformation.Email = user.Name
+	userInformation.Email = user.Email
 
 	newReminder = reminder.Reminder{
 		Email:          userInformation.Email,
@@ -121,6 +121,7 @@ func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cal := calendar.CreateReminderInvite(newSubscription, newReminder)
+
 	email.SendEmail(newReminder, userInformation, cal, s.mailer, s.dataStore)
 
 	w.WriteHeader(http.StatusOK)
