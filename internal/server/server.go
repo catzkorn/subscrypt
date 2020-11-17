@@ -3,18 +3,15 @@ package server
 import (
 	"fmt"
 	"github.com/Catzkorn/subscrypt/internal/plaid"
+	"github.com/Catzkorn/subscrypt/internal/reminder"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
 	"github.com/shopspring/decimal"
 	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Catzkorn/subscrypt/internal/reminder"
-	"github.com/Catzkorn/subscrypt/internal/subscription"
-	"github.com/Catzkorn/subscrypt/internal/userprofile"
-	"github.com/shopspring/decimal"
 )
 
 // Server is the HTTP interface for subscription information
