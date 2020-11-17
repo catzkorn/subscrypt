@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -55,45 +56,52 @@ type Transaction struct {
 }
 
 func (p *PlaidAPI) GetTransactions() {
-	m := Message{ClientId: "", Secret: "", InstitutionId: "ins_3", InitialProducts: []string{"auth","transactions"},Options: map[string]string{"webhook": "https://www.genericwebhookurl.com/webhook"} }
+	response := getPublicToken()
+	access := getAccessToken(response)
+	time.Sleep(10 * time.Second)
+	getTransactions(access)
+}
+
+func getPublicToken() PublicToken {
+	m := GetPublicToken{ClientId: os.Getenv("CLIENT_ID"), Secret: os.Getenv("SECRET"), InstitutionId: "ins_3", InitialProducts: []string{"auth","transactions"},Options: map[string]string{"webhook": "https://www.genericwebhookurl.com/webhook"} }
 	b, _ := json.Marshal(m)
 	fmt.Println(string(b))
 	r , _ := http.Post("https://sandbox.plaid.com/sandbox/public_token/create", "application/json", bytes.NewBuffer(b))
 	data, _ := ioutil.ReadAll(r.Body)
-	var response Response
+	var response PublicToken
 	err := json.Unmarshal(data, &response)
 
 	if err != nil {
 		println(err)
 	}
 
-	fmt.Println(response.PublicToken)
+	return response
 
-	e := Exchange{ClientId: m.ClientId, Secret: m.Secret, PublicToken: response.PublicToken}
-	b, _ = json.Marshal(e)
-	r , _ = http.Post("https://sandbox.plaid.com/item/public_token/exchange", "application/json", bytes.NewBuffer(b))
-	data, _ = ioutil.ReadAll(r.Body)
-	var access Access
+}
 
-	err = json.Unmarshal(data, &access)
+func getAccessToken(response PublicToken) AccessToken{
+	e := GetAccessToken{ClientId: os.Getenv("CLIENT_ID"), Secret: os.Getenv("SECRET"), PublicToken: response.Token}
+	b, _ := json.Marshal(e)
+	r , _ := http.Post("https://sandbox.plaid.com/item/public_token/exchange", "application/json", bytes.NewBuffer(b))
+	data, _ := ioutil.ReadAll(r.Body)
+	var access AccessToken
+
+	err := json.Unmarshal(data, &access)
 
 	if err != nil {
 		println(err)
 	}
 
-	fmt.Println(access.AccessToken)
-	time.Sleep(10 * time.Second)
-
-	getTransactions(m, access)
+	return access
 }
 
-func getTransactions(m Message, access Access) {
-	t := GetTransactions{ClientId: m.ClientId, Secret: m.Secret, AccessToken: access.AccessToken, StartDate: "2018-11-10", EndDate: "2020-11-10"}
+func getTransactions(access AccessToken) {
+	t := GetTransactions{ClientId: os.Getenv("CLIENT_ID"), Secret: os.Getenv("SECRET"), AccessToken: access.Token, StartDate: "2018-11-10", EndDate: "2020-11-10"}
 	b, _ := json.Marshal(t)
 	r, _ := http.Post("https://sandbox.plaid.com/transactions/get", "application/json", bytes.NewBuffer(b))
 	data, _ := ioutil.ReadAll(r.Body)
 	fmt.Printf("%s\n", data)
-	var listOfTransactions ListOfTransactions
+	var listOfTransactions TransactionList
 
 	err := json.Unmarshal(data, &listOfTransactions)
 	if err != nil {
