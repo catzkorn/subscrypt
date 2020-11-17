@@ -68,11 +68,30 @@ function _formatSubscriptionsTable(subscriptions) {
 function _formatSubscription(subscription) {
     return `<tr>
             <td>${subscription.name}</td>
-            <td>${parseFloat(subscription.amount).toFixed(2)}</td>
-            <td>${subscription.dateDue.getDate()}</td>
+            <td>${_formatAmountTwoDecimals(subscription.amount)}</td>
+            <td>${_formatDateAsDay(subscription.dateDue)}</td>
             <td><button type="button" id="reminder-${subscription.id}" onclick="sendReminder(${subscription.id})">Reminder</button></td>
             <td><button type="button" id="delete-${subscription.id}" onclick="deleteSubscription(${subscription.id})">Delete</button></td>
             </tr>`
+}
+
+function _formatAmountTwoDecimals(amount) {
+    return parseFloat(amount).toFixed(2)
+}
+
+function _formatDateAsDay(date) {
+    let d = date.getDate()
+    return d + _getOrdinal(d)
+}
+
+function _getOrdinal(number) {
+    if (number > 3 && number < 21) return 'th';
+    switch (number % 10) {
+        case 1:  return "st";
+        case 2:  return "nd";
+        case 3:  return "rd";
+        default: return "th";
+    }
 }
 
 function _postSubscription(name, amount, dateDue) {
