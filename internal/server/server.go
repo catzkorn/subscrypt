@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"github.com/Catzkorn/subscrypt/internal/reminder"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/Catzkorn/subscrypt/internal/userprofile"
-	"github.com/shopspring/decimal"
 )
 
 // Server is the HTTP interface for subscription information
@@ -146,34 +146,18 @@ func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 // processPostSubscription tells the SubscriptionStore to record the subscription from the post body
 func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request) {
 
-	amount, _ := decimal.NewFromString(r.FormValue("amount"))
-
-	layout := "2006-01-02"
-	str := r.FormValue("date")
-
-	t, err := time.Parse(layout, str)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	entry := subscription.Subscription{
-		Name:    r.FormValue("name"),
-		Amount:  amount,
-		DateDue: t,
-	}
-
+	var subscription subscription.Subscription
+	err := json.NewDecoder(r.Body).Decode(&subscription)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	_, err = s.dataStore.RecordSubscription(entry)
+	_, err = s.dataStore.RecordSubscription(subscription)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/", http.StatusFound)
+	w.WriteHeader(http.StatusOK)
 }
 
 // processPostReminder creates an ics file
