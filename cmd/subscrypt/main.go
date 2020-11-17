@@ -19,9 +19,10 @@ func main() {
 
 	api := &plaid.PlaidAPI{}
 
-	server := server.NewServer(database, api)
+	server := server.NewServer(database, "./web/index.html", api)
 	err = http.ListenAndServe(":5000", server)
 	if err != nil {
 		log.Fatalf("could not listen on port 5000 %v", err)
 	}
+
 }

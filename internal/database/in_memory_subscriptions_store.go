@@ -2,17 +2,20 @@ package database
 
 import (
 	"fmt"
+
 	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
 )
 
 // NewInMemorySubscriptionStore returns a instance of InMemorySubscriptionStore
 func NewInMemorySubscriptionStore() *InMemorySubscriptionStore {
-	return &InMemorySubscriptionStore{[]subscription.Subscription{}}
+	return &InMemorySubscriptionStore{[]subscription.Subscription{}, &userprofile.Userprofile{}}
 }
 
 // InMemorySubscriptionStore stores information about individual subscriptions
 type InMemorySubscriptionStore struct {
 	subscriptions []subscription.Subscription
+	userProfile   *userprofile.Userprofile
 }
 
 // GetSubscriptions is a method that returns all subscriptions
@@ -40,7 +43,7 @@ func (i *InMemorySubscriptionStore) RecordSubscription(subscription subscription
 func (i *InMemorySubscriptionStore) DeleteSubscription(subscriptionID int) error {
 
 	index := i.findSubscriptionIndex(subscriptionID)
-	lastIndex := len(i.subscriptions)-1
+	lastIndex := len(i.subscriptions) - 1
 
 	if index == -1 {
 		return fmt.Errorf("failed to delete subscription with ID %v", subscriptionID)
@@ -48,6 +51,21 @@ func (i *InMemorySubscriptionStore) DeleteSubscription(subscriptionID int) error
 	i.subscriptions[lastIndex], i.subscriptions[index] = i.subscriptions[index], i.subscriptions[lastIndex]
 	i.subscriptions = i.subscriptions[:lastIndex]
 	return nil
+}
+
+// RecordUserDetails stores the users name and email
+func (i *InMemorySubscriptionStore) RecordUserDetails(name string, email string) (*userprofile.Userprofile, error) {
+	i.userProfile = &userprofile.Userprofile{
+		Name:  name,
+		Email: email,
+	}
+
+	return i.userProfile, nil
+}
+
+// GetUserDetails returns the users name and email
+func (i *InMemorySubscriptionStore) GetUserDetails() (*userprofile.Userprofile, error) {
+	return i.userProfile, nil
 }
 
 // FindSubscriptionIndex finds the index of a given subscription ID, from the InMemoryDataStore's subscriptions

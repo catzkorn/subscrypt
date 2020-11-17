@@ -31,7 +31,6 @@ func TestDatabaseConnection(t *testing.T) {
 	})
 }
 
-
 func TestAddingSubscriptionToDB(t *testing.T) {
 	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
@@ -182,6 +181,89 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 	})
 }
 
+func TestGetSubscriptionFromDB(t *testing.T) {
+
+	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+	assertDatabaseError(t, err)
+
+	t.Run("deletes the subscription from the database", func(t *testing.T) {
+		subscription := createTestSubscription()
+
+		returnedSubscription, err := store.RecordSubscription(subscription)
+		assertDatabaseError(t, err)
+
+		gotSubscription, err := store.GetSubscription(returnedSubscription.ID)
+		assertDatabaseError(t, err)
+
+		if gotSubscription.ID != returnedSubscription.ID {
+			t.Errorf("Database did not return an ID, got %v want %v", gotSubscription.ID, returnedSubscription.ID)
+		}
+
+		if gotSubscription.Name != subscription.Name {
+			t.Errorf("Database did not return correct subscription name, got %s want %s", gotSubscription.Name, returnedSubscription.Name)
+		}
+
+		if !gotSubscription.Amount.Equal(subscription.Amount) {
+			t.Errorf("Database did not return correct amount, got %#v want %#v", gotSubscription.Amount, returnedSubscription.Amount)
+		}
+
+		if !gotSubscription.DateDue.Equal(subscription.DateDue) {
+			t.Errorf("Database did not return correct subscription date, got %s want %s", gotSubscription.DateDue, returnedSubscription.DateDue)
+		}
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
+	})
+}
+
+func TestUserprofilesDatabase(t *testing.T) {
+	usersName := "Gary Gopher"
+	usersEmail := os.Getenv("EMAIL")
+
+	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+	assertDatabaseError(t, err)
+
+	t.Run("add name and email", func(t *testing.T) {
+
+		returnedDetails, err := store.RecordUserDetails(usersName, usersEmail)
+		assertDatabaseError(t, err)
+
+		if returnedDetails == nil {
+			t.Errorf("no user details recorded: %w", err)
+		}
+
+		if returnedDetails.Name != "Gary Gopher" {
+			t.Errorf("incorrect user name returned got %v want %v", returnedDetails.Name, usersName)
+		}
+
+		if returnedDetails.Email != usersEmail {
+			t.Errorf("incorrect email returned got %v want %v", returnedDetails.Name, usersEmail)
+		}
+		err = clearUsersTable()
+		assertDatabaseError(t, err)
+
+	})
+
+	t.Run("get name and email from database", func(t *testing.T) {
+
+		_, err := store.RecordUserDetails(usersName, usersEmail)
+		assertDatabaseError(t, err)
+
+		gotDetails, err := store.GetUserDetails()
+		assertDatabaseError(t, err)
+
+		if gotDetails.Name != usersName {
+			t.Errorf("incorrect name retrieved got %v want %v", gotDetails.Name, usersName)
+		}
+
+		if gotDetails.Email != usersEmail {
+			t.Errorf("incorrect email retrieved got %v want %v", gotDetails.Email, usersEmail)
+		}
+		err = clearUsersTable()
+		assertDatabaseError(t, err)
+	})
+
+}
+
 func createTestSubscription() subscription.Subscription {
 	amount, _ := decimal.NewFromString("8.00")
 	subscription := subscription.Subscription{
@@ -199,6 +281,16 @@ func clearSubscriptionsTable() error {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
 	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
+
+	return err
+}
+
+func clearUsersTable() error {
+	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_STRING"))
+	if err != nil {
+		return fmt.Errorf("unexpected connection error: %w", err)
+	}
+	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE users;")
 
 	return err
 }

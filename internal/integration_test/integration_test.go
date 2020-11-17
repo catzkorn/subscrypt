@@ -5,11 +5,14 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+<<<<<<< HEAD
 	"github.com/Catzkorn/subscrypt/internal/database"
 	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"github.com/Catzkorn/subscrypt/internal/server"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
+=======
+>>>>>>> main
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -18,12 +21,23 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Catzkorn/subscrypt/internal/database"
+	"github.com/Catzkorn/subscrypt/internal/server"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/shopspring/decimal"
 )
+
+const indexTemplatePath = "../../web/index.html"
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
+<<<<<<< HEAD
 	api := &plaid.PlaidAPI{}
 	testServer := server.NewServer(store, api)
+=======
+	testServer := server.NewServer(store, indexTemplatePath)
+>>>>>>> main
 	amount, _ := decimal.NewFromString("100")
 	wantedSubscriptions := []subscription.Subscription{
 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -55,13 +69,17 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 
 func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
+<<<<<<< HEAD
 	api := &plaid.PlaidAPI{}
 	testServer := server.NewServer(store, api)
+=======
+	testServer := server.NewServer(store, indexTemplatePath)
+>>>>>>> main
 
 	amount, _ := decimal.NewFromString("100")
 	subscription := subscription.Subscription{
-		Name: "Netflix",
-		Amount: amount,
+		Name:    "Netflix",
+		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
 	storedSubscription, err := store.RecordSubscription(subscription)
@@ -91,8 +109,12 @@ func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+<<<<<<< HEAD
 	api := &plaid.PlaidAPI{}
 	testServer := server.NewServer(store, api)
+=======
+	testServer := server.NewServer(store, indexTemplatePath)
+>>>>>>> main
 	amount, _ := decimal.NewFromString("100")
 	wantedSubscriptions := []subscription.Subscription{
 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -108,12 +130,10 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	testServer.ServeHTTP(response, request)
 	body, err := ioutil.ReadAll(response.Body)
 
-	if err != nil {
-		fmt.Println(err)
-	}
-
 	bodyString := string(body)
 	got := bodyString
+
+	fmt.Println(bodyString)
 
 	res := strings.Contains(got, wantedSubscriptions[0].Name)
 
@@ -127,13 +147,17 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 
 func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+<<<<<<< HEAD
 	api := &plaid.PlaidAPI{}
 	testServer := server.NewServer(store, api)
+=======
+	testServer := server.NewServer(store, indexTemplatePath)
+>>>>>>> main
 
 	amount, _ := decimal.NewFromString("100")
 	subscription := subscription.Subscription{
-		Name: "Netflix",
-		Amount: amount,
+		Name:    "Netflix",
+		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
 	storedSubscription, err := store.RecordSubscription(subscription)

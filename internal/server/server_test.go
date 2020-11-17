@@ -2,23 +2,29 @@ package server
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/Catzkorn/subscrypt/internal/plaid"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
 	"github.com/shopspring/decimal"
 )
 
+const indexTemplatePath = "../../web/index.html"
+
 type StubDataStore struct {
 	subscriptions []subscription.Subscription
-	deleteCount []int
+	deleteCount   []int
 }
 
 func (s *StubDataStore) GetSubscriptions() ([]subscription.Subscription, error) {
@@ -45,6 +51,17 @@ func (s *StubDataStore) DeleteSubscription(ID int) error {
 	return nil
 }
 
+func (s *StubDataStore) RecordUserDetails(name string, email string) (*userprofile.Userprofile, error) {
+	userprofile := userprofile.Userprofile{Name: name, Email: email}
+
+	return &userprofile, nil
+}
+func (s *StubDataStore) GetUserDetails() (*userprofile.Userprofile, error) {
+	userprofile := userprofile.Userprofile{}
+
+	return &userprofile, nil
+}
+
 type stubTransactionAPI struct{
 
 }
@@ -58,7 +75,7 @@ func TestGetTransactions(t *testing.T) {
 	t.Run("Successfully calls the transactionAPI", func(t *testing.T) {
 		store := &StubDataStore{}
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, transactionAPI)
+		server := NewServer(store,indexTemplatePath, transactionAPI)
 
 		request, _ := http.NewRequest(http.MethodGet, "/api/transactions/", nil)
 		response := httptest.NewRecorder()
@@ -71,7 +88,6 @@ func TestGetTransactions(t *testing.T) {
 	})
 }
 
-
 func TestGETSubscriptions(t *testing.T) {
 
 	t.Run("return a subscription", func(t *testing.T) {
@@ -82,7 +98,7 @@ func TestGETSubscriptions(t *testing.T) {
 
 		store := &StubDataStore{subscriptions: wantedSubscriptions}
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, transactionAPI)
+		server := NewServer(store, indexTemplatePath, transactionAPI)
 
 		request := newGetSubscriptionRequest()
 		response := httptest.NewRecorder()
@@ -110,8 +126,7 @@ func TestStoreSubscription(t *testing.T) {
 	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
 		store := &StubDataStore{}
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, transactionAPI)
-
+		server := NewServer(store, indexTemplatePath, transactionAPI)
 
 		request := newPostFormRequest(url.Values{"name": {"Netflix"}, "amount": {"9.98"}, "date": {"2020-11-12"}})
 
@@ -125,13 +140,67 @@ func TestStoreSubscription(t *testing.T) {
 	})
 }
 
+func TestCreateReminder(t *testing.T) {
+
+	t.Run("creates a reminder for subscription and returns a confirmation that a reminder invite has been sent", func(t *testing.T) {
+		amount, _ := decimal.NewFromString("100.99")
+		subscriptions := []subscription.Subscription{
+			{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
+		}
+
+		store := &StubDataStore{subscriptions: subscriptions}
+		transactionAPI := &stubTransactionAPI{}
+		server := NewServer(store, indexTemplatePath, transactionAPI)
+
+		request := newPostReminderRequest("test@test.com", fmt.Sprint(subscriptions[0].ID), "2020-11-13")
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+		assertStatus(t, response.Code, http.StatusOK)
+
+	})
+
+}
+
+func assertStatus(t *testing.T, got, want int) {
+	t.Helper()
+	if got != want {
+		t.Errorf("did not get correct status, got %d, want %d", got, want)
+	}
+}
+
+func assertSubscriptions(t *testing.T, got, want []subscription.Subscription) {
+	t.Helper()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v want %v", got, want)
+	}
+}
+
+func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want string) {
+	t.Helper()
+	if response.Result().Header.Get("content-type") != want {
+		t.Errorf("response did not have content-type of %s, got %v", want, response.Result().Header)
+	}
+}
+
+func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions []subscription.Subscription) {
+	t.Helper()
+	err := json.NewDecoder(body).Decode(&subscriptions)
+
+	if err != nil {
+		t.Fatalf("Unable to parse response from server %q into slice of Subscription, '%v'", body, err)
+	}
+
+	return
+
+}
 func TestDeleteSubscriptionAPI(t *testing.T) {
 
 	t.Run("deletes the specified subscription from the data store and returns 200", func(t *testing.T) {
 		subscriptions := []subscription.Subscription{{ID: 1}}
 		store := &StubDataStore{subscriptions: subscriptions}
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, transactionAPI)
+		server := NewServer(store, indexTemplatePath, transactionAPI)
 
 		request := newDeleteSubscriptionRequest(1)
 
@@ -148,7 +217,7 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 		subscriptions := []subscription.Subscription{{ID: 1}}
 		store := &StubDataStore{subscriptions: subscriptions}
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, transactionAPI)
+		server := NewServer(store, indexTemplatePath, transactionAPI)
 
 		request := newDeleteSubscriptionRequest(2)
 
@@ -175,6 +244,17 @@ func newPostFormRequest(url url.Values) *http.Request {
 	return req
 }
 
+func newPostReminderRequest(email string, subscriptionID string, reminderDate string) *http.Request {
+	urlValues := url.Values{"email": {email}, "subscriptionID": {subscriptionID}, "reminderDate": {reminderDate}}
+	var bodyStr = []byte(urlValues.Encode())
+	req, err := http.NewRequest(http.MethodPost, "/reminder", bytes.NewBuffer(bodyStr))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	if err != nil {
+		panic(err)
+	}
+	return req
+}
+
 func newDeleteSubscriptionRequest(ID int) *http.Request {
 	bodyStr := []byte(fmt.Sprintf("{\"id\": %v}", ID))
 	url := fmt.Sprintf("/api/subscriptions/%v", ID)
@@ -183,11 +263,4 @@ func newDeleteSubscriptionRequest(ID int) *http.Request {
 		panic(err)
 	}
 	return req
-}
-
-func assertStatus(t *testing.T, got, want int) {
-	t.Helper()
-	if got != want {
-		t.Errorf("did not get correct status, got %d, want %d", got, want)
-	}
 }
