@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"log"
 	"net/http"
 	"os"
@@ -16,7 +17,9 @@ func main() {
 		log.Fatalf("failed to create database connection: %v", err)
 	}
 
-	server := server.NewServer(database, "./web/index.html")
+	transactionsAPI := &plaid.PlaidAPI{}
+
+	server := server.NewServer(database, "./web/index.html", transactionsAPI)
 	err = http.ListenAndServe(":5000", server)
 	if err != nil {
 		log.Fatalf("could not listen on port 5000 %v", err)

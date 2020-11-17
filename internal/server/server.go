@@ -2,23 +2,28 @@ package server
 
 import (
 	"fmt"
+	"github.com/Catzkorn/subscrypt/internal/plaid"
+	"github.com/Catzkorn/subscrypt/internal/reminder"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
+	"github.com/shopspring/decimal"
 	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Catzkorn/subscrypt/internal/reminder"
-	"github.com/Catzkorn/subscrypt/internal/subscription"
-	"github.com/Catzkorn/subscrypt/internal/userprofile"
-	"github.com/shopspring/decimal"
 )
 
 // Server is the HTTP interface for subscription information
 type Server struct {
-	dataStore           DataStore
-	router              *http.ServeMux
+	dataStore DataStore
+	router    *http.ServeMux
 	parsedIndexTemplate *template.Template
+	transactionAPI TransactionAPI
+}
+
+type TransactionAPI interface {
+	GetTransactions() (plaid.TransactionList, error)
 }
 
 // IndexPageData defines data shown on the page
@@ -39,17 +44,29 @@ type DataStore interface {
 }
 
 // NewServer returns a instance of a Server
-func NewServer(dataStore DataStore, indexTemplatePath string) *Server {
-	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
+func NewServer(dataStore DataStore, indexTemplatePath string, transactionAPI TransactionAPI) *Server {
+	s := &Server{dataStore: dataStore, router: http.NewServeMux(), transactionAPI: transactionAPI}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
 	s.router.Handle("/reminder", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
+	s.router.Handle("/api/transactions/", http.HandlerFunc(s.transactionAPIHandler))
 	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
 
 	s.parsedIndexTemplate = template.Must(template.New("index.html").ParseFiles(indexTemplatePath))
 
 	return s
+}
+
+func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	case http.MethodGet:
+		_ , err := s.transactionAPI.GetTransactions()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
 }
 
 // ServeHTTP implements the http handler interface
