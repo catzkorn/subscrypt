@@ -143,7 +143,7 @@ func TestStoreSubscription(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(store.subscriptions[0], subscription) {
-			t.Errorf("did not store correct winner got %v want %v", store.subscriptions[0], subscription)
+			t.Errorf("did not store correct subscription got %v want %v", store.subscriptions[0], subscription)
 		}
 	})
 }
