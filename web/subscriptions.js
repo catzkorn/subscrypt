@@ -90,11 +90,15 @@ function validateSubscriptionValues(name, amount, dateDue) {
 function convertToSubscriptions(res) {
     let resSubscriptions = JSON.parse(res);
     let subscriptions = [];
-    resSubscriptions.forEach(function (subscription) {
-        let subscriptionObj = new Subscription(subscription.id, subscription.name, subscription.amount, subscription.dateDue);
-        subscriptions.push(subscriptionObj);
-    })
-    return subscriptions;
+    if (resSubscriptions === null) {
+        return subscriptions
+    } else {
+        resSubscriptions.forEach(function (subscription) {
+            let subscriptionObj = new Subscription(subscription.id, subscription.name, subscription.amount, subscription.dateDue);
+            subscriptions.push(subscriptionObj);
+        })
+        return subscriptions;
+    }
 }
 
 function deleteSubscription(id) {
