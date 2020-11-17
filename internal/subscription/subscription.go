@@ -1,6 +1,7 @@
 package subscription
 
 import (
+	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -15,4 +16,9 @@ type Subscription struct {
 	Name    string
 	Amount  decimal.Decimal
 	DateDue time.Time
+}
+
+func ProcessTransactions(transactions plaid.TransactionList) []Subscription {
+	var subscriptions []Subscription
+	return subscriptions
 }

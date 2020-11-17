@@ -67,7 +67,7 @@ type stubTransactionAPI struct{
 }
 
 func (s * stubTransactionAPI) GetTransactions() (plaid.TransactionList, error){
-	transactions := plaid.TransactionList{Transactions: []plaid.Transaction{{Amount: 9.99, Date: "2020-09-12", MerchantName: "Netflix", Name: "Netflix"}}}
+	transactions := plaid.TransactionList{Transactions: []plaid.Transaction{{Amount: 9.99, Date: "2020-09-12", Name: "Netflix"}}}
 	return transactions, nil
 }
 

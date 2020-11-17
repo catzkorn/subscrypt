@@ -45,20 +45,20 @@ type GetTransactions struct {
 }
 
 type TransactionList struct {
-	Transactions []Transaction `json:"transaction"`
+	Transactions []Transaction `json:"transactions"`
 }
 
 type Transaction struct {
 	Amount       float32 `json:"amount"`
 	Date         string `json:"date"`
-	MerchantName string `json:"merchant_name"`
 	Name         string `json:"name"`
 }
 
 func (p *PlaidAPI) GetTransactions() (TransactionList, error){
 	response := getPublicToken()
+	time.Sleep(2 * time.Second)
 	access := getAccessToken(response)
-	time.Sleep(10 * time.Second)
+	time.Sleep(2 * time.Second)
 	TransactionList := getTransactions(access)
 
 	return TransactionList , nil
@@ -90,7 +90,7 @@ func getPublicToken() PublicToken {
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %w", err)
 	}
-
+	fmt.Println(response)
 	return response
 
 }
@@ -123,6 +123,8 @@ func getAccessToken(response PublicToken) AccessToken{
 		_ = fmt.Errorf("unexpected error: %w", err)
 	}
 
+	fmt.Println(access)
+
 	return access
 }
 
@@ -142,6 +144,7 @@ func getTransactions(access AccessToken) TransactionList {
 
 	data, err := ioutil.ReadAll(r.Body)
 
+
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %w", err)
 	}
@@ -153,6 +156,8 @@ func getTransactions(access AccessToken) TransactionList {
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %w", err)
 	}
+
+	fmt.Println(listOfTransactions)
 
 	return listOfTransactions
 }
