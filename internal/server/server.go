@@ -10,6 +10,7 @@ import (
 
 	"github.com/Catzkorn/subscrypt/internal/calendar"
 	"github.com/Catzkorn/subscrypt/internal/email"
+	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"github.com/Catzkorn/subscrypt/internal/reminder"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/Catzkorn/subscrypt/internal/userprofile"
@@ -22,6 +23,11 @@ type Server struct {
 	router              *http.ServeMux
 	parsedIndexTemplate *template.Template
 	mailer              email.Mailer
+	transactionAPI      TransactionAPI
+}
+
+type TransactionAPI interface {
+	GetTransactions() (plaid.TransactionList, error)
 }
 
 // IndexPageData defines data shown on the page
@@ -42,12 +48,14 @@ type DataStore interface {
 }
 
 // NewServer returns a instance of a Server
-func NewServer(dataStore DataStore, indexTemplatePath string, mailer email.Mailer) *Server {
-	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
+
+func NewServer(dataStore DataStore, indexTemplatePath string, mailer email.Mailer, transactionAPI TransactionAPI) *Server {
+	s := &Server{dataStore: dataStore, router: http.NewServeMux(), transactionAPI: transactionAPI}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
 	s.router.Handle("/api/reminders", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
+	s.router.Handle("/api/transactions/", http.HandlerFunc(s.transactionAPIHandler))
 	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
 
 	s.parsedIndexTemplate = template.Must(template.New("index.html").ParseFiles(indexTemplatePath))
@@ -55,6 +63,17 @@ func NewServer(dataStore DataStore, indexTemplatePath string, mailer email.Maile
 	s.mailer = mailer
 
 	return s
+}
+
+func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	case http.MethodGet:
+		_, err := s.transactionAPI.GetTransactions()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
 }
 
 // ServeHTTP implements the http handler interface

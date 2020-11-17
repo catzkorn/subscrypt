@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Catzkorn/subscrypt/internal/database"
+	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"github.com/Catzkorn/subscrypt/internal/server"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/sendgrid/rest"
@@ -35,7 +36,11 @@ func (s *StubMailer) Send(email *mail.SGMailV3) (*rest.Response, error) {
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{})
+
+	api := &plaid.PlaidAPI{}
+
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
+
 	amount, _ := decimal.NewFromString("100")
 	wantedSubscriptions := []subscription.Subscription{
 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -52,7 +57,7 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		fmt.Println(err)
+		t.Errorf("unexpected error: %w", err)
 	}
 
 	bodyString := string(body)
@@ -67,15 +72,17 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 
 func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{})
+
+	api := &plaid.PlaidAPI{}
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
-	subscription := subscription.Subscription{
+	newSubscription := subscription.Subscription{
 		Name:    "Netflix",
 		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
-	storedSubscription, err := store.RecordSubscription(subscription)
+	storedSubscription, err := store.RecordSubscription(newSubscription)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -102,7 +109,10 @@ func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{})
+
+	api := &plaid.PlaidAPI{}
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
+
 	amount, _ := decimal.NewFromString("100")
 	wantedSubscriptions := []subscription.Subscription{
 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -133,15 +143,17 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 
 func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{})
+
+	api := &plaid.PlaidAPI{}
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
-	subscription := subscription.Subscription{
+	newSubscription := subscription.Subscription{
 		Name:    "Netflix",
 		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
-	storedSubscription, err := store.RecordSubscription(subscription)
+	storedSubscription, err := store.RecordSubscription(newSubscription)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -210,8 +222,8 @@ func newPostFormRequest(url url.Values) *http.Request {
 
 func newDeleteSubscriptionRequest(ID int) *http.Request {
 	bodyStr := []byte(fmt.Sprintf("{\"id\": %v}", ID))
-	url := fmt.Sprintf("/api/subscriptions/%v", ID)
-	req, err := http.NewRequest(http.MethodDelete, url, bytes.NewBuffer(bodyStr))
+	deleteURL := fmt.Sprintf("/api/subscriptions/%v", ID)
+	req, err := http.NewRequest(http.MethodDelete, deleteURL, bytes.NewBuffer(bodyStr))
 	if err != nil {
 		panic(err)
 	}
