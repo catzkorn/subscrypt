@@ -25,22 +25,7 @@
 
         {{end}}
 
-        <table style="width:100%">
-            <tr>
-                <td>Name Of Subscription</td>
-                <td>Amount Due Monthly</td>
-                <td>Date Due Monthly</td>
-            </tr>
-            {{range .Subscriptions}}
-            <tr>
-                <td>{{.Name}}</td>
-                <td>{{.Amount}}</td>
-                <td>{{.DateDue}}</td>
-                <td><button type="button" id="reminder-{{.ID}}" onclick="sendReminder({{.ID}})">Reminder</button>
-                <td><button type="button" id="delete-{{.ID}}" onclick="deleteSubscription({{.ID}})">Delete</button>
-            </tr>
-            {{end}}
-        </table>
+        <div id="subscriptions"></div>
 
         <form>
             <label for="name">Name Of Subscription:</label>
@@ -53,6 +38,7 @@
         </form>
         <span id="subscription-error"></span>
 
+        <script src="web/subscription.js"></script>
         <script src="web/subscriptions.js"></script>
         <script src="web/reminders.js"></script>
 

@@ -11,7 +11,7 @@ import (
 // Amount is the cost of the subscription, stored as a decimal.
 // DateDue is the date that the subscription is due on, stored as a date.
 type Subscription struct {
-	ID      int
+	ID      int					`json:"id"`
 	Name    string				`json:"name"`
 	Amount  decimal.Decimal 	`json:"amount"`
 	DateDue time.Time 			`json:"dateDue"`
