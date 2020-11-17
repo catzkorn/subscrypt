@@ -90,7 +90,7 @@ func getPublicToken() PublicToken {
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %w", err)
 	}
-	fmt.Println(response)
+
 	return response
 
 }
@@ -123,8 +123,6 @@ func getAccessToken(response PublicToken) AccessToken{
 		_ = fmt.Errorf("unexpected error: %w", err)
 	}
 
-	fmt.Println(access)
-
 	return access
 }
 
@@ -156,8 +154,6 @@ func getTransactions(access AccessToken) TransactionList {
 	if err != nil {
 		_ = fmt.Errorf("unexpected error: %w", err)
 	}
-
-	fmt.Println(listOfTransactions)
 
 	return listOfTransactions
 }

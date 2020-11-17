@@ -62,10 +62,17 @@ func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		_ , err := s.transactionAPI.GetTransactions()
+		transactions , err := s.transactionAPI.GetTransactions()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+
+		subscriptions := subscription.ProcessTransactions(transactions)
+		for _, entry := range subscriptions {
+			_, _ = s.dataStore.RecordSubscription(entry)
+		}
+
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
 
