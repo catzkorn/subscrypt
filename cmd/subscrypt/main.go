@@ -16,9 +16,10 @@ func main() {
 		log.Fatalf("failed to create database connection: %v", err)
 	}
 
-	server := server.NewServer(database)
+	server := server.NewServer(database, "./web/index.html")
 	err = http.ListenAndServe(":5000", server)
 	if err != nil {
 		log.Fatalf("could not listen on port 5000 %v", err)
 	}
+
 }

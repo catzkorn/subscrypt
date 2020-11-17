@@ -2,23 +2,30 @@ package server
 
 import (
 	"fmt"
-	"github.com/Catzkorn/subscrypt/internal/subscription"
-	"github.com/shopspring/decimal"
+	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Catzkorn/subscrypt/internal/reminder"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
+	"github.com/shopspring/decimal"
 )
 
 // Server is the HTTP interface for subscription information
 type Server struct {
-	dataStore DataStore
-	router    *http.ServeMux
+	dataStore           DataStore
+	router              *http.ServeMux
+	parsedIndexTemplate *template.Template
 }
 
+// IndexPageData defines data shown on the page
 type IndexPageData struct {
-	PageTitle string
+	PageTitle     string
 	Subscriptions []subscription.Subscription
+	Userprofile   *userprofile.Userprofile
 }
 
 // DataStore provides an interface to store information about individual subscriptions
@@ -27,13 +34,20 @@ type DataStore interface {
 	RecordSubscription(subscription subscription.Subscription) (*subscription.Subscription, error)
 	DeleteSubscription(ID int) error
 	GetSubscription(ID int) (*subscription.Subscription, error)
+	RecordUserDetails(name string, email string) (*userprofile.Userprofile, error)
+	GetUserDetails() (*userprofile.Userprofile, error)
 }
 
 // NewServer returns a instance of a Server
-func NewServer(dataStore DataStore) *Server {
+func NewServer(dataStore DataStore, indexTemplatePath string) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
+	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
+	s.router.Handle("/reminder", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
+	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
+
+	s.parsedIndexTemplate = template.Must(template.New("index.html").ParseFiles(indexTemplatePath))
 
 	return s
 }
@@ -50,9 +64,17 @@ func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
 		err := s.processGetSubscription(w)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	case http.MethodPost:
 		s.processPostSubscription(w, r)
+	}
+}
+
+func (s *Server) reminderHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		s.processPostReminder(w, r)
 	}
 }
 
@@ -66,9 +88,28 @@ func (s *Server) subscriptionsAPIHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if r.Method == http.MethodDelete{
+	if r.Method == http.MethodDelete {
 		s.processDeleteSubscription(w, ID)
 	}
+}
+
+func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		s.processPostUser(w, r)
+
+	}
+}
+
+func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
+
+	_, err := s.dataStore.RecordUserDetails(r.FormValue("username"), r.FormValue("email"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 // JsonContentType defines application/json
@@ -78,17 +119,22 @@ const JsonContentType = "application/json"
 func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 
 	subscriptions, err := s.dataStore.GetSubscriptions()
+	if err != nil {
+		return err
+	}
 
+	userInfo, err := s.dataStore.GetUserDetails()
 	if err != nil {
 		return err
 	}
 
 	data := IndexPageData{
-		PageTitle: "My Subscriptions List",
+		PageTitle:     "My Subscriptions List",
 		Subscriptions: subscriptions,
+		Userprofile:   userInfo,
 	}
 
-	err = ParsedIndexTemplate.Execute(w, data)
+	err = s.parsedIndexTemplate.Execute(w, data)
 
 	if err != nil {
 		return err
@@ -112,8 +158,8 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 	}
 
 	entry := subscription.Subscription{
-		Name:   r.FormValue("name"),
-		Amount: amount,
+		Name:    r.FormValue("name"),
+		Amount:  amount,
 		DateDue: t,
 	}
 
@@ -128,6 +174,35 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+// processPostReminder creates an ics file
+// TODO: then emails it to the user's email
+func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
+	var newReminder reminder.Reminder
+
+	subscriptionID, err := strconv.Atoi(r.FormValue("subscriptionID"))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	reminderDate, err := time.Parse("2006-01-02", r.FormValue("reminderDate"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	newReminder = reminder.Reminder{
+		Email:          r.FormValue("email"),
+		SubscriptionID: subscriptionID,
+		ReminderDate:   reminderDate,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Println(newReminder)
+
 }
 
 // processDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID
