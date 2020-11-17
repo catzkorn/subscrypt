@@ -6,6 +6,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/Catzkorn/subscrypt/internal/database"
+	"github.com/Catzkorn/subscrypt/internal/plaid"
+	"github.com/Catzkorn/subscrypt/internal/server"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/shopspring/decimal"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -13,18 +18,15 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/Catzkorn/subscrypt/internal/database"
-	"github.com/Catzkorn/subscrypt/internal/server"
-	"github.com/Catzkorn/subscrypt/internal/subscription"
-	"github.com/shopspring/decimal"
 )
-
 const indexTemplatePath = "../../web/index.html"
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-	testServer := server.NewServer(store, indexTemplatePath)
+	api := &plaid.PlaidAPI{}
+
+	testServer := server.NewServer(store, indexTemplatePath, api)
+
 	amount, _ := decimal.NewFromString("100")
 	newSubscription := subscription.Subscription{
 		Name: "Netflix",
@@ -47,7 +49,7 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Errorf("unexpected error: %w", err)
 	}
 
 	bodyString := string(body)
@@ -62,15 +64,16 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 
 func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-	testServer := server.NewServer(store, indexTemplatePath)
+	api := &plaid.PlaidAPI{}
+	testServer := server.NewServer(store, indexTemplatePath, api)
 
 	amount, _ := decimal.NewFromString("100")
-	subscription := subscription.Subscription{
+	newSubscription := subscription.Subscription{
 		Name:    "Netflix",
 		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
-	storedSubscription, err := store.RecordSubscription(subscription)
+	storedSubscription, err := store.RecordSubscription(newSubscription)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -97,7 +100,10 @@ func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	testServer := server.NewServer(store, indexTemplatePath)
+
+	api := &plaid.PlaidAPI{}
+	testServer := server.NewServer(store, indexTemplatePath, api)
+
 	amount, _ := decimal.NewFromString("100")
 	subscription := subscription.Subscription{
 		Name:    "Netflix",
@@ -131,15 +137,16 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 
 func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	testServer := server.NewServer(store, indexTemplatePath)
+	api := &plaid.PlaidAPI{}
+	testServer := server.NewServer(store, indexTemplatePath, api)
 
 	amount, _ := decimal.NewFromString("100")
-	subscription := subscription.Subscription{
+	newSubscription := subscription.Subscription{
 		Name:    "Netflix",
 		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
-	storedSubscription, err := store.RecordSubscription(subscription)
+	storedSubscription, err := store.RecordSubscription(newSubscription)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -209,8 +216,8 @@ func newPostSubscriptionRequest(t *testing.T, subscription subscription.Subscrip
 
 func newDeleteSubscriptionRequest(ID int) *http.Request {
 	bodyStr := []byte(fmt.Sprintf("{\"id\": %v}", ID))
-	url := fmt.Sprintf("/api/subscriptions/%v", ID)
-	req, err := http.NewRequest(http.MethodDelete, url, bytes.NewBuffer(bodyStr))
+	deleteURL := fmt.Sprintf("/api/subscriptions/%v", ID)
+	req, err := http.NewRequest(http.MethodDelete, deleteURL, bytes.NewBuffer(bodyStr))
 	if err != nil {
 		panic(err)
 	}
