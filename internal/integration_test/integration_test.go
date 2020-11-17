@@ -43,7 +43,7 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Errorf("unexpected error: %w", err)
 	}
 
 	bodyString := string(body)
