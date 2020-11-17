@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"reflect"
 	"strings"
 	"testing"
@@ -135,19 +134,27 @@ func TestGETSubscriptions(t *testing.T) {
 func TestStoreSubscription(t *testing.T) {
 
 	t.Run("stores a subscription we POST to the server", func(t *testing.T) {
+		amount, _ := decimal.NewFromString("100.99")
+		subscription := subscription.Subscription{Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
+
 		store := &StubDataStore{}
 
 		transactionAPI := &stubTransactionAPI{}
 		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
 
-		request := newPostFormRequest(url.Values{"name": {"Netflix"}, "amount": {"9.98"}, "date": {"2020-11-12"}})
-
+		request := newPostSubscriptionRequest(t, subscription)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
+		assertStatus(t, response.Code, http.StatusOK)
+
 		if len(store.subscriptions) != 1 {
 			t.Errorf("got %d calls to RecordSubscription want %d", len(store.subscriptions), 1)
+		}
+
+		if !reflect.DeepEqual(store.subscriptions[0], subscription) {
+			t.Errorf("did not store correct subscription got %v want %v", store.subscriptions[0], subscription)
 		}
 	})
 }
@@ -251,13 +258,14 @@ func newGetSubscriptionRequest() *http.Request {
 	return req
 }
 
-func newPostFormRequest(url url.Values) *http.Request {
-	var bodyStr = []byte(url.Encode())
-	req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(bodyStr))
+func newPostSubscriptionRequest(t *testing.T, subscription subscription.Subscription) *http.Request {
+	postBody, _ := json.Marshal(subscription)
+	req, err := http.NewRequest(http.MethodPost, "/api/subscriptions", bytes.NewBuffer(postBody))
+
 	if err != nil {
-		panic(err)
+		t.Errorf("failed to generate new POST subscription request")
 	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
 	return req
 }
 
