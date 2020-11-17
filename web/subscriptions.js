@@ -1,7 +1,7 @@
 function createSubscription() {
     let name = document.getElementById('subscription-name').value;
     let amount  = document.getElementById('subscription-amount').value;
-    let dateDue  = document.getElementById('subscription-date').value + "T00:00:00Z";
+    let dateDue  = formatDate(document.getElementById('subscription-date').value);
 
     let xhttp = new XMLHttpRequest();
     let url = "/api/subscriptions";
@@ -16,6 +16,10 @@ function createSubscription() {
     xhttp.send(data);
 }
 
+function getSubscriptionFormValues() {
+
+}
+
 function deleteSubscription(id) {
     let xhttp = new XMLHttpRequest();
     let url = "/api/subscriptions/" + id
@@ -26,4 +30,8 @@ function deleteSubscription(id) {
     }
     xhttp.open("DELETE", url, true);
     xhttp.send();
+}
+
+function formatDate(date) {
+    return date + "T00:00:00Z"
 }
