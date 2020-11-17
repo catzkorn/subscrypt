@@ -25,12 +25,15 @@ func ProcessTransactions(transactions plaid.TransactionList) []Subscription {
 	var subscriptions []Subscription
 
 	for _, transaction := range transactions.Transactions {
-
-		if stringInSlice(transaction.Name, knownSubscriptions) {
-			amount := decimal.NewFromFloat32(transaction.Amount)
-			subscriptionDate := processDate(transaction.Date)
-			subscription := Subscription{Name: transaction.Name, Amount: amount, DateDue: subscriptionDate}
-			subscriptions = append(subscriptions, subscription)
+		if subscriptionInSlice(transaction.Name, subscriptions) {
+			continue
+		} else {
+			if stringInSlice(transaction.Name, knownSubscriptions) {
+				amount := decimal.NewFromFloat32(transaction.Amount)
+				subscriptionDate := processDate(transaction.Date)
+				subscription := Subscription{Name: transaction.Name, Amount: amount, DateDue: subscriptionDate}
+				subscriptions = append(subscriptions, subscription)
+			}
 		}
 	}
 
@@ -57,6 +60,15 @@ func processDate(date string) time.Time {
 func stringInSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
+func subscriptionInSlice(a string, list []Subscription) bool {
+	for _, b := range list {
+		if b.Name == a {
 			return true
 		}
 	}
