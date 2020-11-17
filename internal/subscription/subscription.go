@@ -12,7 +12,7 @@ import (
 // DateDue is the date that the subscription is due on, stored as a date.
 type Subscription struct {
 	ID      int
-	Name    string
-	Amount  decimal.Decimal
-	DateDue time.Time
+	Name    string				`json:"name"`
+	Amount  decimal.Decimal 	`json:"amount"`
+	DateDue time.Time 			`json:"dateDue"`
 }

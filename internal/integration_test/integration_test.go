@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/Catzkorn/subscrypt/internal/database"
 	"github.com/Catzkorn/subscrypt/internal/plaid"
@@ -13,7 +14,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -28,18 +28,24 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	testServer := server.NewServer(store, indexTemplatePath, api)
 
 	amount, _ := decimal.NewFromString("100")
-	wantedSubscriptions := []subscription.Subscription{
-		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
+	newSubscription := subscription.Subscription{
+		Name: "Netflix",
+		Amount: amount,
+		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
 
-	request := newPostFormRequest(url.Values{"name": {"Netflix"}, "amount": {"9.98"}, "date": {"2020-11-12"}})
+	postRequest := newPostSubscriptionRequest(t, newSubscription)
 	response := httptest.NewRecorder()
-	testServer.ServeHTTP(response, request)
+	testServer.ServeHTTP(response, postRequest)
 
-	request = newGetSubscriptionRequest()
+	assertStatus(t, response.Code, http.StatusOK)
+
+	getRequest := newGetSubscriptionRequest()
 	response = httptest.NewRecorder()
+	testServer.ServeHTTP(response, getRequest)
 
-	testServer.ServeHTTP(response, request)
+	assertStatus(t, response.Code, http.StatusOK)
+
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
@@ -49,10 +55,10 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	bodyString := string(body)
 	got := bodyString
 
-	res := strings.Contains(got, wantedSubscriptions[0].Name)
+	res := strings.Contains(got, newSubscription.Name)
 
 	if res != true {
-		t.Errorf("webpage did not contain subscription of name %v", wantedSubscriptions[0].Name)
+		t.Errorf("webpage did not contain subscription of name %v", newSubscription.Name)
 	}
 }
 
@@ -99,29 +105,30 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	testServer := server.NewServer(store, indexTemplatePath, api)
 
 	amount, _ := decimal.NewFromString("100")
-	wantedSubscriptions := []subscription.Subscription{
-		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
+	subscription := subscription.Subscription{
+		Name:    "Netflix",
+		Amount:  amount,
+		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
+	}
+	storedSubscription, err := store.RecordSubscription(subscription)
+	if err != nil {
+		fmt.Println(err)
 	}
 
-	request := newPostFormRequest(url.Values{"name": {"Netflix"}, "amount": {"9.98"}, "date": {"2020-11-12"}})
+	request := newDeleteSubscriptionRequest(storedSubscription.ID)
 	response := httptest.NewRecorder()
-	testServer.ServeHTTP(response, request)
-
-	request = newGetSubscriptionRequest()
-	response = httptest.NewRecorder()
 
 	testServer.ServeHTTP(response, request)
-	body, err := ioutil.ReadAll(response.Body)
 
-	bodyString := string(body)
-	got := bodyString
+	assertStatus(t, response.Code, http.StatusOK)
 
-	fmt.Println(bodyString)
+	gotSubscription, err := store.GetSubscription(storedSubscription.ID)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	res := strings.Contains(got, wantedSubscriptions[0].Name)
-
-	if res != true {
-		t.Errorf("webpage did not contain subscription of name %v", wantedSubscriptions[0].Name)
+	if gotSubscription != nil {
+		t.Errorf("subscription not deleted, got %v for given id, want nil", gotSubscription)
 	}
 
 	err = clearSubscriptionsTable()
@@ -196,13 +203,14 @@ func newGetSubscriptionRequest() *http.Request {
 	return req
 }
 
-func newPostFormRequest(url url.Values) *http.Request {
-	var bodyStr = []byte(url.Encode())
-	req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(bodyStr))
+func newPostSubscriptionRequest(t *testing.T, subscription subscription.Subscription) *http.Request {
+	postBody, _ := json.Marshal(subscription)
+	req, err := http.NewRequest(http.MethodPost, "/api/subscriptions", bytes.NewBuffer(postBody))
+
 	if err != nil {
-		panic(err)
+		t.Errorf("failed to generate new POST subscription request")
 	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
 	return req
 }
 

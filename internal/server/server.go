@@ -1,12 +1,12 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"github.com/Catzkorn/subscrypt/internal/reminder"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/Catzkorn/subscrypt/internal/userprofile"
-	"github.com/shopspring/decimal"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -49,7 +49,8 @@ func NewServer(dataStore DataStore, indexTemplatePath string, transactionAPI Tra
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
 	s.router.Handle("/reminder", http.HandlerFunc(s.reminderHandler))
-	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
+	s.router.Handle("/api/subscriptions", http.HandlerFunc(s.subscriptionsAPIHandler))
+	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionIDAPIHandler))
 	s.router.Handle("/api/transactions/", http.HandlerFunc(s.transactionAPIHandler))
 	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
 
@@ -97,6 +98,15 @@ func (s *Server) reminderHandler(w http.ResponseWriter, r *http.Request) {
 
 // subscriptionsAPIHandler handles the routing logic for the '/api/subscriptions' paths
 func (s *Server) subscriptionsAPIHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodPost {
+		s.processPostSubscription(w, r)
+	}
+
+}
+
+// subscriptionIDAPIHandler handles the routing logic for the '/api/subscriptions/:id' paths
+func (s *Server) subscriptionIDAPIHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := strings.TrimPrefix(r.URL.Path, "/api/subscriptions/")
 	ID, err := strconv.Atoi(urlID)
 
@@ -163,34 +173,18 @@ func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 // processPostSubscription tells the SubscriptionStore to record the subscription from the post body
 func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request) {
 
-	amount, _ := decimal.NewFromString(r.FormValue("amount"))
-
-	layout := "2006-01-02"
-	str := r.FormValue("date")
-
-	t, err := time.Parse(layout, str)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	entry := subscription.Subscription{
-		Name:    r.FormValue("name"),
-		Amount:  amount,
-		DateDue: t,
-	}
-
+	var subscription subscription.Subscription
+	err := json.NewDecoder(r.Body).Decode(&subscription)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	_, err = s.dataStore.RecordSubscription(entry)
+	_, err = s.dataStore.RecordSubscription(subscription)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/", http.StatusFound)
+	w.WriteHeader(http.StatusOK)
 }
 
 // processPostReminder creates an ics file
