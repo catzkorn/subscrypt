@@ -9,7 +9,6 @@ function _getSubscriptions(callback) {
     let path = '/api/subscriptions';
     xhttp.onreadystatechange = function () {
         if (xhttp.readyState === 4 && xhttp.status === 200) {
-            console.log(xhttp.responseText)
             let subscriptions = convertToSubscriptions(xhttp.responseText);
             callback(subscriptions);
         }

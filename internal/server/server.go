@@ -194,19 +194,12 @@ const JSONContentType = "application/json"
 // processGetIndex processes the GET / request, returning the index page html
 func (s *Server) processGetIndex(w http.ResponseWriter) error {
 
-	subscriptions, err := s.dataStore.GetSubscriptions()
-	if err != nil {
-		return err
-	}
-
 	userInfo, err := s.dataStore.GetUserDetails()
 	if err != nil {
 		return err
 	}
 
 	data := IndexPageData{
-		PageTitle:     "My Subscriptions List",
-		Subscriptions: subscriptions,
 		Userprofile:   userInfo,
 	}
 
