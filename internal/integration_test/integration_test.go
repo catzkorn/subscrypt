@@ -205,7 +205,7 @@ func newGetSubscriptionRequest() *http.Request {
 
 func newPostSubscriptionRequest(t *testing.T, subscription subscription.Subscription) *http.Request {
 	postBody, _ := json.Marshal(subscription)
-	req, err := http.NewRequest(http.MethodPost, "/", bytes.NewBuffer(postBody))
+	req, err := http.NewRequest(http.MethodPost, "/api/subscriptions", bytes.NewBuffer(postBody))
 
 	if err != nil {
 		t.Errorf("failed to generate new POST subscription request")

@@ -49,7 +49,8 @@ func NewServer(dataStore DataStore, indexTemplatePath string, transactionAPI Tra
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
 	s.router.Handle("/reminder", http.HandlerFunc(s.reminderHandler))
-	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
+	s.router.Handle("/api/subscriptions", http.HandlerFunc(s.subscriptionsAPIHandler))
+	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionIDAPIHandler))
 	s.router.Handle("/api/transactions/", http.HandlerFunc(s.transactionAPIHandler))
 	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
 
@@ -97,6 +98,15 @@ func (s *Server) reminderHandler(w http.ResponseWriter, r *http.Request) {
 
 // subscriptionsAPIHandler handles the routing logic for the '/api/subscriptions' paths
 func (s *Server) subscriptionsAPIHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == http.MethodPost {
+		s.processPostSubscription(w, r)
+	}
+
+}
+
+// subscriptionIDAPIHandler handles the routing logic for the '/api/subscriptions/:id' paths
+func (s *Server) subscriptionIDAPIHandler(w http.ResponseWriter, r *http.Request) {
 	urlID := strings.TrimPrefix(r.URL.Path, "/api/subscriptions/")
 	ID, err := strconv.Atoi(urlID)
 
