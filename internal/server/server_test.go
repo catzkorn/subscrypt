@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -34,6 +35,7 @@ func (s *StubMailer) Send(email *mail.SGMailV3) (*rest.Response, error) {
 type StubDataStore struct {
 	subscriptions []subscription.Subscription
 	deleteCount   []int
+	userprofile   userprofile.Userprofile
 }
 
 func (s *StubDataStore) GetSubscriptions() ([]subscription.Subscription, error) {
@@ -74,8 +76,8 @@ func (s *StubDataStore) GetUserDetails() (*userprofile.Userprofile, error) {
 type stubTransactionAPI struct {
 }
 
-func (s *stubTransactionAPI) GetTransactions() (plaid.TransactionList, error) {
-	transactions := plaid.TransactionList{Transactions: []plaid.Transaction{{Amount: 9.99, Date: "2020-09-12", MerchantName: "Netflix", Name: "Netflix"}}}
+func (s * stubTransactionAPI) GetTransactions() (plaid.TransactionList, error){
+	transactions := plaid.TransactionList{Transactions: []plaid.Transaction{{Amount: 9.99, Date: "2020-09-12", Name: "Netflix"}}}
 	return transactions, nil
 }
 
@@ -90,7 +92,7 @@ func TestGetTransactions(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		assertStatus(t, response.Code, http.StatusOK)
+		assertStatus(t, response.Code, http.StatusFound)
 	})
 }
 
@@ -242,6 +244,27 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 	})
 }
 
+func TestUserHandler(t *testing.T) {
+
+	t.Run("tests creation of a user", func(t *testing.T) {
+		userprofile := userprofile.Userprofile{}
+
+		store := &StubDataStore{userprofile: userprofile}
+
+		transactionAPI := &stubTransactionAPI{}
+		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
+
+		request := newPostUserRequest(t, "Charlotte", os.Getenv("EMAIL"))
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+
+	})
+
+}
+
 func newGetSubscriptionRequest() *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, "/api/subscriptions", nil)
 	return req
@@ -270,7 +293,7 @@ func newPostReminderRequest(t testing.TB, id int) *http.Request {
 
 	req, err := http.NewRequest(http.MethodPost, "/api/reminders", bytes.NewBuffer(bodyStr))
 	if err != nil {
-		t.Fatalf("fail to marshal subscription: %v", err)
+		t.Fatalf("failed to send request: %v", err)
 	}
 
 	req.Header.Add("Content-Type", "application/json")
@@ -284,5 +307,26 @@ func newDeleteSubscriptionRequest(ID int) *http.Request {
 	if err != nil {
 		panic(err)
 	}
+	return req
+}
+
+func newPostUserRequest(t testing.TB, name string, email string) *http.Request {
+	t.Helper()
+	userProfile := userprofile.Userprofile{
+		Name:  name,
+		Email: email,
+	}
+
+	bodyStr, err := json.Marshal(&userProfile)
+	if err != nil {
+		t.Fatalf("fail to marshal user information: %v", err)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "/api/users", bytes.NewBuffer(bodyStr))
+	if err != nil {
+		t.Fatalf("failed to send request: %v", err)
+	}
+
+	req.Header.Add("Content-Type", "application/json")
 	return req
 }

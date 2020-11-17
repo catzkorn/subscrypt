@@ -10,20 +10,21 @@
     <body>
         <h1>Subscrypt</h1>
 
-        <form action="/new/user/" method="post">
-            <label for="name">Name:</label>
-            <input type="text" name="username"><br>
-            <label for="email">Email:</label>
-            <input type="text" name="email"><br>
-            <input type="submit" value="Submit">
-        </form>
-
         {{ if .Userprofile }}
 
         Name: {{.Userprofile.Name}}<br>
         Email: {{.Userprofile.Email}}
 
         {{end}}
+
+        <form>
+            <label for="name">Name:</label>
+            <input type="text" id="username"><br>
+            <label for="email">Email:</label>
+            <input type="text" id="email"><br>
+            <button type="button" id="create-user-button" onclick="createUser()">Submit</button>
+        </form>
+        <span id="user-error"></span>
 
         <div id="subscriptions"></div>
 
@@ -36,11 +37,17 @@
             <input type="date" id="subscription-date" name="date"><br>
             <td><button type="button" id="create-subscription-button" onclick="createSubscription()">Submit</button>
         </form>
+
+       <button type="button" id="getTransactions" onclick="getTransactions()">Call API</button>
+
         <span id="subscription-error"></span>
 
         <script src="web/subscription.js"></script>
         <script src="web/subscriptions.js"></script>
         <script src="web/reminders.js"></script>
+        <script src="web/users.js"></script>
+        <script src="web/transactionAPI.js"></script>
+
 
     </body>
 
