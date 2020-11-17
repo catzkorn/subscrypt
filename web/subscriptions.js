@@ -54,7 +54,8 @@ function _formatSubscriptionsTable(subscriptions) {
                                 <tr>
                                     <td>Subscription Name</td>
                                     <td>Amount</td>
-                                    <td>Next Payment Date</td>
+                                    <td>Payment Date</td>
+                                    <td>Frequency</td>
                                 </tr>`;
 
     subscriptions.forEach(function (subscription) {
@@ -70,6 +71,7 @@ function _formatSubscription(subscription) {
             <td>${subscription.name}</td>
             <td>${_formatAmountTwoDecimals(subscription.amount)}</td>
             <td>${_formatDateAsDay(subscription.dateDue)}</td>
+            <td>Monthly</td>
             <td><button type="button" id="reminder-${subscription.id}" onclick="sendReminder(${subscription.id})">Reminder</button></td>
             <td><button type="button" id="delete-${subscription.id}" onclick="deleteSubscription(${subscription.id})">Delete</button></td>
             </tr>`
@@ -131,8 +133,6 @@ function _convertToSubscriptions(res) {
         return subscriptions;
     }
 }
-
-
 
 function _formatDateForJSON(date) {
     return date + "T00:00:00Z"
