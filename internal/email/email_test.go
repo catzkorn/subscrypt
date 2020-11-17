@@ -69,9 +69,9 @@ func TestSendingAnEmail(t *testing.T) {
 			t.Errorf("no attachment recognised")
 		}
 
-		expectedSubject := fmt.Sprintf("Your %s subscription is due for renewal on %v", subscription.Name, reminder.ReminderDate.Format("January 2, 2006"))
+		expectedSubject := fmt.Sprintf("Your %s subscription is due for renewal on %v", subscription.Name, subscription.DateDue.Format("January 2, 2006"))
 
-		if client.sentEmail.Subject != "Your Netflix subscription is due for renewal on November 11, 2020" {
+		if client.sentEmail.Subject != expectedSubject {
 			t.Errorf("did not get expected subject format, got %v want %v", client.sentEmail.Subject, expectedSubject)
 		}
 

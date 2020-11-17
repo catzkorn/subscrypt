@@ -88,7 +88,6 @@ func (s *Server) reminderHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 	var newReminder reminder.Reminder
 	var newSubscription subscription.Subscription
-	var userInformation userprofile.Userprofile
 
 	err := json.NewDecoder(r.Body).Decode(&newSubscription)
 	if err != nil {
@@ -102,27 +101,25 @@ func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newSubscription.Name = subscription.Name
-	newSubscription.Amount = subscription.Amount
-	newSubscription.DateDue = subscription.DateDue
-
 	user, err := s.dataStore.GetUserDetails()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	userInformation.Name = user.Name
-	userInformation.Email = user.Email
 
 	newReminder = reminder.Reminder{
-		Email:          userInformation.Email,
-		SubscriptionID: newSubscription.ID,
-		ReminderDate:   newSubscription.DateDue.AddDate(0, 0, -5),
+		Email:          user.Email,
+		SubscriptionID: subscription.ID,
+		ReminderDate:   subscription.DateDue.AddDate(0, 0, -5),
 	}
 
-	cal := calendar.CreateReminderInvite(newSubscription, newReminder)
+	cal := calendar.CreateReminderInvite(*subscription, newReminder)
 
-	email.SendEmail(newReminder, userInformation, cal, s.mailer, s.dataStore)
+	err = email.SendEmail(newReminder, *user, cal, s.mailer, s.dataStore)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 
@@ -162,8 +159,8 @@ func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-// JsonContentType defines application/json
-const JsonContentType = "application/json"
+// JSONContentType defines application/json
+const JSONContentType = "application/json"
 
 // processGetSubscription processes the GET subscription request, returning the store subscriptions as json
 func (s *Server) processGetSubscription(w http.ResponseWriter) error {

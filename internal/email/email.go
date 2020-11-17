@@ -39,7 +39,7 @@ func SendEmail(reminder reminder.Reminder, user userprofile.Userprofile, event *
 	from := mail.NewEmail("Subscrypt Team", "team@subscrypt.com")
 	subject := fmt.Sprintf("Your %s subscription is due for renewal on %v", subscription.Name, subscription.DateDue.Format(timeLayout))
 	to := mail.NewEmail(user.Name, reminder.Email)
-	plainTextContent := fmt.Sprint("Hey there %s!\nYou asked for a reminder and here it is!", user.Name)
+	plainTextContent := fmt.Sprintf("Hey there %s!\nYou asked for a reminder and here it is!", user.Name)
 	htmlContent := fmt.Sprintf("<strong>Hey there %s!\nYou asked for a reminder and here it is!</strong>", user.Name)
 
 	calendarInvite := createAttachment(event)

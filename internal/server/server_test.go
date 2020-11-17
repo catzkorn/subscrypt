@@ -226,7 +226,6 @@ func newPostFormRequest(url url.Values) *http.Request {
 }
 
 func newPostReminderRequest(t testing.TB, id int) *http.Request {
-
 	t.Helper()
 	subscription := subscription.Subscription{
 		ID: id,
@@ -235,10 +234,12 @@ func newPostReminderRequest(t testing.TB, id int) *http.Request {
 	if err != nil {
 		t.Fatalf("fail to marshal subscription: %v", err)
 	}
+
 	req, err := http.NewRequest(http.MethodPost, "/api/reminders", bytes.NewBuffer(bodyStr))
 	if err != nil {
 		t.Fatalf("fail to marshal subscription: %v", err)
 	}
+
 	req.Header.Add("Content-Type", "application/json")
 	return req
 }
