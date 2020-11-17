@@ -102,6 +102,7 @@ function _postSubscription(name, amount, dateDue) {
     xhttp.onreadystatechange = function () {
         if (xhttp.readyState == 4 && xhttp.status == 200) {
             loadSubscriptions();
+            document.getElementById("create-subscription-form").reset()
         }
     }
     let data = JSON.stringify({"name": name, "amount": amount, "dateDue": dateDue});
