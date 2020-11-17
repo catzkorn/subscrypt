@@ -41,15 +41,16 @@
             {{end}}
         </table>
 
-        <form action="/api/subscriptions" method="post" onsubmit="createSubscription()">
+        <form>
             <label for="name">Name Of Subscription:</label>
-            <input type="text" id="subscription-name" name="name" required="true"><br>
+            <input type="text" id="subscription-name" name="name"><br>
             <label for="amount">Amount Due Monthly:</label>
-            <input type="text" id="subscription-amount" name="amount" required="true"><br>
+            <input type="text" id="subscription-amount" name="amount"><br>
             <label for="date">Date Due Monthly:</label>
-            <input type="date" id="subscription-date" name="date" required="true"><br>
-            <td><input type="submit" id="create-subscription-button">
+            <input type="date" id="subscription-date" name="date"><br>
+            <td><button type="button" id="create-subscription-button" onclick="createSubscription()">Submit</button>
         </form>
+        <span id="subscription-error"></span>
 
         <script src="web/subscriptions.js"></script>
 
