@@ -55,7 +55,7 @@ func NewServer(dataStore DataStore, indexTemplatePath string, mailer email.Maile
 	s.router.Handle("/api/subscriptions", http.HandlerFunc(s.subscriptionsAPIHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionIDAPIHandler))
 	s.router.Handle("/api/transactions/", http.HandlerFunc(s.transactionAPIHandler))
-	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
+	s.router.Handle("/api/users", http.HandlerFunc(s.userHandler))
 
 	s.parsedIndexTemplate = template.Must(template.New("index.html").ParseFiles(indexTemplatePath))
 
@@ -183,14 +183,22 @@ func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
+	var userProfile userprofile.Userprofile
 
-	_, err := s.dataStore.RecordUserDetails(r.FormValue("username"), r.FormValue("email"))
+	err := json.NewDecoder(r.Body).Decode(&userProfile)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusFound)
+	_, err = s.dataStore.RecordUserDetails(userProfile.Name, userProfile.Email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+
 }
 
 // JSONContentType defines application/json
@@ -226,7 +234,6 @@ func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 
 // processPostSubscription tells the SubscriptionStore to record the subscription from the post body
 func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request) {
-
 	var subscription subscription.Subscription
 	err := json.NewDecoder(r.Body).Decode(&subscription)
 	if err != nil {
