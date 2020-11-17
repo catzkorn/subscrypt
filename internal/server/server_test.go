@@ -333,7 +333,7 @@ func newPostUserRequest(t testing.TB, name string, email string) *http.Request {
 		t.Fatalf("fail to marshal user information: %v", err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, "/api/users/", bytes.NewBuffer(bodyStr))
+	req, err := http.NewRequest(http.MethodPost, "/api/users", bytes.NewBuffer(bodyStr))
 	if err != nil {
 		t.Fatalf("failed to send request: %v", err)
 	}
