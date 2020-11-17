@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -43,7 +44,7 @@ func NewServer(dataStore DataStore, indexTemplatePath string) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux()}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
-	s.router.Handle("/reminder", http.HandlerFunc(s.reminderHandler))
+	s.router.Handle("/api/reminders", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionsAPIHandler))
 	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
 
@@ -76,6 +77,39 @@ func (s *Server) reminderHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		s.processPostReminder(w, r)
 	}
+}
+
+// processPostReminder creates an ics file
+// TODO: then emails it to the user's email
+func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
+	var newReminder reminder.Reminder
+	var newSubscription subscription.Subscription
+
+	err := json.NewDecoder(r.Body).Decode(&newSubscription)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	subscription, err := s.dataStore.GetSubscription(newSubscription.ID)
+	if err != nil {
+		fmt.Errorf("subscription not retrieved: %w", err)
+	}
+
+	newSubscription.Name = subscription.Name
+	newSubscription.Amount = subscription.Amount
+	newSubscription.DateDue = subscription.DateDue
+
+	// newReminder = reminder.Reminder{
+	// 	Email:          r.FormValue("email"),
+	// 	SubscriptionID: subscriptionID,
+	// 	ReminderDate:   reminderDate,
+	// }
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Println(newReminder)
+
 }
 
 // subscriptionsAPIHandler handles the routing logic for the '/api/subscriptions' paths
@@ -174,35 +208,6 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusFound)
-}
-
-// processPostReminder creates an ics file
-// TODO: then emails it to the user's email
-func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
-	var newReminder reminder.Reminder
-
-	subscriptionID, err := strconv.Atoi(r.FormValue("subscriptionID"))
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	reminderDate, err := time.Parse("2006-01-02", r.FormValue("reminderDate"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	newReminder = reminder.Reminder{
-		Email:          r.FormValue("email"),
-		SubscriptionID: subscriptionID,
-		ReminderDate:   reminderDate,
-	}
-
-	w.WriteHeader(http.StatusOK)
-	fmt.Println(newReminder)
-
 }
 
 // processDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID

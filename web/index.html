@@ -36,6 +36,7 @@
                 <td>{{.Name}}</td>
                 <td>{{.Amount}}</td>
                 <td>{{.DateDue}}</td>
+                <td><button type="button" id="reminder-{{.ID}}" onclick="sendReminder({{.ID}})">Reminder</button>
                 <td><button type="button" id="delete-{{.ID}}" onclick="deleteSubscription({{.ID}})">Delete</button>
             </tr>
             {{end}}
@@ -52,6 +53,7 @@
         </form>
 
         <script src="web/subscriptions.js"></script>
+        <script src="web/reminders.js"></script>
 
     </body>
 
