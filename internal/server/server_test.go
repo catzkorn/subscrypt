@@ -78,8 +78,8 @@ func (s *StubDataStore) GetUserDetails() (*userprofile.Userprofile, error) {
 type stubTransactionAPI struct {
 }
 
-func (s *stubTransactionAPI) GetTransactions() (plaid.TransactionList, error) {
-	transactions := plaid.TransactionList{Transactions: []plaid.Transaction{{Amount: 9.99, Date: "2020-09-12", MerchantName: "Netflix", Name: "Netflix"}}}
+func (s * stubTransactionAPI) GetTransactions() (plaid.TransactionList, error){
+	transactions := plaid.TransactionList{Transactions: []plaid.Transaction{{Amount: 9.99, Date: "2020-09-12", Name: "Netflix"}}}
 	return transactions, nil
 }
 
@@ -94,7 +94,7 @@ func TestGetTransactions(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		assertStatus(t, response.Code, http.StatusOK)
+		assertStatus(t, response.Code, http.StatusFound)
 
 	})
 }
