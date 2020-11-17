@@ -10,6 +10,7 @@ import (
 	"github.com/Catzkorn/subscrypt/internal/calendar"
 	"github.com/Catzkorn/subscrypt/internal/reminder"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
 	"github.com/sendgrid/rest"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"github.com/shopspring/decimal"
@@ -48,12 +49,17 @@ func TestSendingAnEmail(t *testing.T) {
 		DateDue: time.Date(2020, time.November, 16, 0, 0, 0, 0, time.UTC),
 	}
 
+	user := userprofile.Userprofile{
+		Name:  "Gary Gopher",
+		Email: os.Getenv("EMAIL"),
+	}
+
 	t.Run("send an email", func(t *testing.T) {
 
 		cal := calendar.CreateReminderInvite(subscription, reminder)
 		client := &StubMailer{}
 		datastore := &StubDataStore{subscription: subscription}
-		err := SendEmail(reminder, cal, client, datastore)
+		err := SendEmail(reminder, user, cal, client, datastore)
 
 		if err != nil {
 			t.Errorf("there was an error sending the email %v", err)
@@ -63,9 +69,9 @@ func TestSendingAnEmail(t *testing.T) {
 			t.Errorf("no attachment recognised")
 		}
 
-		expectedSubject := fmt.Sprintf("Your %s subscription is due for renewal on %v", subscription.Name, reminder.ReminderDate.Format("January 2, 2006"))
+		expectedSubject := fmt.Sprintf("Your %s subscription is due for renewal on %v", subscription.Name, subscription.DateDue.Format("January 2, 2006"))
 
-		if client.sentEmail.Subject != "Your Netflix subscription is due for renewal on November 11, 2020" {
+		if client.sentEmail.Subject != expectedSubject {
 			t.Errorf("did not get expected subject format, got %v want %v", client.sentEmail.Subject, expectedSubject)
 		}
 
