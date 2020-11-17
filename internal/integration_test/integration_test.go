@@ -5,14 +5,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-<<<<<<< HEAD
 	"github.com/Catzkorn/subscrypt/internal/database"
 	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"github.com/Catzkorn/subscrypt/internal/server"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/shopspring/decimal"
-=======
->>>>>>> main
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -21,23 +18,15 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/Catzkorn/subscrypt/internal/database"
-	"github.com/Catzkorn/subscrypt/internal/server"
-	"github.com/Catzkorn/subscrypt/internal/subscription"
-	"github.com/shopspring/decimal"
 )
-
 const indexTemplatePath = "../../web/index.html"
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-<<<<<<< HEAD
 	api := &plaid.PlaidAPI{}
-	testServer := server.NewServer(store, api)
-=======
-	testServer := server.NewServer(store, indexTemplatePath)
->>>>>>> main
+
+	testServer := server.NewServer(store, indexTemplatePath, api)
+
 	amount, _ := decimal.NewFromString("100")
 	wantedSubscriptions := []subscription.Subscription{
 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -69,20 +58,16 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 
 func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-<<<<<<< HEAD
 	api := &plaid.PlaidAPI{}
-	testServer := server.NewServer(store, api)
-=======
-	testServer := server.NewServer(store, indexTemplatePath)
->>>>>>> main
+	testServer := server.NewServer(store, indexTemplatePath, api)
 
 	amount, _ := decimal.NewFromString("100")
-	subscription := subscription.Subscription{
+	newSubscription := subscription.Subscription{
 		Name:    "Netflix",
 		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
-	storedSubscription, err := store.RecordSubscription(subscription)
+	storedSubscription, err := store.RecordSubscription(newSubscription)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -109,12 +94,10 @@ func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-<<<<<<< HEAD
+
 	api := &plaid.PlaidAPI{}
-	testServer := server.NewServer(store, api)
-=======
-	testServer := server.NewServer(store, indexTemplatePath)
->>>>>>> main
+	testServer := server.NewServer(store, indexTemplatePath, api)
+
 	amount, _ := decimal.NewFromString("100")
 	wantedSubscriptions := []subscription.Subscription{
 		{ID: 1, Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)},
@@ -147,20 +130,16 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 
 func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-<<<<<<< HEAD
 	api := &plaid.PlaidAPI{}
-	testServer := server.NewServer(store, api)
-=======
-	testServer := server.NewServer(store, indexTemplatePath)
->>>>>>> main
+	testServer := server.NewServer(store, indexTemplatePath, api)
 
 	amount, _ := decimal.NewFromString("100")
-	subscription := subscription.Subscription{
+	newSubscription := subscription.Subscription{
 		Name:    "Netflix",
 		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
-	storedSubscription, err := store.RecordSubscription(subscription)
+	storedSubscription, err := store.RecordSubscription(newSubscription)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -229,8 +208,8 @@ func newPostFormRequest(url url.Values) *http.Request {
 
 func newDeleteSubscriptionRequest(ID int) *http.Request {
 	bodyStr := []byte(fmt.Sprintf("{\"id\": %v}", ID))
-	url := fmt.Sprintf("/api/subscriptions/%v", ID)
-	req, err := http.NewRequest(http.MethodDelete, url, bytes.NewBuffer(bodyStr))
+	deleteURL := fmt.Sprintf("/api/subscriptions/%v", ID)
+	req, err := http.NewRequest(http.MethodDelete, deleteURL, bytes.NewBuffer(bodyStr))
 	if err != nil {
 		panic(err)
 	}
