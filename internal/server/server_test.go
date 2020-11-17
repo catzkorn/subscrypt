@@ -92,7 +92,7 @@ func TestGetTransactions(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		assertStatus(t, response.Code, http.StatusOK)
+		assertStatus(t, response.Code, http.StatusFound)
 
 	})
 }

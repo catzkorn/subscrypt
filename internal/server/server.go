@@ -78,7 +78,7 @@ func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
 			_, _ = s.dataStore.RecordSubscription(entry)
 		}
 
-		http.Redirect(w, r, "/", http.StatusOK)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
 
