@@ -20,13 +20,18 @@ type Subscription struct {
 
 func ProcessTransactions(transactions plaid.TransactionList) []Subscription {
 
+	knownSubscriptions := []string{"Netflix", "Touchstone Climbing", "SparkFun"}
+
 	var subscriptions []Subscription
 
 	for _, transaction := range transactions.Transactions {
-		amount := decimal.NewFromFloat32(transaction.Amount)
-		subscriptionDate := processDate(transaction.Date)
-		subscription := Subscription{Name: transaction.Name, Amount: amount, DateDue: subscriptionDate }
-		subscriptions = append(subscriptions, subscription)
+
+		if stringInSlice(transaction.Name, knownSubscriptions) {
+			amount := decimal.NewFromFloat32(transaction.Amount)
+			subscriptionDate := processDate(transaction.Date)
+			subscription := Subscription{Name: transaction.Name, Amount: amount, DateDue: subscriptionDate}
+			subscriptions = append(subscriptions, subscription)
+		}
 	}
 
 	return subscriptions
@@ -47,4 +52,13 @@ func processDate(date string) time.Time {
 	}
 
 	return subscriptionDate
+}
+
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
