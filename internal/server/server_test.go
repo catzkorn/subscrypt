@@ -4,23 +4,34 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/Catzkorn/subscrypt/internal/plaid"
+
 	"github.com/Catzkorn/subscrypt/internal/subscription"
 	"github.com/Catzkorn/subscrypt/internal/userprofile"
+	"github.com/sendgrid/rest"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"github.com/shopspring/decimal"
 )
 
 const indexTemplatePath = "../../web/index.html"
+
+type StubMailer struct {
+	sentEmail *mail.SGMailV3
+}
+
+func (s *StubMailer) Send(email *mail.SGMailV3) (*rest.Response, error) {
+	s.sentEmail = email
+	return &rest.Response{StatusCode: http.StatusAccepted}, nil
+}
 
 type StubDataStore struct {
 	subscriptions []subscription.Subscription
@@ -62,11 +73,10 @@ func (s *StubDataStore) GetUserDetails() (*userprofile.Userprofile, error) {
 	return &userprofile, nil
 }
 
-type stubTransactionAPI struct{
-
+type stubTransactionAPI struct {
 }
 
-func (s * stubTransactionAPI) GetTransactions() (plaid.TransactionList, error){
+func (s *stubTransactionAPI) GetTransactions() (plaid.TransactionList, error) {
 	transactions := plaid.TransactionList{Transactions: []plaid.Transaction{{Amount: 9.99, Date: "2020-09-12", MerchantName: "Netflix", Name: "Netflix"}}}
 	return transactions, nil
 }
@@ -75,7 +85,7 @@ func TestGetTransactions(t *testing.T) {
 	t.Run("Successfully calls the transactionAPI", func(t *testing.T) {
 		store := &StubDataStore{}
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store,indexTemplatePath, transactionAPI)
+		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
 
 		request, _ := http.NewRequest(http.MethodGet, "/api/transactions/", nil)
 		response := httptest.NewRecorder()
@@ -83,7 +93,6 @@ func TestGetTransactions(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusOK)
-
 
 	})
 }
@@ -97,8 +106,9 @@ func TestGETSubscriptions(t *testing.T) {
 		}
 
 		store := &StubDataStore{subscriptions: wantedSubscriptions}
+
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, transactionAPI)
+		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
 
 		request := newGetSubscriptionRequest()
 		response := httptest.NewRecorder()
@@ -128,8 +138,9 @@ func TestStoreSubscription(t *testing.T) {
 		subscription := subscription.Subscription{Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
 
 		store := &StubDataStore{}
+
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, transactionAPI)
+		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
 
 		request := newPostSubscriptionRequest(t, subscription)
 		response := httptest.NewRecorder()
@@ -157,13 +168,16 @@ func TestCreateReminder(t *testing.T) {
 		}
 
 		store := &StubDataStore{subscriptions: subscriptions}
-		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, transactionAPI)
 
-		request := newPostReminderRequest("test@test.com", fmt.Sprint(subscriptions[0].ID), "2020-11-13")
+		transactionAPI := &stubTransactionAPI{}
+		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
+
+		request := newPostReminderRequest(t, subscriptions[0].ID)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
+
+		fmt.Println(response.Body.String())
 		assertStatus(t, response.Code, http.StatusOK)
 
 	})
@@ -207,8 +221,9 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 	t.Run("deletes the specified subscription from the data store and returns 200", func(t *testing.T) {
 		subscriptions := []subscription.Subscription{{ID: 1}}
 		store := &StubDataStore{subscriptions: subscriptions}
+
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, transactionAPI)
+		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
 
 		request := newDeleteSubscriptionRequest(1)
 
@@ -224,8 +239,9 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 	t.Run("returns 404 if given subscription ID doesn't exist", func(t *testing.T) {
 		subscriptions := []subscription.Subscription{{ID: 1}}
 		store := &StubDataStore{subscriptions: subscriptions}
+
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, transactionAPI)
+		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
 
 		request := newDeleteSubscriptionRequest(2)
 
@@ -253,14 +269,22 @@ func newPostSubscriptionRequest(t *testing.T, subscription subscription.Subscrip
 	return req
 }
 
-func newPostReminderRequest(email string, subscriptionID string, reminderDate string) *http.Request {
-	urlValues := url.Values{"email": {email}, "subscriptionID": {subscriptionID}, "reminderDate": {reminderDate}}
-	var bodyStr = []byte(urlValues.Encode())
-	req, err := http.NewRequest(http.MethodPost, "/reminder", bytes.NewBuffer(bodyStr))
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	if err != nil {
-		panic(err)
+func newPostReminderRequest(t testing.TB, id int) *http.Request {
+	t.Helper()
+	subscription := subscription.Subscription{
+		ID: id,
 	}
+	bodyStr, err := json.Marshal(&subscription)
+	if err != nil {
+		t.Fatalf("fail to marshal subscription: %v", err)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "/api/reminders", bytes.NewBuffer(bodyStr))
+	if err != nil {
+		t.Fatalf("fail to marshal subscription: %v", err)
+	}
+
+	req.Header.Add("Content-Type", "application/json")
 	return req
 }
 

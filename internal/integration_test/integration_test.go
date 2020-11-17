@@ -6,11 +6,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/Catzkorn/subscrypt/internal/database"
-	"github.com/Catzkorn/subscrypt/internal/plaid"
-	"github.com/Catzkorn/subscrypt/internal/server"
-	"github.com/Catzkorn/subscrypt/internal/subscription"
-	"github.com/shopspring/decimal"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -18,19 +13,38 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Catzkorn/subscrypt/internal/database"
+	"github.com/Catzkorn/subscrypt/internal/plaid"
+	"github.com/Catzkorn/subscrypt/internal/server"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/sendgrid/rest"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"github.com/shopspring/decimal"
 )
+
 const indexTemplatePath = "../../web/index.html"
+
+type StubMailer struct {
+	sentEmail *mail.SGMailV3
+}
+
+func (s *StubMailer) Send(email *mail.SGMailV3) (*rest.Response, error) {
+	s.sentEmail = email
+	return &rest.Response{StatusCode: http.StatusAccepted}, nil
+}
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
+
 	api := &plaid.PlaidAPI{}
 
-	testServer := server.NewServer(store, indexTemplatePath, api)
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
 	newSubscription := subscription.Subscription{
-		Name: "Netflix",
-		Amount: amount,
+		Name:    "Netflix",
+		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
 
@@ -49,7 +63,7 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		fmt.Errorf("unexpected error: %w", err)
+		t.Errorf("unexpected error: %w", err)
 	}
 
 	bodyString := string(body)
@@ -64,8 +78,9 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 
 func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
+
 	api := &plaid.PlaidAPI{}
-	testServer := server.NewServer(store, indexTemplatePath, api)
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
 	newSubscription := subscription.Subscription{
@@ -102,7 +117,7 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 
 	api := &plaid.PlaidAPI{}
-	testServer := server.NewServer(store, indexTemplatePath, api)
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
 	subscription := subscription.Subscription{
@@ -137,8 +152,9 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 
 func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+
 	api := &plaid.PlaidAPI{}
-	testServer := server.NewServer(store, indexTemplatePath, api)
+	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
 	newSubscription := subscription.Subscription{

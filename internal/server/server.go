@@ -2,26 +2,29 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/Catzkorn/subscrypt/internal/plaid"
-	"github.com/Catzkorn/subscrypt/internal/reminder"
-	"github.com/Catzkorn/subscrypt/internal/subscription"
-	"github.com/Catzkorn/subscrypt/internal/userprofile"
 	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
+
+	"github.com/Catzkorn/subscrypt/internal/calendar"
+	"github.com/Catzkorn/subscrypt/internal/email"
+	"github.com/Catzkorn/subscrypt/internal/plaid"
+	"github.com/Catzkorn/subscrypt/internal/reminder"
+	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
 )
 
 // Server is the HTTP interface for subscription information
 type Server struct {
-	dataStore DataStore
-	router    *http.ServeMux
+	dataStore           DataStore
+	router              *http.ServeMux
 	parsedIndexTemplate *template.Template
-	transactionAPI TransactionAPI
+	mailer              email.Mailer
+	transactionAPI      TransactionAPI
 }
 
+// TransactionAPI defines the transaction api interface
 type TransactionAPI interface {
 	GetTransactions() (plaid.TransactionList, error)
 }
@@ -44,17 +47,19 @@ type DataStore interface {
 }
 
 // NewServer returns a instance of a Server
-func NewServer(dataStore DataStore, indexTemplatePath string, transactionAPI TransactionAPI) *Server {
+func NewServer(dataStore DataStore, indexTemplatePath string, mailer email.Mailer, transactionAPI TransactionAPI) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux(), transactionAPI: transactionAPI}
 	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
-	s.router.Handle("/reminder", http.HandlerFunc(s.reminderHandler))
+	s.router.Handle("/api/reminders", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions", http.HandlerFunc(s.subscriptionsAPIHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionIDAPIHandler))
 	s.router.Handle("/api/transactions/", http.HandlerFunc(s.transactionAPIHandler))
 	s.router.Handle("/new/user/", http.HandlerFunc(s.userHandler))
 
 	s.parsedIndexTemplate = template.Must(template.New("index.html").ParseFiles(indexTemplatePath))
+
+	s.mailer = mailer
 
 	return s
 }
@@ -63,7 +68,7 @@ func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		_ , err := s.transactionAPI.GetTransactions()
+		_, err := s.transactionAPI.GetTransactions()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -94,6 +99,48 @@ func (s *Server) reminderHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		s.processPostReminder(w, r)
 	}
+}
+
+// processPostReminder creates an ics file
+// TODO: then emails it to the user's email
+func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
+	var newReminder reminder.Reminder
+	var newSubscription subscription.Subscription
+
+	err := json.NewDecoder(r.Body).Decode(&newSubscription)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	subscription, err := s.dataStore.GetSubscription(newSubscription.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	user, err := s.dataStore.GetUserDetails()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	newReminder = reminder.Reminder{
+		Email:          user.Email,
+		SubscriptionID: subscription.ID,
+		ReminderDate:   subscription.DateDue.AddDate(0, 0, -5),
+	}
+
+	cal := calendar.CreateReminderInvite(*subscription, newReminder)
+
+	err = email.SendEmail(newReminder, *user, cal, s.mailer, s.dataStore)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+
 }
 
 // subscriptionsAPIHandler handles the routing logic for the '/api/subscriptions' paths
@@ -139,8 +186,8 @@ func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-// JsonContentType defines application/json
-const JsonContentType = "application/json"
+// JSONContentType defines application/json
+const JSONContentType = "application/json"
 
 // processGetSubscription processes the GET subscription request, returning the store subscriptions as json
 func (s *Server) processGetSubscription(w http.ResponseWriter) error {
@@ -185,35 +232,6 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-}
-
-// processPostReminder creates an ics file
-// TODO: then emails it to the user's email
-func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
-	var newReminder reminder.Reminder
-
-	subscriptionID, err := strconv.Atoi(r.FormValue("subscriptionID"))
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	reminderDate, err := time.Parse("2006-01-02", r.FormValue("reminderDate"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	newReminder = reminder.Reminder{
-		Email:          r.FormValue("email"),
-		SubscriptionID: subscriptionID,
-		ReminderDate:   reminderDate,
-	}
-
-	w.WriteHeader(http.StatusOK)
-	fmt.Println(newReminder)
-
 }
 
 // processDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Catzkorn/subscrypt/internal/reminder"
 	"github.com/Catzkorn/subscrypt/internal/subscription"
+	"github.com/Catzkorn/subscrypt/internal/userprofile"
 	ics "github.com/arran4/golang-ical"
 	"github.com/sendgrid/rest"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
@@ -25,7 +26,7 @@ type DataStore interface {
 const timeLayout = "January 2, 2006"
 
 // SendEmail sends a reminder email
-func SendEmail(reminder reminder.Reminder, event *ics.Calendar, mailer Mailer, datastore DataStore) error {
+func SendEmail(reminder reminder.Reminder, user userprofile.Userprofile, event *ics.Calendar, mailer Mailer, datastore DataStore) error {
 
 	subscription, err := datastore.GetSubscription(reminder.SubscriptionID)
 	if err != nil {
@@ -36,17 +37,16 @@ func SendEmail(reminder reminder.Reminder, event *ics.Calendar, mailer Mailer, d
 	}
 
 	from := mail.NewEmail("Subscrypt Team", "team@subscrypt.com")
-	subject := fmt.Sprintf("Your %s subscription is due for renewal on %v", subscription.Name, reminder.ReminderDate.Format(timeLayout))
-	to := mail.NewEmail("Subscryptee", reminder.Email)
-	plainTextContent := "Hey there Subscryptee!\nYou asked for a reminder and here it is!"
-	htmlContent := "<strong>Hey there Subscryptee!\nYou asked for a reminder and here it is!</strong>"
+	subject := fmt.Sprintf("Your %s subscription is due for renewal on %v", subscription.Name, subscription.DateDue.Format(timeLayout))
+	to := mail.NewEmail(user.Name, reminder.Email)
+	plainTextContent := fmt.Sprintf("Hey there %s!\nYou asked for a reminder and here it is!", user.Name)
+	htmlContent := fmt.Sprintf("<strong>Hey there %s!\nYou asked for a reminder and here it is!</strong>", user.Name)
 
 	calendarInvite := createAttachment(event)
 
 	message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
 	message.AddAttachment(calendarInvite)
 
-	// client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
 	response, err := mailer.Send(message)
 	if err != nil {
 		return err
