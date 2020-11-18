@@ -334,13 +334,12 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 
 func TestUserprofilesDatabase(t *testing.T) {
 	usersName := "Gary Gopher"
-	usersEmail := os.Getenv("EMAIL")
+	usersEmail := "gary@gopher.com"
 
 	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
 
 	t.Run("add name and email", func(t *testing.T) {
-
 		returnedDetails, err := store.RecordUserDetails(usersName, usersEmail)
 		assertDatabaseError(t, err)
 
@@ -348,7 +347,7 @@ func TestUserprofilesDatabase(t *testing.T) {
 			t.Errorf("no user details recorded: %w", err)
 		}
 
-		if returnedDetails.Name != "Gary Gopher" {
+		if returnedDetails.Name != usersName {
 			t.Errorf("incorrect user name returned got %v want %v", returnedDetails.Name, usersName)
 		}
 
@@ -357,7 +356,6 @@ func TestUserprofilesDatabase(t *testing.T) {
 		}
 		err = clearUsersTable()
 		assertDatabaseError(t, err)
-
 	})
 
 	t.Run("get name and email from database", func(t *testing.T) {
@@ -374,6 +372,27 @@ func TestUserprofilesDatabase(t *testing.T) {
 
 		if gotDetails.Email != usersEmail {
 			t.Errorf("incorrect email retrieved got %v want %v", gotDetails.Email, usersEmail)
+		}
+		err = clearUsersTable()
+		assertDatabaseError(t, err)
+	})
+
+	t.Run("update name and email", func(t *testing.T) {
+		_, err := store.RecordUserDetails(usersName, usersEmail)
+		assertDatabaseError(t, err)
+
+		updatedName := "Gwen Gopher"
+		updatedEmail := "gwen@gopher.com"
+
+		updatedUser, err := store.RecordUserDetails(updatedName, updatedEmail)
+		assertDatabaseError(t, err)
+
+		if updatedUser.Name != updatedName {
+			t.Errorf("incorrect name retrieved got %v want %v", updatedUser.Name, updatedName)
+		}
+
+		if updatedUser.Email != updatedEmail {
+			t.Errorf("incorrect name retrieved got %v want %v", updatedUser.Email, updatedEmail)
 		}
 		err = clearUsersTable()
 		assertDatabaseError(t, err)
