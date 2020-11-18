@@ -1,10 +1,6 @@
-/*div {*/
-/*    display: block;*/
-/*    margin-block-start: 1em;*/
-/*    margin-block-end: 1em;*/
-/*    margin-inline-start: 0px;*/
-/*    margin-inline-end: 0px;*/
-/*}*/
+h1 {
+    margin-top: 20px;
+}
 
 /*body {*/
 /*    background-color: #8BC6EC;*/
@@ -55,4 +51,12 @@
 
 #user {
     padding: 20px;
+}
+
+#subscriptions {
+    display: none;
+}
+
+#new-user-form {
+    padding: 10px;
 }

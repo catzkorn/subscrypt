@@ -44,13 +44,15 @@ function _getSubscriptions(callback) {
 }
 
 function _showSubscriptions(subscriptions) {
-    let subscriptionsHTML = "";
+    let subscriptionsHTML = `<h4>Subscriptions</h4>`;
     if (subscriptions.length > 0) {
-        subscriptionsHTML = _formatSubscriptionsTable(subscriptions);
+        subscriptionsHTML += _formatSubscriptionsTable(subscriptions);
     } else {
-        subscriptionsHTML = "You don't have any subscriptions";
+        subscriptionsHTML += "<p>You don't have any subscriptions</p>";
     }
     document.getElementById("subscriptions-table").innerHTML = subscriptionsHTML;
+    let subscriptionDiv = document.getElementById("subscriptions")
+    subscriptionDiv.style.display = "block";
 }
 
 function _formatSubscriptionsTable(subscriptions) {

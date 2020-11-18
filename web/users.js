@@ -58,14 +58,14 @@ function _formatUser(user) {
       <form>
         <div class="form-group row">
             <label for="name" class="col- col-form-label col-form-label-sm"><span class="icon">${userSvg}</span></label>
-            <div class="col-4">
+            <div class="col-3">
                 <input type="text" readonly class="form-control-plaintext form-control-sm" id="username" value="${user.Name}">
             </div>
               <label for="email" class="col- col-form-label col-form-label-sm"><span class="icon">${atSvg}</span></label>
-              <div class="col-4">
+              <div class="col-3">
                   <input type="text" readonly class="form-control-plaintext form-control-sm" id="email" value="${user.Email}">
               </div>
-              <div class="col-">
+              <div class="col-5">
               ${_formatEditUserButton(user)}
 </div>
         </div>
@@ -82,29 +82,32 @@ function _formatEditUserButton(user) {
 }
 
 function _newUserForm() {
-  let newUserForm = "<div class=\"card w-75\">" +
-                      "<div class=\"card-body\">" +
-                        "<h5 class=\"card-title\">Welcome! Enter your details</h5>" +
+  let newUserForm = `<div class="card w-110 mx-auto" id='new-user-form'>` +
+                      `<div class="card-body">` +
+                        `<h5 class="card-title text-center">Welcome! Enter your details</h5>` +
                         _formatUserForm() +
                       "</div>" +
                     "</div>"
   return newUserForm
 }
 
-function _formatUserForm() {
-
+function _formatUserForm(type) {
+  let centerClass = ""
+  if (type === "new") {
+    centerClass = "justify-content-center"
+  }
   let userForm = `
     <form>
-        <div class="form-group row">
+        <div class="form-group row ${centerClass}">
             <label for="name" class="col- col-form-label col-form-label-sm"><span class="icon">${userSvg}</span></label>
-            <div class="col-4">
+            <div class="col-3">
                 <input type="text" class="form-control form-control-sm" id="username" placeholder="Name">
             </div>
             <label for="email" class="col- col-form-label col-form-label-sm"><span class="icon">${atSvg}</span></label>
-            <div class="col-4">
+            <div class="col-3">
                 <input type="text" class="form-control form-control-sm" id="email" placeholder="Email">
             </div>
-            <div class="col-1">
+            <div class="col-5">
                 <button type="button" class="btn btn-primary" id="create-user-button" onclick="createUser()">Submit</button>
             </div>
         </div>
