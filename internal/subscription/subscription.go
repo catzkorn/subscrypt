@@ -1,8 +1,9 @@
 package subscription
 
 import (
-	"github.com/Catzkorn/subscrypt/internal/plaid"
 	"time"
+
+	"github.com/Catzkorn/subscrypt/internal/plaid"
 
 	"github.com/shopspring/decimal"
 )
@@ -12,10 +13,10 @@ import (
 // Amount is the cost of the subscription, stored as a decimal.
 // DateDue is the date that the subscription is due on, stored as a date.
 type Subscription struct {
-	ID      int					`json:"id"`
-	Name    string				`json:"name"`
-	Amount  decimal.Decimal 	`json:"amount"`
-	DateDue time.Time 			`json:"dateDue"`
+	ID      int             `json:"id"`
+	Name    string          `json:"name"`
+	Amount  decimal.Decimal `json:"amount"`
+	DateDue time.Time       `json:"dateDue"`
 }
 
 func ProcessTransactions(transactions plaid.TransactionList) []Subscription {
@@ -48,7 +49,7 @@ func processDate(date string) time.Time {
 	var subscriptionDate time.Time
 
 	if t.Day() <= time.Now().Day() {
-		subscriptionDate = time.Date(time.Now().Year(), time.Now().Month() + 1, t.Day(), 0, 0, 0, 0, time.UTC)
+		subscriptionDate = time.Date(time.Now().Year(), time.Now().Month()+1, t.Day(), 0, 0, 0, 0, time.UTC)
 	} else {
 		// next month date
 		subscriptionDate = time.Date(time.Now().Year(), time.Now().Month(), t.Day(), 0, 0, 0, 0, time.UTC)

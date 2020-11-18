@@ -136,7 +136,16 @@ func (d *Database) GetSubscription(subscriptionID int) (*subscription.Subscripti
 
 // DeleteSubscription deletes a subscription from the database by ID
 func (d *Database) DeleteSubscription(subscriptionID int) error {
-	result, err := d.database.ExecContext(context.Background(), "DELETE FROM subscriptions WHERE id = $1;", subscriptionID)
+	subscription, err := d.GetSubscription(subscriptionID)
+	switch {
+	case err != nil:
+		return fmt.Errorf("unexpected database error: %w", err)
+	case subscription == nil:
+		return fmt.Errorf("no subscription found: %w", err)
+	}
+
+	fmt.Println(subscription.Name)
+	result, err := d.database.ExecContext(context.Background(), "DELETE FROM subscriptions WHERE name = $1;", subscription.Name)
 	if err != nil {
 		return fmt.Errorf("unexpected database error: %w", err)
 	}

@@ -273,7 +273,7 @@ func (s *Server) processDeleteSubscription(w http.ResponseWriter, ID int) {
 		http.Error(w, errorMessage, http.StatusNotFound)
 		return
 	default:
-		err = s.dataStore.DeleteSubscription(ID)
+		err = s.dataStore.DeleteSubscription(retrievedSubscription.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

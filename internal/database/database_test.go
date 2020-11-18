@@ -179,6 +179,29 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 			t.Errorf("deleting invalid subscription did not error")
 		}
 	})
+
+	t.Run("deletes both instances of a subscription", func(t *testing.T) {
+		subscription := createTestSubscription()
+
+		gotSubscription, err := store.RecordSubscription(subscription)
+		assertDatabaseError(t, err)
+		gotSubscription, err = store.RecordSubscription(subscription)
+		assertDatabaseError(t, err)
+
+		err = store.DeleteSubscription(gotSubscription.ID)
+		assertDatabaseError(t, err)
+
+		subscriptions, err := store.GetSubscriptions()
+		assertDatabaseError(t, err)
+
+		if len(subscriptions) != 0 {
+			t.Errorf("database did not delete all instances of the subscription, got %v, wanted no subscriptions", subscriptions)
+		}
+
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
+
+	})
 }
 
 func TestGetSubscriptionFromDB(t *testing.T) {
