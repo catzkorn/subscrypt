@@ -20,10 +20,10 @@ const JSONContentType = "application/json"
 
 // Server is the HTTP interface for subscription information
 type Server struct {
-	dataStore           DataStore
-	router              *http.ServeMux
-	mailer              email.Mailer
-	transactionAPI      TransactionAPI
+	dataStore      DataStore
+	router         *http.ServeMux
+	mailer         email.Mailer
+	transactionAPI TransactionAPI
 }
 
 // TransactionAPI defines the transaction api interface
@@ -132,6 +132,12 @@ func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if user == nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println(user)
 
 	newReminder = reminder.Reminder{
 		Email:          user.Email,

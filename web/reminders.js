@@ -1,4 +1,11 @@
 function sendReminder(id) {
+  let name = document.getElementById('username').value;
+  let email = document.getElementById('email').value;
+
+  if (validateUsersInformation(name, email) == false) {
+    return;
+  }
+
   let xhttp = new XMLHttpRequest();
   let url = "/api/reminders";
   let data = JSON.stringify({ "id": id });
@@ -10,4 +17,16 @@ function sendReminder(id) {
   };
   xhttp.open("POST", url, true);
   xhttp.send(data);
+}
+
+
+
+
+function validateUsersInformation(name, email) {
+  if (name == "" || email == "") {
+    document.getElementById("reminder-error").innerHTML = "Please enter user details to receive a reminder";
+    return false;
+  } else {
+    return true;
+  }
 }

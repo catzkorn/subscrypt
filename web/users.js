@@ -22,7 +22,7 @@ function _showUser(user) {
   let userHTML = "";
   if (user != null) {
     userHTML = _formatUser(user);
-    userHTML += _formatEditUserButton(user)
+    userHTML += _formatEditUserButton(user);
 
   } else {
     userHTML = _formatUserForm();
@@ -60,9 +60,6 @@ function showEditUserForm(name, email) {
   document.getElementById("username").value = name;
   document.getElementById("email").value = email;
 }
-
-
-// THIS WORKS BELLOW LEAVE IT ALONE! VVVV
 
 
 function createUser() {

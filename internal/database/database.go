@@ -208,6 +208,8 @@ func (d *Database) GetUserDetails() (*userprofile.Userprofile, error) {
 		return nil, nil
 	case err != nil:
 		return nil, fmt.Errorf("unexpected database error: %w", err)
+	case usersName == "" || usersEmail == "":
+		return nil, fmt.Errorf("no user was returned")
 	default:
 		newUserprofile := userprofile.Userprofile{
 			Name:  usersName,
