@@ -10,7 +10,6 @@ function _getUser(callback) {
   xhttp.onreadystatechange = function() {
     if (xhttp.readyState === 4 && xhttp.status === 200) {
       let user = JSON.parse(xhttp.responseText);
-      console.log(xhttp.responseText);
       callback(user);
     }
   };
@@ -25,7 +24,7 @@ function _showUser(user) {
     userHTML += _formatEditUserButton(user);
     loadSubscriptions();
   } else {
-    userHTML = _formatUserForm();
+    userHTML = _newUserForm();
   }
   document.getElementById("user").innerHTML = userHTML;
 }
@@ -38,31 +37,48 @@ function _formatUser(user) {
 }
 
 function _formatEditUserButton(user) {
-  return `<button type="button" class="btn btn-default" id="edit-user-button" onclick="showEditUserForm('${user.Name}', '${user.Email}')">
-            <i class="fas fa-pen"></i>
-          </button>`;
+  return `
+<button type="button" id="edit-user-button" onclick="showEditUserForm('${user.Name}', '${user.Email}')">
+    <svg class="w-6 h-6"fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+</path>
+</svg>
+          </button>
+`;
+}
+
+function _newUserForm() {
+  let newUserForm = "<div class=\"card w-75\">" +
+                      "<div class=\"card-body\">" +
+                        "<h5 class=\"card-title\">Welcome! Enter your details</h5>" +
+                        _formatUserForm() +
+                      "</div>" +
+                    "</div>"
+  return newUserForm
 }
 
 function _formatUserForm() {
 
-  let userForm = `<form>
-    <div class="row">
-        <div class="col">
-            <input type="text" class="form-control" id="username" placeholder="Name">
+  let userForm = `
+    <form>
+        <div class="row">
+            <div class="col">
+                <input type="text" class="form-control" id="username" placeholder="Name">
+            </div>
+            <div class="col">
+                <input type="text" class="form-control" id="email" placeholder="Email">
+            </div>
+            <div class="col">
+                <button type="button" class="btn btn-primary" id="create-user-button" onclick="createUser()">Submit</button>
+            </div>
         </div>
-        <div class="col">
-            <input type="text" class="form-control" id="email" placeholder="Email">
-        </div>
-        <div class="col">
-            <button type="button" class="btn btn-primary" id="create-user-button" onclick="createUser()"><i class="fas fa-pen"></i></button>
-        </div>
-    </div>
-<!--  <label for="name">Name:</label>-->
-<!--  <input type="text" id="username"><br>-->
-<!--  <label for="email">Email:</label>-->
-<!--  <input type="text" id="email"><br>-->
-<!--  <button type="button" id="create-user-button" onclick="createUser()">Submit</button>-->
-</form>`;
+    <!--  <label for="name">Name:</label>-->
+    <!--  <input type="text" id="username"><br>-->
+    <!--  <label for="email">Email:</label>-->
+    <!--  <input type="text" id="email"><br>-->
+    <!--  <button type="button" id="create-user-button" onclick="createUser()">Submit</button>-->
+    </form>
+`;
 
   return userForm;
 }

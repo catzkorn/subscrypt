@@ -5,3 +5,23 @@ div {
     margin-inline-start: 0px;
     margin-inline-end: 0px;
 }
+
+#edit-user-button {
+    background-color: Transparent;
+    background-repeat:no-repeat;
+    border: none;
+    cursor:pointer;
+    overflow: hidden;
+    outline:none;
+    width: 50px;
+    height: 50px;
+}
+
+#edit-user-button svg {
+    width: 25px;
+    height: 25px;
+}
+
+svg {
+    stroke: royalblue;
+}
