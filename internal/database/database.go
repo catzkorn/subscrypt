@@ -50,7 +50,6 @@ func (d *Database) RecordSubscription(sub subscription.Subscription) (*subscript
 	RETURNING id, name, amount, date_due`
 
 	err := d.database.QueryRowContext(context.Background(), insertQuery, sub.Name, sub.Amount, sub.DateDue, timestamp).Scan(&id, &name, &amount, &dateDue)
-
 	if err != nil {
 		return nil, fmt.Errorf("unexpected insert error: %w", err)
 	}

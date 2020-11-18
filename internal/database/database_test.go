@@ -27,7 +27,6 @@ func TestDatabaseConnection(t *testing.T) {
 		if err == nil {
 			t.Errorf("connected to database that doesn't exist")
 		}
-
 	})
 }
 
@@ -35,9 +34,8 @@ func TestAddingSubscriptionToDB(t *testing.T) {
 	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
 
-	t.Run("adds a subscription and retrieves all added subscriptions", func(t *testing.T) {
+	t.Run("adds a Netflix subscription", func(t *testing.T) {
 		wantedSubscription := createTestSubscription()
-
 		subscription, err := store.RecordSubscription(wantedSubscription)
 		assertDatabaseError(t, err)
 
@@ -61,6 +59,51 @@ func TestAddingSubscriptionToDB(t *testing.T) {
 		assertDatabaseError(t, err)
 	})
 
+	t.Run("adds a climbing subscription", func(t *testing.T) {
+		amount, _ := decimal.NewFromString("50.00")
+		wantedSubscription := subscription.Subscription{
+			Name:    "Reading Climbing Centre",
+			Amount:  amount,
+			DateDue: time.Date(2020, time.December, 30, 0, 0, 0, 0, time.UTC),
+		}
+		subscription, err := store.RecordSubscription(wantedSubscription)
+		assertDatabaseError(t, err)
+
+		if subscription.ID == 0 {
+			t.Errorf("Database did not return an ID, got %v want %v", 0, subscription.ID)
+		}
+
+		if subscription.Name != wantedSubscription.Name {
+			t.Errorf("Database did not return correct subscription name, got %s want %s", subscription.Name, wantedSubscription.Name)
+		}
+
+		if !subscription.Amount.Equal(subscription.Amount) {
+			t.Errorf("Database did not return correct amount, got %#v want %#v", subscription.Amount, wantedSubscription.Amount)
+		}
+
+		if !subscription.DateDue.Equal(wantedSubscription.DateDue) {
+			t.Errorf("Database did not return correct subscription date, got %s want %s", subscription.DateDue, wantedSubscription.DateDue)
+		}
+
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
+	})
+
+	t.Run("fails to add a subscription", func(t *testing.T) {
+		emptySubscription := subscription.Subscription{}
+		subscription, err := store.RecordSubscription(emptySubscription)
+
+		if err != nil {
+			t.Fatalf("unexpected database error: %v", err)
+		}
+
+		if subscription.Name != "" {
+			t.Errorf("database retrieved a subscription when it was not meant to: %w", err)
+		}
+
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
+	})
 }
 
 func TestGetSubscriptionsFromDB(t *testing.T) {
@@ -295,7 +338,6 @@ func createTestSubscription() subscription.Subscription {
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
 	return subscription
-
 }
 
 func clearSubscriptionsTable() error {
