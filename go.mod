@@ -1,3 +1,5 @@
+// +heroku goVersion go1.15
+
 module github.com/Catzkorn/subscrypt
 
 go 1.15
