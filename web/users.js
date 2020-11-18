@@ -65,7 +65,7 @@ function _formatUser(user) {
               <div class="col-4">
                   <input type="text" readonly class="form-control-plaintext form-control-sm" id="email" value="${user.Email}">
               </div>
-              <div class="col-1">
+              <div class="col-">
               ${_formatEditUserButton(user)}
 </div>
         </div>
