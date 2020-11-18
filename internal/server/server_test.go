@@ -107,7 +107,7 @@ func TestGETSubscriptions(t *testing.T) {
 		transactionAPI := &stubTransactionAPI{}
 		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
 
-		request := newGetSubscriptionRequest()
+		request := newGetSubscriptionRequest(t)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -214,7 +214,7 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 		transactionAPI := &stubTransactionAPI{}
 		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
 
-		request := newDeleteSubscriptionRequest(1)
+		request := newDeleteSubscriptionRequest(t, 1)
 
 		response := httptest.NewRecorder()
 
@@ -232,7 +232,7 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 		transactionAPI := &stubTransactionAPI{}
 		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
 
-		request := newDeleteSubscriptionRequest(2)
+		request := newDeleteSubscriptionRequest(t, 2)
 
 		response := httptest.NewRecorder()
 
@@ -251,26 +251,68 @@ func TestUserHandler(t *testing.T) {
 		transactionAPI := &stubTransactionAPI{}
 		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
 
-		request := newPostUserRequest(t, "Charlotte", "test@test.com")
+		request := newPostUserRequest(t, "Gary Gopher", "gary@gopher.com")
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 		assertStatus(t, response.Code, http.StatusOK)
 
-		if store.userprofile.Name != "Charlotte" {
-			t.Errorf("incorrect name set got %v want %v", store.userprofile.Name, "Charlotte")
+		if store.userprofile.Name != "Gary Gopher" {
+			t.Errorf("incorrect name set got %v want %v", store.userprofile.Name, "Gary Gopher")
 		}
 
-		if store.userprofile.Email != "test@test.com" {
-			t.Errorf("incorrect name set got %v want %v", store.userprofile.Email, "test@test.com")
+		if store.userprofile.Email != "gary@gopher.com" {
+			t.Errorf("incorrect name set got %v want %v", store.userprofile.Email, "gary@gopher.com")
 		}
+
+	})
+
+	t.Run("tests retrival of user", func(t *testing.T) {
+
+		userProfile := userprofile.Userprofile{
+			Name:  "Gary Gopher",
+			Email: "gary@gopher.com",
+		}
+
+		store := &StubDataStore{userprofile: userProfile}
+
+		transactionAPI := &stubTransactionAPI{}
+		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
+
+		request := newGetUserRequest(t)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+
+		var retrievedUserProfile userprofile.Userprofile
+
+		err := json.NewDecoder(response.Body).Decode(&retrievedUserProfile)
+		if err != nil {
+			t.Fatalf("Unable to parse response from server %q into user profile, '%v'", response.Body, err)
+		}
+
+		if retrievedUserProfile.Name != userProfile.Name {
+			t.Errorf("incorrect name retrieved got %v want %v", retrievedUserProfile.Name, userProfile.Name)
+		}
+
+		if retrievedUserProfile.Email != userProfile.Email {
+			t.Errorf("incorrect name retrieved got %v want %v", retrievedUserProfile.Email, userProfile.Email)
+		}
+
+		assertContentType(t, response, JSONContentType)
 
 	})
 
 }
 
-func newGetSubscriptionRequest() *http.Request {
-	req, _ := http.NewRequest(http.MethodGet, "/api/subscriptions", nil)
+func newGetSubscriptionRequest(t testing.TB) *http.Request {
+	t.Helper()
+	req, err := http.NewRequest(http.MethodGet, "/api/subscriptions", nil)
+	if err != nil {
+		t.Fatalf("failed to send request: %v", err)
+	}
 	return req
 }
 
@@ -304,12 +346,11 @@ func newPostReminderRequest(t testing.TB, id int) *http.Request {
 	return req
 }
 
-func newDeleteSubscriptionRequest(ID int) *http.Request {
-	bodyStr := []byte(fmt.Sprintf("{\"id\": %v}", ID))
+func newDeleteSubscriptionRequest(t testing.TB, ID int) *http.Request {
 	url := fmt.Sprintf("/api/subscriptions/%v", ID)
-	req, err := http.NewRequest(http.MethodDelete, url, bytes.NewBuffer(bodyStr))
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
-		panic(err)
+		t.Fatalf("failed to send request: %v", err)
 	}
 	return req
 }
@@ -332,5 +373,14 @@ func newPostUserRequest(t testing.TB, name string, email string) *http.Request {
 	}
 
 	req.Header.Add("Content-Type", "application/json")
+	return req
+}
+
+func newGetUserRequest(t testing.TB) *http.Request {
+	t.Helper()
+	req, err := http.NewRequest(http.MethodGet, "/api/users", nil)
+	if err != nil {
+		t.Fatalf("failed to send request: %v", err)
+	}
 	return req
 }
