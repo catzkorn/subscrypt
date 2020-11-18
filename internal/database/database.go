@@ -42,13 +42,14 @@ func (d *Database) RecordSubscription(sub subscription.Subscription) (*subscript
 	var name string
 	var amount pgtype.Numeric
 	var dateDue time.Time
+	timestamp := time.Now()
 
 	insertQuery := `
-	INSERT INTO subscriptions (name, amount, date_due) 
-	VALUES ($1, $2, $3) 
+	INSERT INTO subscriptions (name, amount, date_due, created_at) 
+	VALUES ($1, $2, $3, $4) 
 	RETURNING id, name, amount, date_due`
 
-	err := d.database.QueryRowContext(context.Background(), insertQuery, sub.Name, sub.Amount, sub.DateDue).Scan(&id, &name, &amount, &dateDue)
+	err := d.database.QueryRowContext(context.Background(), insertQuery, sub.Name, sub.Amount, sub.DateDue, timestamp).Scan(&id, &name, &amount, &dateDue)
 
 	if err != nil {
 		return nil, fmt.Errorf("unexpected insert error: %w", err)
@@ -65,7 +66,8 @@ func (d *Database) RecordSubscription(sub subscription.Subscription) (*subscript
 
 // GetSubscriptions retrieves all subscriptions from the subscription database
 func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
-	rows, err := d.database.QueryContext(context.Background(), "SELECT id, name, amount, date_due FROM subscriptions WHERE created_at IN (SELECT MAX(created_at) FROM subscriptions);")
+
+	rows, err := d.database.QueryContext(context.Background(), "select t1.id, t1.name, t1.amount, t1.date_due from subscriptions t1 left join subscriptions t2 on t1.name = t2.name and t2.created_at >t1.created_at where t2.name is null;")
 	if err != nil {
 		return nil, fmt.Errorf("unexpected retrieve error: %w", err)
 	}
