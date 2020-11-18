@@ -1,12 +1,24 @@
-div {
-    display: block;
-    margin-block-start: 1em;
-    margin-block-end: 1em;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-}
+/*div {*/
+/*    display: block;*/
+/*    margin-block-start: 1em;*/
+/*    margin-block-end: 1em;*/
+/*    margin-inline-start: 0px;*/
+/*    margin-inline-end: 0px;*/
+/*}*/
 
-#edit-user-button {
+/*body {*/
+/*    background-color: #8BC6EC;*/
+/*    background-image: linear-gradient(135deg, #8BC6EC 0%, #9599E2 100%);*/
+
+/*    !*height: 100%;*!*/
+/*    font-family: 'Kumbh Sans', sans-serif;*/
+/*    !*color: white;*!*/
+/*    !*min-height: 100vh;*!*/
+/*    !*display: flex;*!*/
+/*    !*flex-direction: column;*!*/
+/*}*/
+
+.icon-button {
     background-color: Transparent;
     background-repeat:no-repeat;
     border: none;
@@ -17,11 +29,29 @@ div {
     height: 50px;
 }
 
-#edit-user-button svg {
+.icon-button svg {
     width: 25px;
     height: 25px;
 }
 
-svg {
+.icon {
+    width: 20px;
+    height: 20px;
+}
+
+.icon svg {
+    width: 20px;
+    height: 20px;
     stroke: royalblue;
+    fill: white;
+
+}
+
+#edit-user-button svg {
+    fill: royalblue;
+}
+
+
+#user {
+    padding: 20px;
 }
