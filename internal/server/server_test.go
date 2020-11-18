@@ -83,7 +83,7 @@ func TestGetTransactions(t *testing.T) {
 	t.Run("Successfully calls the transactionAPI", func(t *testing.T) {
 		store := &StubDataStore{}
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
+		server := NewServer(store, &StubMailer{}, transactionAPI)
 
 		request, _ := http.NewRequest(http.MethodGet, "/api/transactions/", nil)
 		response := httptest.NewRecorder()
@@ -105,7 +105,7 @@ func TestGETSubscriptions(t *testing.T) {
 		store := &StubDataStore{subscriptions: wantedSubscriptions}
 
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
+		server := NewServer(store, &StubMailer{}, transactionAPI)
 
 		request := newGetSubscriptionRequest(t)
 		response := httptest.NewRecorder()
@@ -129,7 +129,7 @@ func TestStoreSubscription(t *testing.T) {
 		store := &StubDataStore{}
 
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
+		server := NewServer(store, &StubMailer{}, transactionAPI)
 
 		request := newPostSubscriptionRequest(t, subscription)
 		response := httptest.NewRecorder()
@@ -159,7 +159,7 @@ func TestCreateReminder(t *testing.T) {
 		store := &StubDataStore{subscriptions: subscriptions}
 
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
+		server := NewServer(store, &StubMailer{}, transactionAPI)
 
 		request := newPostReminderRequest(t, subscriptions[0].ID)
 		response := httptest.NewRecorder()
@@ -212,7 +212,7 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 		store := &StubDataStore{subscriptions: subscriptions}
 
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
+		server := NewServer(store, &StubMailer{}, transactionAPI)
 
 		request := newDeleteSubscriptionRequest(t, 1)
 
@@ -230,7 +230,7 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 		store := &StubDataStore{subscriptions: subscriptions}
 
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
+		server := NewServer(store, &StubMailer{}, transactionAPI)
 
 		request := newDeleteSubscriptionRequest(t, 2)
 
@@ -249,7 +249,7 @@ func TestUserHandler(t *testing.T) {
 		store := &StubDataStore{}
 
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
+		server := NewServer(store, &StubMailer{}, transactionAPI)
 
 		request := newPostUserRequest(t, "Gary Gopher", "gary@gopher.com")
 		response := httptest.NewRecorder()
@@ -277,7 +277,7 @@ func TestUserHandler(t *testing.T) {
 		store := &StubDataStore{userprofile: userProfile}
 
 		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
+		server := NewServer(store, &StubMailer{}, transactionAPI)
 
 		request := newGetUserRequest(t)
 		response := httptest.NewRecorder()

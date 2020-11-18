@@ -18,7 +18,7 @@ package integration
 //
 //	api := &plaid.PlaidAPI{}
 //
-//	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
+//	testServer := server.NewServer(store, &StubMailer{}, api)
 //
 //
 //	getRequest := newTransactionAPIRequest()

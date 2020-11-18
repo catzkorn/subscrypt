@@ -40,7 +40,7 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 
 	api := &plaid.PlaidAPI{}
 
-	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
+	testServer := server.NewServer(store, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
 	newSubscription := subscription.Subscription{
@@ -70,7 +70,7 @@ func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
 
 	api := &plaid.PlaidAPI{}
-	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
+	testServer := server.NewServer(store, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
 	newSubscription := subscription.Subscription{
@@ -107,7 +107,7 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 
 	api := &plaid.PlaidAPI{}
-	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
+	testServer := server.NewServer(store, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
 	newSubscription := subscription.Subscription{
@@ -141,7 +141,7 @@ func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 
 	api := &plaid.PlaidAPI{}
-	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
+	testServer := server.NewServer(store, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
 	newSubscription := subscription.Subscription{

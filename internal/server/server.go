@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,7 +22,6 @@ const JSONContentType = "application/json"
 type Server struct {
 	dataStore           DataStore
 	router              *http.ServeMux
-	parsedIndexTemplate *template.Template
 	mailer              email.Mailer
 	transactionAPI      TransactionAPI
 }
@@ -51,7 +49,7 @@ type DataStore interface {
 }
 
 // NewServer returns a instance of a Server
-func NewServer(dataStore DataStore, indexTemplatePath string, mailer email.Mailer, transactionAPI TransactionAPI) *Server {
+func NewServer(dataStore DataStore, mailer email.Mailer, transactionAPI TransactionAPI) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux(), transactionAPI: transactionAPI}
 	s.router.Handle("/", http.HandlerFunc(s.indexHandler))
 
@@ -62,8 +60,6 @@ func NewServer(dataStore DataStore, indexTemplatePath string, mailer email.Maile
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionIDAPIHandler))
 	s.router.Handle("/api/transactions/", http.HandlerFunc(s.transactionAPIHandler))
 	s.router.Handle("/api/users", http.HandlerFunc(s.userHandler))
-
-	s.parsedIndexTemplate = template.Must(template.New("index.html").ParseFiles(indexTemplatePath))
 
 	s.mailer = mailer
 
@@ -100,7 +96,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // indexHandler handles the routing logic for the index
 func (s *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./web/index.html")
+	if r.Method == http.MethodGet {
+		s.processGetIndex(w, r)
+	}
 }
 
 // reminderHandler handles the routing logic for the reminders
@@ -224,22 +222,8 @@ func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // processGetIndex processes the GET / request, returning the index page html
-func (s *Server) processGetIndex(w http.ResponseWriter) error {
-	userInfo, err := s.dataStore.GetUserDetails()
-	if err != nil {
-		return err
-	}
-	data := IndexPageData{
-		Userprofile: userInfo,
-	}
-
-	err = s.parsedIndexTemplate.Execute(w, data)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (s *Server) processGetIndex(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./web/index.html")
 }
 
 // processGetSubscriptions processes the GET /api/subscriptions request
