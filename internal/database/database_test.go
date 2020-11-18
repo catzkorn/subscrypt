@@ -30,7 +30,7 @@ func TestDatabaseConnection(t *testing.T) {
 	})
 }
 
-func TestAddingSubscriptionToDB(t *testing.T) {
+func TestRecordSubscriptionToDB(t *testing.T) {
 	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
 
@@ -106,26 +106,26 @@ func TestGetSubscriptionsFromDB(t *testing.T) {
 	t.Run("gets all the subscriptions from the database", func(t *testing.T) {
 		subscription := createTestSubscription("Amazon Prime", "7.99", time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC))
 
-		_, err := store.RecordSubscription(subscription)
+		wantedSubscription, err := store.RecordSubscription(subscription)
 		assertDatabaseError(t, err)
 
 		gotSubscriptions, err := store.GetSubscriptions()
 		assertDatabaseError(t, err)
 
-		if gotSubscriptions[0].ID == 0 {
-			t.Errorf("Database did not return an ID, got %v want %v", 0, subscription.ID)
+		if gotSubscriptions[0].ID != wantedSubscription.ID {
+			t.Errorf("Database did not return an ID, got %v want %v", gotSubscriptions[0].ID, wantedSubscription.ID)
 		}
 
-		if gotSubscriptions[0].Name != subscription.Name {
-			t.Errorf("Database did not return correct subscription name, got %s want %s", subscription.Name, subscription.Name)
+		if gotSubscriptions[0].Name != wantedSubscription.Name {
+			t.Errorf("Database did not return correct subscription name, got %s want %s", gotSubscriptions[0].Name, wantedSubscription.Name)
 		}
 
-		if !gotSubscriptions[0].Amount.Equal(subscription.Amount) {
-			t.Errorf("Database did not return correct amount, got %#v want %#v", subscription.Amount, subscription.Amount)
+		if !gotSubscriptions[0].Amount.Equal(wantedSubscription.Amount) {
+			t.Errorf("Database did not return correct amount, got %#v want %#v", gotSubscriptions[0].Amount, wantedSubscription.Amount)
 		}
 
-		if !gotSubscriptions[0].DateDue.Equal(subscription.DateDue) {
-			t.Errorf("Database did not return correct subscription date, got %s want %s", subscription.DateDue, subscription.DateDue)
+		if !gotSubscriptions[0].DateDue.Equal(wantedSubscription.DateDue) {
+			t.Errorf("Database did not return correct subscription date, got %s want %s", gotSubscriptions[0].DateDue, wantedSubscription.DateDue)
 		}
 
 		err = clearSubscriptionsTable()
@@ -359,7 +359,6 @@ func TestUserprofilesDatabase(t *testing.T) {
 	})
 
 	t.Run("get name and email from database", func(t *testing.T) {
-
 		_, err := store.RecordUserDetails(usersName, usersEmail)
 		assertDatabaseError(t, err)
 
@@ -373,6 +372,7 @@ func TestUserprofilesDatabase(t *testing.T) {
 		if gotDetails.Email != usersEmail {
 			t.Errorf("incorrect email retrieved got %v want %v", gotDetails.Email, usersEmail)
 		}
+
 		err = clearUsersTable()
 		assertDatabaseError(t, err)
 	})
@@ -397,7 +397,6 @@ func TestUserprofilesDatabase(t *testing.T) {
 		err = clearUsersTable()
 		assertDatabaseError(t, err)
 	})
-
 }
 
 func createTestSubscription(name string, price string, date time.Time) subscription.Subscription {
