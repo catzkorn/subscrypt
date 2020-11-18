@@ -15,6 +15,9 @@ import (
 	"github.com/Catzkorn/subscrypt/internal/userprofile"
 )
 
+// JSONContentType defines application/json
+const JSONContentType = "application/json"
+
 // Server is the HTTP interface for subscription information
 type Server struct {
 	dataStore           DataStore
@@ -202,9 +205,6 @@ func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 }
-
-// JSONContentType defines application/json
-const JSONContentType = "application/json"
 
 // processGetIndex processes the GET / request, returning the index page html
 func (s *Server) processGetIndex(w http.ResponseWriter) error {
