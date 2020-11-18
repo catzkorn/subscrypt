@@ -6,11 +6,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
+	"reflect"
 	"testing"
 	"time"
 
@@ -24,6 +24,7 @@ import (
 )
 
 const indexTemplatePath = "../../web/index.html"
+const JSONContentType = "application/json"
 
 type StubMailer struct {
 	sentEmail *mail.SGMailV3
@@ -58,22 +59,11 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	response = httptest.NewRecorder()
 	testServer.ServeHTTP(response, getRequest)
 
+	got := getSubscriptionsFromResponse(t, response.Body)
+
 	assertStatus(t, response.Code, http.StatusOK)
-
-	body, err := ioutil.ReadAll(response.Body)
-
-	if err != nil {
-		t.Errorf("unexpected error: %w", err)
-	}
-
-	bodyString := string(body)
-	got := bodyString
-
-	res := strings.Contains(got, newSubscription.Name)
-
-	if res != true {
-		t.Errorf("webpage did not contain subscription of name %v", newSubscription.Name)
-	}
+	assertSubscription(t, got[0], newSubscription)
+	assertContentType(t, response, JSONContentType)
 }
 
 func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
@@ -120,34 +110,31 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	testServer := server.NewServer(store, indexTemplatePath, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
-	subscription := subscription.Subscription{
+	newSubscription := subscription.Subscription{
 		Name:    "Netflix",
 		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
-	storedSubscription, err := store.RecordSubscription(subscription)
-	if err != nil {
-		fmt.Println(err)
-	}
 
-	request := newDeleteSubscriptionRequest(storedSubscription.ID)
+	postRequest := newPostSubscriptionRequest(t, newSubscription)
 	response := httptest.NewRecorder()
-
-	testServer.ServeHTTP(response, request)
+	testServer.ServeHTTP(response, postRequest)
 
 	assertStatus(t, response.Code, http.StatusOK)
 
-	gotSubscription, err := store.GetSubscription(storedSubscription.ID)
-	if err != nil {
-		fmt.Println(err)
-	}
+	getRequest := newGetSubscriptionRequest()
+	response = httptest.NewRecorder()
+	testServer.ServeHTTP(response, getRequest)
 
-	if gotSubscription != nil {
-		t.Errorf("subscription not deleted, got %v for given id, want nil", gotSubscription)
-	}
+	got := getSubscriptionsFromResponse(t, response.Body)
 
-	err = clearSubscriptionsTable()
-	assertDatabaseError(t, err)
+	assertStatus(t, response.Code, http.StatusOK)
+	assertSubscription(t, got[0], newSubscription)
+	assertContentType(t, response, JSONContentType)
+
+	if got[0].Name != newSubscription.Name {
+		t.Errorf("Subscription not saved and retrieved successfully, got ")
+	}
 }
 
 func TestDeletingSubscriptionFromDatabase(t *testing.T) {
@@ -187,18 +174,7 @@ func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	assertDatabaseError(t, err)
 }
 
-func clearSubscriptionsTable() error {
-	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_STRING"))
-	if err != nil {
-		return fmt.Errorf("unexpected connection error: %w", err)
-	}
-	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
-	if err != nil {
-		return fmt.Errorf("unexpected connection error: %w", err)
-	}
-
-	return err
-}
+// Assertion Test Helpers
 
 func assertDatabaseError(t *testing.T, err error) {
 	t.Helper()
@@ -214,8 +190,31 @@ func assertStatus(t *testing.T, got, want int) {
 	}
 }
 
+// assertSubscription checks that the Name, Amount and DateDue of the got and want subscriptions match
+// It doesn't check the ID value
+func assertSubscription(t *testing.T, got, want subscription.Subscription) {
+	t.Helper()
+
+	if got.Name != want.Name {
+		t.Errorf("subscriptions not correct - Name mismatch, got %v want %v", got, want)
+	} else if !reflect.DeepEqual(got.Amount, want.Amount) {
+		t.Errorf("subscriptions not correct - Amount mismatch, got %v want %v", got, want)
+	} else if got.DateDue != want.DateDue {
+		t.Errorf("subscriptions not correct - DateDue mismatch, got %v want %v", got, want)
+	}
+}
+
+func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want string) {
+	t.Helper()
+	if response.Result().Header.Get("content-type") != want {
+		t.Errorf("response did not have content-type of %s, got %v", want, response.Result().Header)
+	}
+}
+
+// New Request Test Methods
+
 func newGetSubscriptionRequest() *http.Request {
-	req, _ := http.NewRequest(http.MethodGet, "/", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/api/subscriptions", nil)
 	return req
 }
 
@@ -238,4 +237,28 @@ func newDeleteSubscriptionRequest(ID int) *http.Request {
 		panic(err)
 	}
 	return req
+}
+
+func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions []subscription.Subscription) {
+	t.Helper()
+	err := json.NewDecoder(body).Decode(&subscriptions)
+
+	if err != nil {
+		t.Fatalf("Unable to parse response from server %q into slice of Subscription, '%v'", body, err)
+	}
+
+	return
+}
+
+func clearSubscriptionsTable() error {
+	db, err := sql.Open("pgx", os.Getenv("DATABASE_CONN_STRING"))
+	if err != nil {
+		return fmt.Errorf("unexpected connection error: %w", err)
+	}
+	_, err = db.ExecContext(context.Background(), "TRUNCATE TABLE subscriptions;")
+	if err != nil {
+		return fmt.Errorf("unexpected connection error: %w", err)
+	}
+
+	return err
 }

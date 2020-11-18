@@ -15,6 +15,9 @@ import (
 	"github.com/Catzkorn/subscrypt/internal/userprofile"
 )
 
+// JSONContentType defines application/json
+const JSONContentType = "application/json"
+
 // Server is the HTTP interface for subscription information
 type Server struct {
 	dataStore           DataStore
@@ -49,7 +52,7 @@ type DataStore interface {
 // NewServer returns a instance of a Server
 func NewServer(dataStore DataStore, indexTemplatePath string, mailer email.Mailer, transactionAPI TransactionAPI) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux(), transactionAPI: transactionAPI}
-	s.router.Handle("/", http.HandlerFunc(s.subscriptionHandler))
+	s.router.Handle("/", http.HandlerFunc(s.indexHandler))
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
 	s.router.Handle("/api/reminders", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions", http.HandlerFunc(s.subscriptionsAPIHandler))
@@ -87,17 +90,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
-// subscriptionHandler handles the routing logic for the index
-func (s *Server) subscriptionHandler(w http.ResponseWriter, r *http.Request) {
+// indexHandler handles the routing logic for the index
+func (s *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		err := s.processGetSubscription(w)
+		err := s.processGetIndex(w)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	case http.MethodPost:
-		s.processPostSubscription(w, r)
 	}
 }
 
@@ -153,8 +154,12 @@ func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 // subscriptionsAPIHandler handles the routing logic for the '/api/subscriptions' paths
 func (s *Server) subscriptionsAPIHandler(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method == http.MethodPost {
+	switch r.Method {
+	case http.MethodGet:
+		s.processGetSubscriptions(w)
+	case http.MethodPost:
 		s.processPostSubscription(w, r)
+
 	}
 
 }
@@ -201,16 +206,8 @@ func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// JSONContentType defines application/json
-const JSONContentType = "application/json"
-
-// processGetSubscription processes the GET subscription request, returning the store subscriptions as json
-func (s *Server) processGetSubscription(w http.ResponseWriter) error {
-
-	subscriptions, err := s.dataStore.GetSubscriptions()
-	if err != nil {
-		return err
-	}
+// processGetIndex processes the GET / request, returning the index page html
+func (s *Server) processGetIndex(w http.ResponseWriter) error {
 
 	userInfo, err := s.dataStore.GetUserDetails()
 	if err != nil {
@@ -218,8 +215,6 @@ func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 	}
 
 	data := IndexPageData{
-		PageTitle:     "My Subscriptions List",
-		Subscriptions: subscriptions,
 		Userprofile:   userInfo,
 	}
 
@@ -230,6 +225,23 @@ func (s *Server) processGetSubscription(w http.ResponseWriter) error {
 	}
 
 	return nil
+}
+
+// processGetSubscriptions processes the GET /api/subscriptions request
+// It returns the stored subscriptions as json
+func (s *Server) processGetSubscriptions(w http.ResponseWriter) {
+	w.Header().Set("content-type", JSONContentType)
+	subscriptions, err := s.dataStore.GetSubscriptions()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(subscriptions)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 // processPostSubscription tells the SubscriptionStore to record the subscription from the post body
@@ -245,7 +257,7 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	defer r.Body.Close()
 }
 
 // processDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID

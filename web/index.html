@@ -8,14 +8,12 @@
     </style>
 
     <body>
-        <h1>{{.PageTitle}}</h1>
+        <h1>Subscrypt</h1>
 
         {{ if .Userprofile }}
 
         Name: {{.Userprofile.Name}}<br>
         Email: {{.Userprofile.Email}}
-
-
 
         {{end}}
 
@@ -28,26 +26,9 @@
         </form>
         <span id="user-error"></span>
 
+        <div id="subscriptions"></div>
 
-
-        <table style="width:100%">
-            <tr>
-                <td>Name Of Subscription</td>
-                <td>Amount Due Monthly</td>
-                <td>Date Due Monthly</td>
-            </tr>
-            {{range .Subscriptions}}
-            <tr>
-                <td>{{.Name}}</td>
-                <td>{{.Amount}}</td>
-                <td>{{.DateDue}}</td>
-                <td><button type="button" id="reminder-{{.ID}}" onclick="sendReminder({{.ID}})">Reminder</button>
-                <td><button type="button" id="delete-{{.ID}}" onclick="deleteSubscription({{.ID}})">Delete</button>
-            </tr>
-            {{end}}
-        </table>
-
-        <form>
+        <form id="create-subscription-form">
             <label for="name">Name Of Subscription:</label>
             <input type="text" id="subscription-name" name="name"><br>
             <label for="amount">Amount Due Monthly:</label>
@@ -61,6 +42,7 @@
 
         <span id="subscription-error"></span>
 
+        <script src="web/subscription.js"></script>
         <script src="web/subscriptions.js"></script>
         <script src="web/reminders.js"></script>
         <script src="web/users.js"></script>
