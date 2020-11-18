@@ -10,21 +10,16 @@
     <body>
         <h1>Subscrypt</h1>
 
-        {{ if .Userprofile }}
+        <div id="user"></div>
+        <!-- {{ if .Userprofile }}
 
         Name: {{.Userprofile.Name}}<br>
         Email: {{.Userprofile.Email}}
 
-        {{end}}
+        {{end}} -->
 
-        <form>
-            <label for="name">Name:</label>
-            <input type="text" id="username"><br>
-            <label for="email">Email:</label>
-            <input type="text" id="email"><br>
-            <button type="button" id="create-user-button" onclick="createUser()">Submit</button>
-        </form>
-        <span id="user-error"></span>
+
+
 
         <div id="subscriptions"></div>
 
@@ -38,7 +33,7 @@
             <td><button type="button" id="create-subscription-button" onclick="createSubscription()">Submit</button>
         </form>
 
-       <button type="button" id="getTransactions" onclick="getTransactions()">Call API</button>
+        <button type="button" id="getTransactions" onclick="getTransactions()">Call API</button>
 
         <span id="subscription-error"></span>
 

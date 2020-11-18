@@ -102,6 +102,7 @@ func (s *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// reminderHandler handles the routing logic for the reminders
 func (s *Server) reminderHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
@@ -148,20 +149,16 @@ func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-
 }
 
 // subscriptionsAPIHandler handles the routing logic for the '/api/subscriptions' paths
 func (s *Server) subscriptionsAPIHandler(w http.ResponseWriter, r *http.Request) {
-
 	switch r.Method {
 	case http.MethodGet:
 		s.processGetSubscriptions(w)
 	case http.MethodPost:
 		s.processPostSubscription(w, r)
-
 	}
-
 }
 
 // subscriptionIDAPIHandler handles the routing logic for the '/api/subscriptions/:id' paths
@@ -181,10 +178,29 @@ func (s *Server) subscriptionIDAPIHandler(w http.ResponseWriter, r *http.Request
 
 func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
+	case http.MethodGet:
+		s.processGetUser(w)
 	case http.MethodPost:
 		s.processPostUser(w, r)
 
 	}
+}
+
+func (s *Server) processGetUser(w http.ResponseWriter) {
+	w.Header().Set("content-type", JSONContentType)
+
+	userInfo, err := s.dataStore.GetUserDetails()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(userInfo)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 }
 
 func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
@@ -208,14 +224,12 @@ func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
 
 // processGetIndex processes the GET / request, returning the index page html
 func (s *Server) processGetIndex(w http.ResponseWriter) error {
-
 	userInfo, err := s.dataStore.GetUserDetails()
 	if err != nil {
 		return err
 	}
-
 	data := IndexPageData{
-		Userprofile:   userInfo,
+		Userprofile: userInfo,
 	}
 
 	err = s.parsedIndexTemplate.Execute(w, data)
