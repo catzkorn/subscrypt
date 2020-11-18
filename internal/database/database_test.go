@@ -35,7 +35,7 @@ func TestAddingSubscriptionToDB(t *testing.T) {
 	assertDatabaseError(t, err)
 
 	t.Run("adds a Netflix subscription", func(t *testing.T) {
-		wantedSubscription := createTestSubscription()
+		wantedSubscription := createTestSubscription("Netflix", "14.99", time.Date(2020, time.November, 29, 0, 0, 0, 0, time.UTC))
 		subscription, err := store.RecordSubscription(wantedSubscription)
 		assertDatabaseError(t, err)
 
@@ -60,12 +60,8 @@ func TestAddingSubscriptionToDB(t *testing.T) {
 	})
 
 	t.Run("adds a climbing subscription", func(t *testing.T) {
-		amount, _ := decimal.NewFromString("50.00")
-		wantedSubscription := subscription.Subscription{
-			Name:    "Reading Climbing Centre",
-			Amount:  amount,
-			DateDue: time.Date(2020, time.December, 30, 0, 0, 0, 0, time.UTC),
-		}
+		wantedSubscription := createTestSubscription("Reading Climbing Centre", "50.00", time.Date(2020, time.December, 30, 0, 0, 0, 0, time.UTC))
+
 		subscription, err := store.RecordSubscription(wantedSubscription)
 		assertDatabaseError(t, err)
 
@@ -111,7 +107,7 @@ func TestGetSubscriptionsFromDB(t *testing.T) {
 	assertDatabaseError(t, err)
 
 	t.Run("gets all the subscriptions from the database", func(t *testing.T) {
-		subscription := createTestSubscription()
+		subscription := createTestSubscription("Amazon Prime", "7.99", time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC))
 
 		_, err := store.RecordSubscription(subscription)
 		assertDatabaseError(t, err)
@@ -139,6 +135,33 @@ func TestGetSubscriptionsFromDB(t *testing.T) {
 		assertDatabaseError(t, err)
 	})
 
+	t.Run("retrieves multiple subscriptions from the database", func(t *testing.T) {
+		helloFreshSub := createTestSubscription("Hello Fresh", "80.00", time.Date(2020, time.November, 18, 0, 0, 0, 0, time.UTC))
+		riverfordSub := createTestSubscription("Riverford", "180.00", time.Date(2020, time.December, 5, 0, 0, 0, 0, time.UTC))
+		gymSub := createTestSubscription("PureGym", "34.99", time.Date(2020, time.December, 8, 0, 0, 0, 0, time.UTC))
+
+		_, err := store.RecordSubscription(helloFreshSub)
+		assertDatabaseError(t, err)
+		_, err = store.RecordSubscription(riverfordSub)
+		assertDatabaseError(t, err)
+		_, err = store.RecordSubscription(gymSub)
+		assertDatabaseError(t, err)
+
+		gotSubscriptions, err := store.GetSubscriptions()
+		assertDatabaseError(t, err)
+
+		if len(gotSubscriptions) != 3 {
+			t.Errorf("database did not return correct number of subscriptions, got %v want %v", len(gotSubscriptions), 3)
+		}
+
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
+	})
+
+	t.Run("correctly handles retrieving from an empty database", func(t *testing.T) {
+
+	})
+
 }
 
 func TestGetSubscriptionByIDFromDB(t *testing.T) {
@@ -146,7 +169,7 @@ func TestGetSubscriptionByIDFromDB(t *testing.T) {
 	assertDatabaseError(t, err)
 
 	t.Run("returns the subscription with given ID from DB", func(t *testing.T) {
-		subscription := createTestSubscription()
+		subscription := createTestSubscription("Graze Box", "20.00", time.Date(2021, time.February, 14, 0, 0, 0, 0, time.UTC))
 
 		wantedSubscription, err := store.RecordSubscription(subscription)
 		assertDatabaseError(t, err)
@@ -194,7 +217,7 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 	assertDatabaseError(t, err)
 
 	t.Run("deletes the subscription from the database", func(t *testing.T) {
-		subscription := createTestSubscription()
+		subscription := createTestSubscription("BMC", "11.99", time.Date(2020, time.December, 1, 0, 0, 0, 0, time.UTC))
 
 		gotSubscription, err := store.RecordSubscription(subscription)
 		assertDatabaseError(t, err)
@@ -224,7 +247,7 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 	})
 
 	t.Run("deletes both instances of a subscription", func(t *testing.T) {
-		subscription := createTestSubscription()
+		subscription := createTestSubscription("Apple TV", "7.99", time.Date(2020, time.December, 15, 0, 0, 0, 0, time.UTC))
 
 		gotSubscription, err := store.RecordSubscription(subscription)
 		assertDatabaseError(t, err)
@@ -252,8 +275,8 @@ func TestGetSubscriptionFromDB(t *testing.T) {
 	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
 
-	t.Run("deletes the subscription from the database", func(t *testing.T) {
-		subscription := createTestSubscription()
+	t.Run("gets a specific subscription from the database", func(t *testing.T) {
+		subscription := createTestSubscription("F1 TV", "8.95", time.Date(2020, time.June, 1, 0, 0, 0, 0, time.UTC))
 
 		returnedSubscription, err := store.RecordSubscription(subscription)
 		assertDatabaseError(t, err)
@@ -330,12 +353,12 @@ func TestUserprofilesDatabase(t *testing.T) {
 
 }
 
-func createTestSubscription() subscription.Subscription {
-	amount, _ := decimal.NewFromString("8.00")
+func createTestSubscription(name string, price string, date time.Time) subscription.Subscription {
+	amount, _ := decimal.NewFromString(price)
 	subscription := subscription.Subscription{
-		Name:    "Netflix",
+		Name:    name,
 		Amount:  amount,
-		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
+		DateDue: date,
 	}
 	return subscription
 }
