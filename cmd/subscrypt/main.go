@@ -22,7 +22,7 @@ func main() {
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
 	transactionsAPI := &plaid.PlaidAPI{}
 
-	server := server.NewServer(database, "./web/index.html", client, transactionsAPI)
+	server := server.NewServer(database, client, transactionsAPI)
 	err = http.ListenAndServe(":5000", server)
 	if err != nil {
 		log.Fatalf("could not listen on port 5000 %v", err)
