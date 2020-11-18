@@ -22,22 +22,26 @@ function _showUser(user) {
   let userHTML = "";
   if (user != null) {
     userHTML = _formatUser(user);
+    userHTML += _formatEditUserButton(user)
+
   } else {
-    userHTML = _formatNewUserForm(user);
+    userHTML = _formatUserForm();
   }
   document.getElementById("user").innerHTML = userHTML;
 }
 
-
 function _formatUser(user) {
   return `
   Name: ${user.Name}<br>
-  Email: ${user.Email}
+  Email: ${user.Email}<br>
   `;
-
 }
 
-function _formatUserForm(user) {
+function _formatEditUserButton(user) {
+  return `<button type="button" id="edit-user-button" onclick="showEditUserForm('${user.Name}', '${user.Email}')">Edit</button>`;
+}
+
+function _formatUserForm() {
 
   let userForm = `<form>
   <label for="name">Name:</label>
@@ -50,6 +54,12 @@ function _formatUserForm(user) {
   return userForm;
 }
 
+function showEditUserForm(name, email) {
+  let editUserFormHTML = _formatUserForm();
+  document.getElementById("user").innerHTML = editUserFormHTML;
+  document.getElementById("username").value = name;
+  document.getElementById("email").value = email;
+}
 
 
 // THIS WORKS BELLOW LEAVE IT ALONE! VVVV
