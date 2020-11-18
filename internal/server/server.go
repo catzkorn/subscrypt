@@ -110,7 +110,6 @@ func (s *Server) reminderHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // processPostReminder creates an ics file
-// TODO: then emails it to the user's email
 func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 	var newReminder reminder.Reminder
 	var newSubscription subscription.Subscription
@@ -136,8 +135,6 @@ func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	fmt.Println(user)
 
 	newReminder = reminder.Reminder{
 		Email:          user.Email,
