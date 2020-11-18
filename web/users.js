@@ -23,7 +23,7 @@ function _showUser(user) {
   if (user != null) {
     userHTML = _formatUser(user);
     userHTML += _formatEditUserButton(user);
-
+    loadSubscriptions();
   } else {
     userHTML = _formatUserForm();
   }
@@ -38,17 +38,30 @@ function _formatUser(user) {
 }
 
 function _formatEditUserButton(user) {
-  return `<button type="button" id="edit-user-button" onclick="showEditUserForm('${user.Name}', '${user.Email}')">Edit</button>`;
+  return `<button type="button" class="btn btn-default" id="edit-user-button" onclick="showEditUserForm('${user.Name}', '${user.Email}')">
+            <i class="fas fa-pen"></i>
+          </button>`;
 }
 
 function _formatUserForm() {
 
   let userForm = `<form>
-  <label for="name">Name:</label>
-  <input type="text" id="username"><br>
-  <label for="email">Email:</label>
-  <input type="text" id="email"><br>
-  <button type="button" id="create-user-button" onclick="createUser()">Submit</button>
+    <div class="row">
+        <div class="col">
+            <input type="text" class="form-control" id="username" placeholder="Name">
+        </div>
+        <div class="col">
+            <input type="text" class="form-control" id="email" placeholder="Email">
+        </div>
+        <div class="col">
+            <button type="button" class="btn btn-primary" id="create-user-button" onclick="createUser()"><i class="fas fa-pen"></i></button>
+        </div>
+    </div>
+<!--  <label for="name">Name:</label>-->
+<!--  <input type="text" id="username"><br>-->
+<!--  <label for="email">Email:</label>-->
+<!--  <input type="text" id="email"><br>-->
+<!--  <button type="button" id="create-user-button" onclick="createUser()">Submit</button>-->
 </form>`;
 
   return userForm;

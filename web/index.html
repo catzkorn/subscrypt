@@ -1,28 +1,38 @@
 <!DOCTYPE html>
-<html>
-    <style>
-        table,
-        td {
-            border: 1px solid black;
-        }
-    </style>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="web/styles.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <title>Subscrypt</title>
+</head>
     <body>
-        <h1>Subscrypt</h1>
+        <div class="container" id="heading"><h1>Subscrypt</h1></div>
 
-        <div id="user"></div>
+        <div class="container" id="user"></div>
 
-        <div id="subscriptions"></div>
+        <div class="container" id="subscriptions">
+            <div id="subscriptions-table"></div>
+        </div>
         <span id="reminder-error"></span>
-        <form id="create-subscription-form">
-            <label for="name">Subscription Name:</label>
-            <input type="text" id="subscription-name" name="name"><br>
-            <label for="amount">Subscription Price:</label>
-            <input type="text" id="subscription-amount" name="amount"><br>
-            <label for="date">Date Next Due:</label>
-            <input type="date" id="subscription-date" name="date"><br>
-            <td><button type="button" id="create-subscription-button" onclick="createSubscription()">Submit</button>
-        </form>
+
+
+        <div class="container" id="add-subscriptions">
+            <form id="create-subscription-form">
+                <label for="name">Subscription Name:</label>
+                <input type="text" id="subscription-name" name="name"><br>
+                <label for="amount">Subscription Price:</label>
+                <input type="text" id="subscription-amount" name="amount"><br>
+                <label for="date">Date Next Due:</label>
+                <input type="date" id="subscription-date" name="date"><br>
+                <td><button type="button" id="create-subscription-button" onclick="createSubscription()">Submit</button></td>
+            </form>
+        </div>
+
 
         <button type="button" id="getTransactions" onclick="getTransactions()">Call API</button>
 
