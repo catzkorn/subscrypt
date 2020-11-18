@@ -61,7 +61,7 @@ func NewServer(dataStore DataStore, mailer email.Mailer, transactionAPI Transact
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionIDAPIHandler))
 	s.router.Handle("/api/transactions/", http.HandlerFunc(s.transactionAPIHandler))
 	s.router.Handle("/api/users", http.HandlerFunc(s.userHandler))
-	s.router.Handle("/api/listoftransactions/", http.HandlerFunc(s.listTransactionAPIHandler))
+	s.router.Handle("/api/listoftransactions", http.HandlerFunc(s.listTransactionAPIHandler))
 
 	s.mailer = mailer
 
