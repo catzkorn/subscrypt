@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -65,20 +64,19 @@ func (s *StubDataStore) DeleteSubscription(ID int) error {
 }
 
 func (s *StubDataStore) RecordUserDetails(name string, email string) (*userprofile.Userprofile, error) {
-	userprofile := userprofile.Userprofile{Name: name, Email: email}
+	s.userprofile = userprofile.Userprofile{Name: name, Email: email}
 
-	return &userprofile, nil
+	return &s.userprofile, nil
 }
 func (s *StubDataStore) GetUserDetails() (*userprofile.Userprofile, error) {
-	userprofile := userprofile.Userprofile{}
 
-	return &userprofile, nil
+	return &s.userprofile, nil
 }
 
 type stubTransactionAPI struct {
 }
 
-func (s * stubTransactionAPI) GetTransactions() (plaid.TransactionList, error){
+func (s *stubTransactionAPI) GetTransactions() (plaid.TransactionList, error) {
 	transactions := plaid.TransactionList{Transactions: []plaid.Transaction{{Amount: 9.99, Date: "2020-09-12", Name: "Netflix"}}}
 	return transactions, nil
 }
@@ -258,19 +256,25 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 func TestUserHandler(t *testing.T) {
 
 	t.Run("tests creation of a user", func(t *testing.T) {
-		userprofile := userprofile.Userprofile{}
 
-		store := &StubDataStore{userprofile: userprofile}
+		store := &StubDataStore{}
 
 		transactionAPI := &stubTransactionAPI{}
 		server := NewServer(store, indexTemplatePath, &StubMailer{}, transactionAPI)
 
-		request := newPostUserRequest(t, "Charlotte", os.Getenv("EMAIL"))
+		request := newPostUserRequest(t, "Charlotte", "test@test.com")
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-
 		assertStatus(t, response.Code, http.StatusOK)
+
+		if store.userprofile.Name != "Charlotte" {
+			t.Errorf("incorrect name set got %v want %v", store.userprofile.Name, "Charlotte")
+		}
+
+		if store.userprofile.Email != "test@test.com" {
+			t.Errorf("incorrect name set got %v want %v", store.userprofile.Email, "test@test.com")
+		}
 
 	})
 
