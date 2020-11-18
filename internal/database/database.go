@@ -65,7 +65,7 @@ func (d *Database) RecordSubscription(sub subscription.Subscription) (*subscript
 
 // GetSubscriptions retrieves all subscriptions from the subscription database
 func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
-	rows, err := d.database.QueryContext(context.Background(), "SELECT * FROM subscriptions;")
+	rows, err := d.database.QueryContext(context.Background(), "SELECT id, name, amount, date_due FROM subscriptions WHERE created_at IN (SELECT MAX(created_at) FROM subscriptions);")
 	if err != nil {
 		return nil, fmt.Errorf("unexpected retrieve error: %w", err)
 	}
