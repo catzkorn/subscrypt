@@ -20,7 +20,7 @@ type Subscription struct {
 
 func ProcessTransactions(transactions plaid.TransactionList) []Subscription {
 
-	knownSubscriptions := []string{"Netflix", "Touchstone Climbing", "SparkFun"}
+	knownSubscriptions := []string{"Netflix", "Touchstone Climbing", "SparkFun", "Tectra Inc", "KFC"}
 
 	var subscriptions []Subscription
 
