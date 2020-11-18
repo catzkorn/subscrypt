@@ -88,10 +88,7 @@ func TestAddingSubscriptionToDB(t *testing.T) {
 	t.Run("fails to add a subscription", func(t *testing.T) {
 		emptySubscription := subscription.Subscription{}
 		subscription, err := store.RecordSubscription(emptySubscription)
-
-		if err != nil {
-			t.Fatalf("unexpected database error: %v", err)
-		}
+		assertDatabaseError(t, err)
 
 		if subscription.Name != "" {
 			t.Errorf("database retrieved a subscription when it was not meant to: %w", err)
@@ -159,7 +156,15 @@ func TestGetSubscriptionsFromDB(t *testing.T) {
 	})
 
 	t.Run("correctly handles retrieving from an empty database", func(t *testing.T) {
+		gotSubscriptions, err := store.GetSubscriptions()
+		assertDatabaseError(t, err)
 
+		if len(gotSubscriptions) != 0 {
+			t.Errorf("database retrieved subscriptions unexpectedly: %w", err)
+		}
+
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
 	})
 
 }
