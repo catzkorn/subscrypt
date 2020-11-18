@@ -54,7 +54,9 @@ type DataStore interface {
 func NewServer(dataStore DataStore, indexTemplatePath string, mailer email.Mailer, transactionAPI TransactionAPI) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux(), transactionAPI: transactionAPI}
 	s.router.Handle("/", http.HandlerFunc(s.indexHandler))
+
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
+
 	s.router.Handle("/api/reminders", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions", http.HandlerFunc(s.subscriptionsAPIHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionIDAPIHandler))
@@ -98,14 +100,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // indexHandler handles the routing logic for the index
 func (s *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		err := s.processGetIndex(w)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
+	http.ServeFile(w, r, "./web/index.html")
 }
 
 // reminderHandler handles the routing logic for the reminders
