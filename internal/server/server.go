@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -77,8 +78,13 @@ func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		subscriptions := subscription.ProcessTransactions(transactions)
+		fmt.Println(subscriptions)
 		for _, entry := range subscriptions {
-			_, _ = s.dataStore.RecordSubscription(entry)
+			_, err = s.dataStore.RecordSubscription(entry)
+
+			if err != nil {
+				fmt.Errorf("unexpected insert error: %w", err)
+			}
 		}
 
 		http.Redirect(w, r, "/", http.StatusFound)
