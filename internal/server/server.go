@@ -52,6 +52,7 @@ type DataStore interface {
 func NewServer(dataStore DataStore, mailer email.Mailer, transactionAPI TransactionAPI) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux(), transactionAPI: transactionAPI}
 	s.router.Handle("/", http.HandlerFunc(s.indexHandler))
+	s.router.Handle("/transactions", http.HandlerFunc(s.transactionsHandler))
 
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
 
@@ -60,10 +61,41 @@ func NewServer(dataStore DataStore, mailer email.Mailer, transactionAPI Transact
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionIDAPIHandler))
 	s.router.Handle("/api/transactions/", http.HandlerFunc(s.transactionAPIHandler))
 	s.router.Handle("/api/users", http.HandlerFunc(s.userHandler))
+	s.router.Handle("/api/listoftransactions/", http.HandlerFunc(s.listTransactionAPIHandler))
 
 	s.mailer = mailer
 
 	return s
+}
+
+func (s *Server) transactionsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		s.processGetTransactionPage(w, r)
+	}
+}
+
+func (s *Server) processGetTransactionPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./web/transactions.html")
+}
+
+
+func (s *Server) listTransactionAPIHandler(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	case http.MethodGet:
+		w.Header().Set("content-type", JSONContentType)
+		transactions, err := s.transactionAPI.GetTransactions()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = json.NewEncoder(w).Encode(transactions)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 }
 
 func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
