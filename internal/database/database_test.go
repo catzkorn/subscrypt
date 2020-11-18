@@ -252,7 +252,7 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
 	assertDatabaseError(t, err)
 
-	t.Run("deletes the subscription from the database", func(t *testing.T) {
+	t.Run("deletes a subscription from the database", func(t *testing.T) {
 		subscription := createTestSubscription("BMC", "11.99", time.Date(2020, time.December, 1, 0, 0, 0, 0, time.UTC))
 
 		gotSubscription, err := store.RecordSubscription(subscription)
@@ -263,11 +263,11 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 		err = store.DeleteSubscription(subscriptionID)
 		assertDatabaseError(t, err)
 
-		subscriptions, err := store.GetSubscriptions()
+		gotSubscription, err = store.GetSubscription(subscriptionID)
 		assertDatabaseError(t, err)
 
-		if len(subscriptions) != 0 {
-			t.Errorf("database did not delete subscription, got %v, wanted no subscriptions", subscriptions)
+		if gotSubscription != nil {
+			t.Errorf("database did not delete subscription, got subscription name %v, wanted no subscriptions", gotSubscription.Name)
 		}
 
 		err = clearSubscriptionsTable()
@@ -276,7 +276,6 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 
 	t.Run("attempts to delete a subscription by an invalid ID", func(t *testing.T) {
 		err := store.DeleteSubscription(0)
-
 		if err == nil {
 			t.Errorf("deleting invalid subscription did not error")
 		}
@@ -302,7 +301,6 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 
 		err = clearSubscriptionsTable()
 		assertDatabaseError(t, err)
-
 	})
 }
 
