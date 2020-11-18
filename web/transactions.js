@@ -38,13 +38,13 @@ function _showTransactions(transactions) {
     if (transactions.length > 0) {
         transactionsHTML = _formatTransactionsTable(transactions);
     } else {
-        transactionsHTML = "You don't have any subscriptions";
+        transactionsHTML = "You don't have any Transactions";
     }
     document.getElementById("transactions").innerHTML = transactionsHTML;
 }
 
 function _formatTransactionsTable(transactions) {
-    let tableHTML = `<table id=\"table-subscriptions\" style=\"width:100%\">
+    let tableHTML = `<table id=\"table-transactions\" style=\"width:100%\">
                                 <tr>
                                     <td>Transaction</td>
                                     <td>Date</td>
