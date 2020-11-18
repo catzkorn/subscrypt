@@ -13,13 +13,13 @@
         <div id="user"></div>
 
         <div id="subscriptions"></div>
-
+        <span id="reminder-error"></span>
         <form id="create-subscription-form">
-            <label for="name">Name Of Subscription:</label>
+            <label for="name">Subscription Name:</label>
             <input type="text" id="subscription-name" name="name"><br>
-            <label for="amount">Amount Due Monthly:</label>
+            <label for="amount">Subscription Price:</label>
             <input type="text" id="subscription-amount" name="amount"><br>
-            <label for="date">Date Due Monthly:</label>
+            <label for="date">Date Next Due:</label>
             <input type="date" id="subscription-date" name="date"><br>
             <td><button type="button" id="create-subscription-button" onclick="createSubscription()">Submit</button>
         </form>
