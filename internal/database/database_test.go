@@ -200,6 +200,34 @@ func TestGetSubscriptionByIDFromDB(t *testing.T) {
 		assertDatabaseError(t, err)
 	})
 
+	t.Run("gets a specific subscription from the database", func(t *testing.T) {
+		subscription := createTestSubscription("F1 TV", "8.95", time.Date(2020, time.June, 1, 0, 0, 0, 0, time.UTC))
+
+		wantedSubscription, err := store.RecordSubscription(subscription)
+		assertDatabaseError(t, err)
+
+		gotSubscription, err := store.GetSubscription(wantedSubscription.ID)
+		assertDatabaseError(t, err)
+
+		if gotSubscription.ID != wantedSubscription.ID {
+			t.Errorf("Database did not return an ID, got %v want %v", gotSubscription.ID, wantedSubscription.ID)
+		}
+
+		if gotSubscription.Name != subscription.Name {
+			t.Errorf("Database did not return correct subscription name, got %s want %s", gotSubscription.Name, wantedSubscription.Name)
+		}
+
+		if !gotSubscription.Amount.Equal(subscription.Amount) {
+			t.Errorf("Database did not return correct amount, got %#v want %#v", gotSubscription.Amount, wantedSubscription.Amount)
+		}
+
+		if !gotSubscription.DateDue.Equal(subscription.DateDue) {
+			t.Errorf("Database did not return correct subscription date, got %s want %s", gotSubscription.DateDue, wantedSubscription.DateDue)
+		}
+		err = clearSubscriptionsTable()
+		assertDatabaseError(t, err)
+	})
+
 	t.Run("returns subscription with given ID from DB with multiple records", func(t *testing.T) {
 		helloFreshSub := createTestSubscription("Hello Fresh", "80.00", time.Date(2020, time.November, 18, 0, 0, 0, 0, time.UTC))
 		riverfordSub := createTestSubscription("Riverford", "180.00", time.Date(2020, time.December, 5, 0, 0, 0, 0, time.UTC))
@@ -299,40 +327,6 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 			t.Errorf("database did not delete all instances of the subscription, got %v, wanted no subscriptions", subscriptions)
 		}
 
-		err = clearSubscriptionsTable()
-		assertDatabaseError(t, err)
-	})
-}
-
-func TestGetSubscriptionFromDB(t *testing.T) {
-
-	store, err := NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-	assertDatabaseError(t, err)
-
-	t.Run("gets a specific subscription from the database", func(t *testing.T) {
-		subscription := createTestSubscription("F1 TV", "8.95", time.Date(2020, time.June, 1, 0, 0, 0, 0, time.UTC))
-
-		returnedSubscription, err := store.RecordSubscription(subscription)
-		assertDatabaseError(t, err)
-
-		gotSubscription, err := store.GetSubscription(returnedSubscription.ID)
-		assertDatabaseError(t, err)
-
-		if gotSubscription.ID != returnedSubscription.ID {
-			t.Errorf("Database did not return an ID, got %v want %v", gotSubscription.ID, returnedSubscription.ID)
-		}
-
-		if gotSubscription.Name != subscription.Name {
-			t.Errorf("Database did not return correct subscription name, got %s want %s", gotSubscription.Name, returnedSubscription.Name)
-		}
-
-		if !gotSubscription.Amount.Equal(subscription.Amount) {
-			t.Errorf("Database did not return correct amount, got %#v want %#v", gotSubscription.Amount, returnedSubscription.Amount)
-		}
-
-		if !gotSubscription.DateDue.Equal(subscription.DateDue) {
-			t.Errorf("Database did not return correct subscription date, got %s want %s", gotSubscription.DateDue, returnedSubscription.DateDue)
-		}
 		err = clearSubscriptionsTable()
 		assertDatabaseError(t, err)
 	})
