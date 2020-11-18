@@ -56,7 +56,7 @@ function _showSubscriptions(subscriptions) {
 }
 
 function _formatSubscriptionsTable(subscriptions) {
-    let tableHTML = `<table class="table" id=\"table-subscriptions\" style=\"width:100%\">
+    let tableHTML = `<table class="table" id="table-subscriptions">
                         <thead>
                             <tr>
                                 <th scope="col">Subscription Name</th>

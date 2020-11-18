@@ -55,17 +55,18 @@ function _showUser(user) {
 
 function _formatUser(user) {
   return `
+      <h3>Welcome back</h3>
       <form>
         <div class="form-group row">
-            <label for="name" class="col- col-form-label col-form-label-sm"><span class="icon">${userSvg}</span></label>
+            <label for="name" class="col- col-form-label col-form-label-md"><span class="icon">${userSvg}</span></label>
             <div class="col-3">
-                <input type="text" readonly class="form-control-plaintext form-control-sm" id="username" value="${user.Name}">
+                <input type="text" readonly class="form-control-plaintext form-control-md" id="username" value="${user.Name}">
             </div>
-              <label for="email" class="col- col-form-label col-form-label-sm"><span class="icon">${atSvg}</span></label>
-              <div class="col-3">
-                  <input type="text" readonly class="form-control-plaintext form-control-sm" id="email" value="${user.Email}">
+              <label for="email" class="col- col-form-label col-form-label-md"><span class="icon">${atSvg}</span></label>
+              <div class="col-4">
+                  <input type="text" readonly class="form-control-plaintext form-control-md" id="email" value="${user.Email}">
               </div>
-              <div class="col-5">
+              <div class="col-3">
               ${_formatEditUserButton(user)}
 </div>
         </div>
@@ -85,7 +86,7 @@ function _newUserForm() {
   let newUserForm = `<div class="card w-110 mx-auto" id='new-user-form'>` +
                       `<div class="card-body">` +
                         `<h5 class="card-title text-center">Welcome! Enter your details</h5>` +
-                        _formatUserForm() +
+                        _formatUserForm("new") +
                       "</div>" +
                     "</div>"
   return newUserForm
@@ -99,15 +100,15 @@ function _formatUserForm(type) {
   let userForm = `
     <form>
         <div class="form-group row ${centerClass}">
-            <label for="name" class="col- col-form-label col-form-label-sm"><span class="icon">${userSvg}</span></label>
+            <label for="name" class="col- col-form-label col-form-label-md"><span class="icon">${userSvg}</span></label>
             <div class="col-3">
-                <input type="text" class="form-control form-control-sm" id="username" placeholder="Name">
+                <input type="text" class="form-control form-control-md" id="username" placeholder="Name">
             </div>
-            <label for="email" class="col- col-form-label col-form-label-sm"><span class="icon">${atSvg}</span></label>
+            <label for="email" class="col- col-form-label col-form-label-md"><span class="icon">${atSvg}</span></label>
+            <div class="col-4">
+                <input type="text" class="form-control form-control-md" id="email" placeholder="Email">
+            </div>
             <div class="col-3">
-                <input type="text" class="form-control form-control-sm" id="email" placeholder="Email">
-            </div>
-            <div class="col-5">
                 <button type="button" class="btn btn-primary" id="create-user-button" onclick="createUser()">Submit</button>
             </div>
         </div>
@@ -118,7 +119,8 @@ function _formatUserForm(type) {
 }
 
 function showEditUserForm(name, email) {
-  let editUserFormHTML = _formatUserForm();
+  let editUserFormHTML = "<h3>Welcome back</h3>"
+  editUserFormHTML += _formatUserForm();
   document.getElementById("user").innerHTML = editUserFormHTML;
   document.getElementById("username").value = name;
   document.getElementById("email").value = email;
