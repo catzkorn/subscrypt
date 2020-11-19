@@ -29,10 +29,10 @@ Our team charter can be viewed [here](https://github.com/Catzkorn/subscrypt/wiki
 |      Area      | Technology  |
 | :------------- | :----------: | 
 |  Languages | Go, JavaScript  |
-|  APIs | Plaid, SendGrid  |
-| Testing & Coverage | Go Tests  |   
-|  Linting | Golang-ci  |  
-| CI/CD   | Github Actions, Heroku | 
+|  APIs | [Plaid](https://plaid.com/uk/), [SendGrid](https://sendgrid.com/)  |
+| Testing & Coverage | [Go Tests](https://golang.org/pkg/testing/)  |   
+|  Linting | [Golangci-lint](https://golangci-lint.run/) |  
+| CI/CD   | [Github Actions, Heroku](https://github.com/Catzkorn/subscrypt/wiki/CI-and-CD) | 
 
 # Using Subscrypt
 
@@ -71,7 +71,7 @@ Navigate to `http://localhost:5000/`
 
 ### Name and Email
 
-To access the subscription manager, add an email and password 
+To access the subscription manager, add an email and password (this is not [user authentication](https://github.com/Catzkorn/subscrypt/blob/main/README.md#user-authentication)).
 
 ## Testing
 
@@ -114,7 +114,7 @@ Subscription catagories such as Fitness, Food, Entertainment, etc. could be intr
 
 ### Frontend Testing
 
-At present our frontend is only manually tested due to time constraints and a late decision to move to Javascript/JSON API. Future iterations of the project would include testing these aspects to ensure 
+At present our frontend is only manually tested due to time constraints and a late decision to move to JavaScript/JSON API. Future iterations of the project would include testing these aspects to ensure 
 
 
 ## Attributions
