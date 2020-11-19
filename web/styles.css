@@ -18,9 +18,32 @@ body {
     /*font-family: 'Kumbh Sans', sans-serif;*/
 }
 
-.input-active {
+.input-active, .input-active:focus {
     background-color: rgba(255, 255, 255, 0.25);
     border: none;
+    color: white;
+}
+
+.input-dark {
+    color: black;
+}
+
+.input-light {
+    color: white;
+}
+
+.form-control-plaintext {
+    width: auto;
+    padding: .375rem .75rem;
+}
+
+form#user-form input, .input-light {
+    margin-right: 10px;
+    margin-left: 5px;
+}
+
+button#create-user-button, button#edit-user-button {
+    margin-left: 10px;
 }
 
 .icon-button {
@@ -63,11 +86,13 @@ body {
     stroke: #9370db;
 }
 
+.new-user {
+    color: black;
+}
+
 .user-header {
     color: white;
     padding: 20px;
-
-    /*font-family: 'Kumbh Sans', sans-serif;*/
 }
 
 .btn-primary {
@@ -100,10 +125,6 @@ th {
 
 #new-user-form {
     padding: 10px;
-}
-
-#email, #username {
-    color: white;
 }
 
 #loading-spinner {
