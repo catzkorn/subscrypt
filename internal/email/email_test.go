@@ -30,23 +30,22 @@ type StubDataStore struct {
 }
 
 func (s *StubDataStore) GetSubscription(subscriptionID int) (*subscription.Subscription, error) {
-
 	return &s.subscription, nil
 }
 
 func TestSendingAnEmail(t *testing.T) {
-
 	reminder := reminder.Reminder{
 		Email:          os.Getenv("EMAIL"),
 		SubscriptionID: 1,
-		ReminderDate:   time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
+		ReminderDate:   time.Date(2020, time.December, 11, 0, 0, 0, 0, time.UTC),
 	}
+
 	amount, _ := decimal.NewFromString("8.00")
 	subscription := subscription.Subscription{
 		ID:      1,
 		Name:    "Netflix",
 		Amount:  amount,
-		DateDue: time.Date(2020, time.November, 16, 0, 0, 0, 0, time.UTC),
+		DateDue: time.Date(2020, time.December, 16, 0, 0, 0, 0, time.UTC),
 	}
 
 	user := userprofile.Userprofile{
@@ -55,12 +54,11 @@ func TestSendingAnEmail(t *testing.T) {
 	}
 
 	t.Run("send an email", func(t *testing.T) {
-
 		cal := calendar.CreateReminderInvite(subscription, reminder)
 		client := &StubMailer{}
 		datastore := &StubDataStore{subscription: subscription}
-		err := SendEmail(reminder, user, cal, client, datastore)
 
+		err := SendEmail(reminder, user, cal, client, datastore)
 		if err != nil {
 			t.Errorf("there was an error sending the email %v", err)
 		}
@@ -74,7 +72,5 @@ func TestSendingAnEmail(t *testing.T) {
 		if client.sentEmail.Subject != expectedSubject {
 			t.Errorf("did not get expected subject format, got %v want %v", client.sentEmail.Subject, expectedSubject)
 		}
-
 	})
-
 }
