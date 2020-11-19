@@ -51,12 +51,13 @@ psql -d subscryptdb -f db/migrations/database_setup.sql
 ```Go
 charlotte@Charlottes-MBP subscrypt % go run ./cmd/subscrypt/main.go
 ```
+Navigate to `http://localhost:5000/`
 
 ## How to Use
 
 TBC
 
-Navigate to `http://localhost:5000/`
+
 
 ## Testing
 
