@@ -58,11 +58,11 @@ function _formatUser(user) {
       <h3>Welcome back</h3>
       <form>
         <div class="form-group row">
-            <label for="name" class="col- col-form-label col-form-label-md"><span class="icon">${userSvg}</span></label>
+            <label for="name" class="col- col-form-label col-form-label-md"><span class="icon icon-light">${userSvg}</span></label>
             <div class="col-3">
                 <input type="text" readonly class="form-control-plaintext form-control-md" id="username" value="${user.Name}">
             </div>
-              <label for="email" class="col- col-form-label col-form-label-md"><span class="icon">${atSvg}</span></label>
+              <label for="email" class="col- col-form-label col-form-label-md"><span class="icon icon-light">${atSvg}</span></label>
               <div class="col-4">
                   <input type="text" readonly class="form-control-plaintext form-control-md" id="email" value="${user.Email}">
               </div>
@@ -77,7 +77,7 @@ function _formatUser(user) {
 
 
 function _formatEditUserButton(user) {
-  return `<button type="button" class="icon-button" id="edit-user-button" onclick="showEditUserForm('${user.Name}', '${user.Email}')">` +
+  return `<button type="button" class="icon-button icon-light" id="edit-user-button" onclick="showEditUserForm('${user.Name}', '${user.Email}')">` +
           pencilSvg +
           `</button>`;
 }
@@ -100,11 +100,11 @@ function _formatUserForm(type) {
   let userForm = `
     <form id="user-form">
         <div class="form-group row ${centerClass}">
-            <label for="name" class="col- col-form-label col-form-label-md"><span class="icon">${userSvg}</span></label>
+            <label for="name" class="col- col-form-label col-form-label-md"><span class="icon icon-light">${userSvg}</span></label>
             <div class="col-3">
                 <input type="text" class="form-control form-control-md" id="username" placeholder="Name">
             </div>
-            <label for="email" class="col- col-form-label col-form-label-md"><span class="icon">${atSvg}</span></label>
+            <label for="email" class="col- col-form-label col-form-label-md"><span class="icon icon-light">${atSvg}</span></label>
             <div class="col-4">
                 <input type="text" class="form-control form-control-md" id="email" placeholder="Email">
             </div>
