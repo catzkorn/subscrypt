@@ -59,9 +59,9 @@ func NewServer(dataStore DataStore, mailer email.Mailer, transactionAPI Transact
 	s.router.Handle("/api/reminders", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions", http.HandlerFunc(s.subscriptionsAPIHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionIDAPIHandler))
-	s.router.Handle("/api/transactions/", http.HandlerFunc(s.transactionAPIHandler))
+	s.router.Handle("/api/transactions/load-subscriptions", http.HandlerFunc(s.transactionAPIHandler))
 	s.router.Handle("/api/users", http.HandlerFunc(s.userHandler))
-	s.router.Handle("/api/listoftransactions", http.HandlerFunc(s.listTransactionAPIHandler))
+	s.router.Handle("/api/transactions", http.HandlerFunc(s.listTransactionAPIHandler))
 
 	s.mailer = mailer
 
@@ -101,7 +101,7 @@ func (s *Server) listTransactionAPIHandler(w http.ResponseWriter, r *http.Reques
 func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
-	case http.MethodGet:
+	case http.MethodPost:
 		transactions, err := s.transactionAPI.GetTransactions()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -116,8 +116,6 @@ func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
 				fmt.Errorf("unexpected insert error: %w", err)
 			}
 		}
-
-		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
 
