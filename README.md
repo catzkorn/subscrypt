@@ -16,9 +16,11 @@ Note: Subscrypt is a proof of concept product, using the Plaid open banking API 
 Charlotte Brandhorst-Satzkorn ----- Farhaan Ali ------ Veronica Lee
 - Gophers by [Gopherize.me](https://gopherize.me/)
 
+Go, Team! and the Subscrypt project are the final engineering project for the [Makers Academy](https://makers.tech) Bootcamp for the September 2020 cohort. 
+
 ## Group goals
 
-As a group our aim was to build a project in a new language, 
+The collective aim of the group was to build a project from scratch in a new language. Go was settled on as a language to gain experience with strongly typed languages, the extensive standard library and well documented resources, and employment possibilities for Go engineers.
 
 Our team charter can be viewed [here](https://github.com/Catzkorn/subscrypt/wiki/Team-Charter).
 
@@ -38,6 +40,17 @@ Our team charter can be viewed [here](https://github.com/Catzkorn/subscrypt/wiki
 ## Initial Setup
 Clone the repository: `https://github.com/Catzkorn/subscrypt.git`
 
+For full functionality you will need to either replace code directly, or store specific information as ENV Variables. 
+
+|      Service      | ENV Key Name  | Example |
+| :------------- | :----------: | :----------: | 
+|  SendGrid | SENDGRID_API_KEY  | [Documentation](https://sendgrid.com/docs/API_Reference/api_getting_started.html)
+|  Database | DATABASE_CONN_STRING | "user=charlotte  host=localhost port=5432 database=subscryptdb sslmode=disable" 
+| Plaid API | SECRET  |   [Documentation](https://plaid.com/docs/api/)
+|  Plaid API | CLIENT_ID  |  [Documentation](https://plaid.com/docs/api/)
+|  Email Address | EMAIL  |  "test@test.com"
+
+
 ### Database setup
 
 [Postgresql](https://www.postgresql.org/) is required for this setup.
@@ -51,13 +64,14 @@ psql -d subscryptdb -f db/migrations/database_setup.sql
 ```Go
 charlotte@Charlottes-MBP subscrypt % go run ./cmd/subscrypt/main.go
 ```
+
 Navigate to `http://localhost:5000/`
 
 ## How to Use
 
-TBC
+### Name and Email
 
-
+To access the subscription manager, add an email and password 
 
 ## Testing
 
