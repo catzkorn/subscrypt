@@ -71,20 +71,49 @@ Navigate to `http://localhost:5000/`
 
 ## How to Use
 
+
 ### Add Name and Email
 
 To access the subscription manager, add an email and password (this is not [user authentication](https://github.com/Catzkorn/subscrypt/blob/main/README.md#user-authentication)).
+
+<img src="https://imgur.com/Ya3jLkT.jpg" width="700" height="400">
+
+Once details are provided, the subscriptions page will be displayed.
+
+<img src="https://imgur.com/rPOrORG.jpg" width="700" height="250">
 
 #### Edit Name and Email
 
 As a user, you are able to edit the name and the email the subscription reminders go to by clicking the pencil icon next to the name and email fields and replacing the contents with the updated versions. 
 
+<img src="https://imgur.com/zHSpU1j.jpg" width="700" height="200">
+
 ### Import Subscriptions 
 
 To import subscriptions, click `Load from bank account` and select `Monzo` (The other buttons are dummy buttons). 
+
+<img src="https://imgur.com/8BbWmpX.jpg" width="700" height="250">
+
+
+A spinner will show while the transactions are loading.
+
+<img src="https://imgur.com/Dbq2LEQ.jpg" width="700" height="200">
+
 ### Add Subscription Manually
 
-To add a subscription manually, press `Add a subscription` and insert the desired subscription details, then press `Add subscription`. The subscription will then be show under 'Subscriptions'.
+To add a subscription manually, press `Add a subscription`: 
+
+<img src="https://imgur.com/rPOrORG.jpg" width="350" height="100">
+
+
+Insert the desired subscription details, then press `Add subscription`. 
+
+<img src="https://imgur.com/ANdxWW5.jpg" width="700" height="400">
+
+The subscription will then be show under 'Subscriptions'.
+
+<img src="https://imgur.com/NjA1OEA.jpg" width="700" height="400">
+
 
 ### Receive a Calendar Reminder
 
