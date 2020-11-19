@@ -34,6 +34,7 @@ Our team charter can be viewed [here](https://github.com/Catzkorn/subscrypt/wiki
 | Testing & Coverage | [Go Tests](https://golang.org/pkg/testing/)  |   
 |  Linting | [Golangci-lint](https://golangci-lint.run/) |  
 | CI/CD   | [Github Actions, Heroku](https://github.com/Catzkorn/subscrypt/wiki/CI-and-CD) | 
+| Additional Libraries   | [Information](https://github.com/Catzkorn/subscrypt/wiki/Additional-Libraries) | 
 
 # Using Subscrypt
 
