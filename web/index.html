@@ -38,7 +38,6 @@
     </ul>
 </nav>
 
-<!-- <div class="container user-header" id="user"></div> -->
 <div class="container-fluid user-header pl-4">
     <div class="container" id="user"></div>
 </div>
@@ -47,6 +46,11 @@
 <div class="container" id="subscriptions">
     <div id="subscriptions-table"></div>
     <span id="reminder-error"></span>
+    <div class="d-flex justify-content-center text-secondary">
+        <div class="spinner-border" role="status" id="loading-spinner">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addSubscriptionModal">
         Add new subscription
     </button>
@@ -125,6 +129,8 @@
         </div>
     </div>
 </div>
+
+
 
 <span id="subscription-error"></span>
 
