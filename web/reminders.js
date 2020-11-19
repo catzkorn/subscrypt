@@ -2,7 +2,7 @@ function sendReminder(id) {
 
   showReminderToast();
 
-  let name = document.getElementById('username').value;
+  let name = document.getElementById('user-name').value;
   let email = document.getElementById('email').value;
 
   if (validateUsersInformation(name, email) == false) {

@@ -46,6 +46,15 @@ button#create-user-button, button#edit-user-button {
     margin-left: 10px;
 }
 
+button#reminder-button, button[id^='delete-'] {
+    outline: none;
+}
+
+#chooseBankAccountModal .modal-body button {
+    width:150px;
+    margin-bottom: 10px;
+}
+
 .icon-button {
     background-color: Transparent;
     background-repeat:no-repeat;
