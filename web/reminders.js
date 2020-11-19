@@ -1,7 +1,5 @@
 function sendReminder(id) {
 
-  showReminderToast();
-
   let name = document.getElementById('user-name').value;
   let email = document.getElementById('email').value;
 
@@ -15,7 +13,7 @@ function sendReminder(id) {
 
   xhttp.onreadystatechange = function() {
     if (xhttp.readyState === 4 && xhttp.status === 200) {
-      // showReminderToast()
+      showReminderToast()
     }
   };
   xhttp.open("POST", url, true);

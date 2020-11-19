@@ -138,6 +138,10 @@ th {
     padding: 10px;
 }
 
+#new-user {
+    margin-top: 120px;
+}
+
 #loading-spinner {
     display: none;
     margin-bottom: 20px;
