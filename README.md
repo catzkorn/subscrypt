@@ -45,7 +45,7 @@ For full functionality you will need to either replace code directly, or store s
 |      Service      | ENV Key Name  | Example |
 | :------------- | :----------: | :----------: | 
 |  SendGrid | SENDGRID_API_KEY  | [Documentation](https://sendgrid.com/docs/API_Reference/api_getting_started.html)
-|  Database | DATABASE_CONN_STRING | "user=charlotte  host=localhost port=5432 database=subscryptdb sslmode=disable" 
+|  Database | DATABASE_CONN_STRING | "user={your_name}  host=localhost port=5432 database=subscryptdb sslmode=disable" 
 | Plaid API | SECRET  |   [Documentation](https://plaid.com/docs/api/)
 |  Plaid API | CLIENT_ID  |  [Documentation](https://plaid.com/docs/api/)
 |  Email Address | EMAIL  |  "test@test.com"
