@@ -28,16 +28,6 @@ function deleteSubscription(id) {
     xhttp.send();
 }
 
-function showSpinner() {
-    let spinner = document.getElementById("loading-spinner");
-    spinner.style.display = "block";
-}
-
-function hideSpinner() {
-    let spinner = document.getElementById("loading-spinner");
-    spinner.style.display = "none";
-}
-
 function _getSubscriptions(callback) {
     let xhttp = new XMLHttpRequest();
     let path = '/api/subscriptions';

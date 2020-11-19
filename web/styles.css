@@ -53,6 +53,10 @@ button#reminder-button, button[id^='delete-'] {
     margin-bottom: 10px;
 }
 
+#transactions-spinner {
+    margin-top: 200px;
+}
+
 .icon-button {
     background-color: Transparent;
     background-repeat:no-repeat;
@@ -119,6 +123,11 @@ button#reminder-button, button[id^='delete-'] {
     background-color: rgba(255, 255, 255, 0.75);
     padding: 20px;
     display: none;
+}
+
+#transactions {
+    background-color: rgba(255, 255, 255, 0.75);
+    padding: 20px;
 }
 
 th {
