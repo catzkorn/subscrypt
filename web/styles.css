@@ -14,8 +14,6 @@ body {
     margin: 0;
     background-repeat: no-repeat;
     background-attachment: fixed;
-
-    /*font-family: 'Kumbh Sans', sans-serif;*/
 }
 
 .input-active, .input-active:focus {
@@ -77,11 +75,6 @@ button#reminder-button, button[id^='delete-'] {
     stroke: steelblue;
 }
 
-/*.icon {*/
-/*    width: 20px;*/
-/*    height: 20px;*/
-/*}*/
-
 .icon svg {
     width: 20px;
     height: 20px;
@@ -138,4 +131,5 @@ th {
 
 #loading-spinner {
     display: none;
+    margin-bottom: 20px;
 }
