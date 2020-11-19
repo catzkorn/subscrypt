@@ -67,6 +67,7 @@ func NewServer(dataStore DataStore, mailer email.Mailer, transactionAPI Transact
 	return s
 }
 
+// transactionHandler handles the routing logic for '/api/transactions/'
 func (s *Server) transactionsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		s.processGetTransactionPage(w, r)
