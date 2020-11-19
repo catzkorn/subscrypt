@@ -91,9 +91,9 @@ function _formatUserForm() {
     <form class="form-inline" id="user-form">
       <div class="form-group">
         <label for="user-name" class="col-form-label col-form-label-md"><span class="icon icon-light">${userSvg}</span></label>
-        <input type="text" class="form-control form-control-md input-active" id="user-name" placeholder="Name">
+        <input type="text" class="form-control form-control-md input-active input-light" id="user-name" placeholder="Name">
         <label for="email" class="col-form-label col-form-label-md"><span class="icon icon-light">${atSvg}</span></label>
-        <input type="text" class="form-control form-control-md input-active" id="email" placeholder="Email">
+        <input type="text" class="form-control form-control-md input-active input-light" id="email" placeholder="Email">
         <button type="button" class="btn btn-primary" id="create-user-button" onclick="createUser()">Submit</button>
       </div>
     </form>

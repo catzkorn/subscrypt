@@ -22,22 +22,29 @@ body {
     color: white;
 }
 
-.input-dark {
-    color: black;
-}
-
 .input-light {
     color: white;
 }
 
 .form-control-plaintext {
-    width: auto;
     padding: .375rem .75rem;
 }
 
-form#user-form input, .input-light {
+.input-light {
     margin-right: 10px;
     margin-left: 5px;
+}
+
+input#user-name.input-light {
+    width: 150px;
+}
+
+input#email.input-light {
+    width: 250px;
+}
+
+.input-dark {
+    color: black;
 }
 
 button#create-user-button, button#edit-user-button {
@@ -136,10 +143,6 @@ th {
 
 #new-user-form {
     padding: 10px;
-}
-
-#new-user {
-    margin-top: 120px;
 }
 
 #loading-spinner {
