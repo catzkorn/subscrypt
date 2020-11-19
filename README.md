@@ -1,5 +1,5 @@
 # Subscrypt
-[Meet the Team](https://github.com/Catzkorn/subscrypt#go-team) | [Using Subscrypt](https://github.com/Catzkorn/subscrypt#using-subscrypt) | [Additional Information](https://github.com/Catzkorn/subscrypt#additional-information)
+[Meet the Team](https://github.com/Catzkorn/subscrypt#go-team)| [Tech Stack](https://github.com/Catzkorn/subscrypt/blob/main/README.md#tech-stack) | [Using Subscrypt](https://github.com/Catzkorn/subscrypt#using-subscrypt) | [Additional Information](https://github.com/Catzkorn/subscrypt#additional-information)
 ## About Subscrypt
 
  Subscrypt was born from the frustration of forgetting when subscriptions are due to be renewed, or forgotten completely, and wasting money on unwanted services. To counter this, we made Subscrypt, a subscription manager application. We allow users to import transactions from their bank via the open banking API and have reoccurring monthly subscriptions filtered into Subscrypt. Users are able to view all their subscriptions and request a calendar reminder for 5 days prior to subscription renewal which is emailed to them. The calendar reminder is a .ics file which can be imported into any popular calendar application.
