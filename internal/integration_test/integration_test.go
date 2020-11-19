@@ -37,9 +37,7 @@ func (s *StubMailer) Send(email *mail.SGMailV3) (*rest.Response, error) {
 
 func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-
 	api := &plaid.PlaidAPI{}
-
 	testServer := server.NewServer(store, &StubMailer{}, api)
 
 	amount, _ := decimal.NewFromString("100")
@@ -51,24 +49,25 @@ func TestCreatingSubsAndRetrievingThem(t *testing.T) {
 
 	postRequest := newPostSubscriptionRequest(t, newSubscription)
 	response := httptest.NewRecorder()
-	testServer.ServeHTTP(response, postRequest)
 
+	testServer.ServeHTTP(response, postRequest)
 	assertStatus(t, response.Code, http.StatusOK)
 
 	getRequest := newGetSubscriptionRequest()
 	response = httptest.NewRecorder()
+
 	testServer.ServeHTTP(response, getRequest)
+	assertStatus(t, response.Code, http.StatusOK)
 
 	got := getSubscriptionsFromResponse(t, response.Body)
+	assertSubscription(t, got[0], newSubscription)
 
 	assertStatus(t, response.Code, http.StatusOK)
-	assertSubscription(t, got[0], newSubscription)
 	assertContentType(t, response, JSONContentType)
 }
 
 func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 	store := database.NewInMemorySubscriptionStore()
-
 	api := &plaid.PlaidAPI{}
 	testServer := server.NewServer(store, &StubMailer{}, api)
 
@@ -78,6 +77,7 @@ func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
+
 	storedSubscription, err := store.RecordSubscription(newSubscription)
 	if err != nil {
 		fmt.Println(err)
@@ -87,7 +87,6 @@ func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	testServer.ServeHTTP(response, request)
-
 	assertStatus(t, response.Code, http.StatusOK)
 
 	gotSubscription, err := store.GetSubscription(storedSubscription.ID)
@@ -104,7 +103,8 @@ func TestDeletingSubscriptionFromInMemoryStore(t *testing.T) {
 }
 
 func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
-	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+	store, err := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+	assertDatabaseError(t, err)
 
 	api := &plaid.PlaidAPI{}
 	testServer := server.NewServer(store, &StubMailer{}, api)
@@ -135,11 +135,14 @@ func TestCreatingSubsAndRetrievingThemFromDatabase(t *testing.T) {
 	if got[0].Name != newSubscription.Name {
 		t.Errorf("Subscription not saved and retrieved successfully, got ")
 	}
+
+	err = clearSubscriptionsTable()
+	assertDatabaseError(t, err)
 }
 
 func TestDeletingSubscriptionFromDatabase(t *testing.T) {
-	store, _ := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
-
+	store, err := database.NewDatabaseConnection(os.Getenv("DATABASE_CONN_STRING"))
+	assertDatabaseError(t, err)
 	api := &plaid.PlaidAPI{}
 	testServer := server.NewServer(store, &StubMailer{}, api)
 
@@ -149,6 +152,7 @@ func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 		Amount:  amount,
 		DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC),
 	}
+
 	storedSubscription, err := store.RecordSubscription(newSubscription)
 	if err != nil {
 		fmt.Println(err)
@@ -158,7 +162,6 @@ func TestDeletingSubscriptionFromDatabase(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	testServer.ServeHTTP(response, request)
-
 	assertStatus(t, response.Code, http.StatusOK)
 
 	gotSubscription, err := store.GetSubscription(storedSubscription.ID)
@@ -194,7 +197,6 @@ func assertStatus(t *testing.T, got, want int) {
 // It doesn't check the ID value
 func assertSubscription(t *testing.T, got, want subscription.Subscription) {
 	t.Helper()
-
 	if got.Name != want.Name {
 		t.Errorf("subscriptions not correct - Name mismatch, got %v want %v", got, want)
 	} else if !reflect.DeepEqual(got.Amount, want.Amount) {
@@ -211,8 +213,6 @@ func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want s
 	}
 }
 
-// New Request Test Methods
-
 func newGetSubscriptionRequest() *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, "/api/subscriptions", nil)
 	return req
@@ -225,7 +225,6 @@ func newPostSubscriptionRequest(t *testing.T, subscription subscription.Subscrip
 	if err != nil {
 		t.Errorf("failed to generate new POST subscription request")
 	}
-
 	return req
 }
 
@@ -242,11 +241,9 @@ func newDeleteSubscriptionRequest(ID int) *http.Request {
 func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions []subscription.Subscription) {
 	t.Helper()
 	err := json.NewDecoder(body).Decode(&subscriptions)
-
 	if err != nil {
 		t.Fatalf("Unable to parse response from server %q into slice of Subscription, '%v'", body, err)
 	}
-
 	return
 }
 
@@ -259,6 +256,5 @@ func clearSubscriptionsTable() error {
 	if err != nil {
 		return fmt.Errorf("unexpected connection error: %w", err)
 	}
-
 	return err
 }
