@@ -8,6 +8,8 @@
 Charlotte Brandhorst-Satzkorn --- Farhaan Ali --- Veronica Lee
 
 
+
+* Gophers by [Gopherize.me](https://gopherize.me/)
 # About Subscrypt
 
 ## Tech Stack
@@ -26,10 +28,25 @@ Charlotte Brandhorst-Satzkorn --- Farhaan Ali --- Veronica Lee
 
 ### Heroku
 
-# How to Run
+
+# Using Subscrypt
+
+Clone the repository: `https://github.com/Catzkorn/subscrypt.git`
+
+## How to Run
 
 
-# How to Test
+## Testing
+
+Testing for the project is handled by the [Go standard library testing package](https://golang.org/pkg/testing/). 
+
+## How to Test
+
+Clone repo
+
+```Go
+charlotte@Charlottes-MBP subscrypt % go test ./...
+```
 
 
 # Additional Information
@@ -37,3 +54,8 @@ Charlotte Brandhorst-Satzkorn --- Farhaan Ali --- Veronica Lee
 
 
 ## Future Goals
+
+
+## Attribution
+
+[Hero Icons](https://heroicons.dev/)
