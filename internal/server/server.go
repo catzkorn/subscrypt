@@ -52,7 +52,7 @@ type DataStore interface {
 func NewServer(dataStore DataStore, mailer email.Mailer, transactionAPI TransactionAPI) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux(), transactionAPI: transactionAPI}
 	s.router.Handle("/", http.HandlerFunc(s.indexHandler))
-	s.router.Handle("/transactions", http.HandlerFunc(s.transactionsHandler))
+	s.router.Handle("/transactions/", http.HandlerFunc(s.transactionsHandler))
 
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
 
