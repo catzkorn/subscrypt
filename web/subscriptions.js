@@ -1,5 +1,3 @@
-// const calendarSvg = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>`
-
 // FILLED ICONS
 const calendarSvg = `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>`
 const binSvg = `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>`
@@ -82,7 +80,7 @@ function _formatSubscription(subscription) {
             <td>${_formatAmountTwoDecimals(subscription.amount)}</td>
             <td>${_formatDateAsDay(subscription.dateDue)}</td>
             <td>Monthly</td>
-            <td><button type="button" class="icon-button" id="reminder-${subscription.id}" onclick="sendReminder(${subscription.id})">${calendarSvg}</button>
+            <td><button type="button" class="icon-button" id="reminder-button" onclick="sendReminder(${subscription.id})">${calendarSvg}</button>
            <button type="button" class="icon-button" id="delete-${subscription.id}" onclick="deleteSubscription(${subscription.id})">${binSvg}</button></td>
             </tr>`;
 }

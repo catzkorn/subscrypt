@@ -1,17 +1,19 @@
 loadTransactions();
 
 function loadTransactions() {
+    showSpinner()
     _getTransactions(_showTransactions);
 }
 
 
 function _getTransactions(callback) {
     let xhttp = new XMLHttpRequest();
-    let path = '/api/listoftransactions';
+    let path = '/api/transactions';
     xhttp.onreadystatechange = function() {
         if (xhttp.readyState === 4 && xhttp.status === 200) {
             let transactions = _convertToTransactions(xhttp.responseText);
             callback(transactions);
+            hideSpinner();
         }
     };
     xhttp.open("GET", path, true);
@@ -33,7 +35,7 @@ function _convertToTransactions(res) {
 }
 
 function _showTransactions(transactions) {
-    let transactionsHTML = `<h4>Subscriptions</h4>`;
+    let transactionsHTML = `<h4>Transactions</h4>`;
     if (transactions.length > 0) {
         transactionsHTML += _formatTransactionsTable(transactions);
     } else {

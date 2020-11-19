@@ -7,12 +7,6 @@ html {
 }
 
 body {
-    /* ORANGEY */
-    /*background-image: linear-gradient(300deg, #f6d365 0%, #fda085 100%);*/
-
-    /*background-color: #8BC6EC;*/
-    /*background-image: linear-gradient(135deg, #8BC6EC 0%, #9599E2 100%);*/
-
     background-color: #7f5a83;
     background-image: linear-gradient(315deg, #7f5a83 0%, #0d324d 74%);
 
@@ -20,13 +14,47 @@ body {
     margin: 0;
     background-repeat: no-repeat;
     background-attachment: fixed;
+}
 
-    /*height: 100%;*/
-    /*font-family: 'Kumbh Sans', sans-serif;*/
-    /*color: white;*/
-    /*min-height: 100vh;*/
-    /*display: flex;*/
-    /*flex-direction: column;*/
+.input-active, .input-active:focus {
+    background-color: rgba(255, 255, 255, 0.25);
+    border: none;
+    color: white;
+}
+
+.input-dark {
+    color: black;
+}
+
+.input-light {
+    color: white;
+}
+
+.form-control-plaintext {
+    width: auto;
+    padding: .375rem .75rem;
+}
+
+form#user-form input, .input-light {
+    margin-right: 10px;
+    margin-left: 5px;
+}
+
+button#create-user-button, button#edit-user-button {
+    margin-left: 10px;
+}
+
+button#reminder-button, button[id^='delete-'] {
+    outline: none;
+}
+
+#chooseBankAccountModal .modal-body button {
+    width:150px;
+    margin-bottom: 10px;
+}
+
+#transactions-spinner {
+    margin-top: 200px;
 }
 
 .icon-button {
@@ -36,42 +64,45 @@ body {
     cursor:pointer;
     overflow: hidden;
     outline:none;
-    width: 25px;
+    width: 32px;
     height: 25px;
 }
 
 .icon-button svg {
-    width: 22px;
+    width: 30px;
     height: 22px;
-    fill: slateblue;
-
+    fill: mediumpurple;
 }
 
 .icon-button:hover svg {
-    fill: mediumvioletred;
-}
-
-.icon {
-    width: 20px;
-    height: 20px;
+    fill: steelblue;
+    stroke: steelblue;
 }
 
 .icon svg {
     width: 20px;
     height: 20px;
+}
+
+.icon-dark svg {
     stroke: slateblue;
+}
+
+.icon-light svg {
+    stroke: #9370db;
+}
+
+.new-user {
+    color: black;
 }
 
 .user-header {
     color: white;
     padding: 20px;
-    /*background-image: linear-gradient(300deg, #f6d365 0%, #fda085 100%);*/
-
-    /*font-family: 'Kumbh Sans', sans-serif;*/
 }
 
 .btn-primary {
-    background-color: slateblue;
+    background-color: #6a5acd;
     border: none;
 }
 
@@ -79,28 +110,24 @@ body {
     border-radius: 0px;
 }
 
-/*.btn-primary {*/
-/*    !*background-image: linear-gradient(to right, #02AAB0 0%, #00CDAC  51%, #02AAB0  100%);*!*/
-/*    text-align: center;*/
-/*    text-transform: uppercase;*/
-/*    transition: 0.5s;*/
-/*    background-size: 200% auto;*/
-/*    color: white;*/
-/*    !*display: block;*!*/
-/*    border: none;*/
-/*    margin: 10px;*/
-/*}*/
-
 .btn-primary:hover {
-    background-position: right center; /* change the direction of the change here */
-    color: #fff;
+    background-color: steelblue;
     text-decoration: none;
+}
+
+.navbar-custom {
+    background-color: #0d324d;
 }
 
 #subscriptions {
     background-color: rgba(255, 255, 255, 0.75);
     padding: 20px;
     display: none;
+}
+
+#transactions {
+    background-color: rgba(255, 255, 255, 0.75);
+    padding: 20px;
 }
 
 th {
@@ -111,6 +138,11 @@ th {
     padding: 10px;
 }
 
-#email, #username {
-    color: white;
+#new-user {
+    margin-top: 120px;
+}
+
+#loading-spinner {
+    display: none;
+    margin-bottom: 20px;
 }
