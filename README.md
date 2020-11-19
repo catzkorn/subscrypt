@@ -13,7 +13,7 @@ Note: Subscrypt is a proof of concept product, using the Plaid open banking API 
 
 <img src="https://imgur.com/oePX1Wo.png" width="200" height="200"> <img src="https://imgur.com/YKZhxGt.png" width="200" height="200"> <img src="https://imgur.com/zBtpZ4o.png" width="200" height="200"> 
 
-Charlotte Brandhorst-Satzkorn ----- Farhaan Ali ------ Veronica Lee
+[Charlotte Brandhorst-Satzkorn](https://github.com/Catzkorn/) ----- [Farhaan Ali](https://github.com/farhaan-ali) ------ [Veronica Lee](https://github.com/veronicavlee89)
 - Gophers by [Gopherize.me](https://gopherize.me/)
 
 Go, Team! and the Subscrypt project are the final engineering project for the [Makers Academy](https://makers.tech) Bootcamp as a part of the September 2020 cohort. 
@@ -159,3 +159,7 @@ A massive thank you to [Chris James](https://github.com/quii) for Learn Go with 
 ### [GoTest](https://github.com/rakyll/gotest)
 
 Thank you [Jaana Dogan](https://github.com/rakyll) who published GoTest, which improves the accessibility of go tests.
+
+## Wiki
+
+Our wiki can be found [here](https://github.com/Catzkorn/subscrypt/wiki)
