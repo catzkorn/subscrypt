@@ -60,7 +60,7 @@ body {
 }
 
 .icon-light svg {
-    stroke: mediumpurple;
+    stroke: #9370db;
 }
 
 .user-header {
@@ -71,7 +71,7 @@ body {
 }
 
 .btn-primary {
-    background-color: slateblue;
+    background-color: #6a5acd;
     border: none;
 }
 

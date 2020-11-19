@@ -90,7 +90,7 @@ function _formatSubscription(subscription) {
             <td>${_formatAmountTwoDecimals(subscription.amount)}</td>
             <td>${_formatDateAsDay(subscription.dateDue)}</td>
             <td>Monthly</td>
-            <td><button type="button" class="icon-button" id="reminder-${subscription.id}" onclick="sendReminder(${subscription.id})">${calendarSvg}</button>
+            <td><button type="button" class="icon-button" id="reminder-button" onclick="sendReminder(${subscription.id})">${calendarSvg}</button>
            <button type="button" class="icon-button" id="delete-${subscription.id}" onclick="deleteSubscription(${subscription.id})">${binSvg}</button></td>
             </tr>`;
 }
@@ -158,9 +158,4 @@ function _convertToSubscriptions(res) {
 
 function _formatDateForJSON(date) {
     return date + "T00:00:00Z";
-}
-
-function _formatButtonSpinner() {
-    return '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>\n' +
-            '<span class="sr-only">Loading...</span>'
 }
