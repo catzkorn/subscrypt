@@ -97,7 +97,6 @@ func (s *Server) listTransactionAPIHandler(w http.ResponseWriter, r *http.Reques
 
 // transactionsAPIHandler
 func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
-
 	switch r.Method {
 	case http.MethodGet:
 		transactions, err := s.transactionAPI.GetTransactions()

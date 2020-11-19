@@ -32,7 +32,6 @@ func NewDatabaseConnection(databaseDSN string) (*Database, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unexpected connection error: %w", err)
 	}
-
 	return &Database{database: db}, nil
 }
 
@@ -65,7 +64,6 @@ func (d *Database) RecordSubscription(sub subscription.Subscription) (*subscript
 
 // GetSubscriptions retrieves all subscriptions from the subscription database
 func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
-
 	rows, err := d.database.QueryContext(context.Background(), "select t1.id, t1.name, t1.amount, t1.date_due from subscriptions t1 left join subscriptions t2 on t1.name = t2.name and t2.created_at >t1.created_at where t2.name is null;")
 	if err != nil {
 		return nil, fmt.Errorf("unexpected retrieve error: %w", err)
@@ -96,7 +94,6 @@ func (d *Database) GetSubscriptions() ([]subscription.Subscription, error) {
 // GetSubscription retrieves a single subscription that has the given ID from the subscription database
 // If no subscription is found with the given ID, it returns a nil pointer
 func (d *Database) GetSubscription(subscriptionID int) (*subscription.Subscription, error) {
-
 	var id int
 	var name string
 	var amount pgtype.Numeric
@@ -157,22 +154,18 @@ func (d *Database) DeleteSubscription(subscriptionID int) error {
 	if rowsAffected == 0 {
 		return fmt.Errorf("no rows were affected by deletion request")
 	}
-
 	return nil
 }
 
 // RecordUserDetails records a users name and email
 func (d *Database) RecordUserDetails(name string, email string) (*userprofile.Userprofile, error) {
-
 	insertQuery := `
 	INSERT INTO users (name, email) 
 	VALUES ($1, $2) 
 	ON CONFLICT (id)
 	DO UPDATE SET name=EXCLUDED.name, email=EXCLUDED.email
 `
-
 	_, err := d.database.ExecContext(context.Background(), insertQuery, name, email)
-
 	if err != nil {
 		return nil, fmt.Errorf("unexpected insert error: %v", err)
 	}
@@ -182,7 +175,6 @@ func (d *Database) RecordUserDetails(name string, email string) (*userprofile.Us
 		Email: email,
 	}
 	return &newUserprofile, nil
-
 }
 
 // GetUserDetails retrieves a users details
