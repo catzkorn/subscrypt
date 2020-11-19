@@ -79,6 +79,7 @@ func (s *Server) processGetTransactionPage(w http.ResponseWriter, r *http.Reques
 	http.ServeFile(w, r, "./web/transactions.html")
 }
 
+// listTransactionAPIHandler returns a list of transactions from the API in JSON format
 func (s *Server) listTransactionAPIHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -97,7 +98,7 @@ func (s *Server) listTransactionAPIHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// transactionsAPIHandler
+// transactionsAPIHandler calls the Plaid API to get a list of transactions and then stores relevant subscriptions in the database
 func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
