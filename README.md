@@ -103,7 +103,7 @@ A spinner will show while the transactions are loading.
 
 To add a subscription manually, press `Add a subscription`: 
 
-<img src="https://imgur.com/rPOrORG.jpg" width="350" height="100">
+<img src="https://imgur.com/rPOrORG.jpg" width="700" height="200">
 
 
 Insert the desired subscription details, then press `Add subscription`. 
@@ -112,12 +112,15 @@ Insert the desired subscription details, then press `Add subscription`.
 
 The subscription will then be show under 'Subscriptions'.
 
-<img src="https://imgur.com/NjA1OEA.jpg" width="700" height="400">
+<img src="https://imgur.com/NjA1OEA.jpg" width="700" height="300">
 
 
 ### Receive a Calendar Reminder
 
 To receive a calendar reminder, click the envelope next to the desired subscription and an email will be sent to the specified user email address with a .ics file attachment that can be added to the desired calendar application. 
+
+<img src="https://imgur.com/eGZun4w.jpg" width="700" height="400">
+
 
 ### Delete a Subscription
 
