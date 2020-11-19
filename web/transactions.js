@@ -7,7 +7,7 @@ function loadTransactions() {
 
 function _getTransactions(callback) {
     let xhttp = new XMLHttpRequest();
-    let path = '/api/listoftransactions';
+    let path = '/api/transactions';
     xhttp.onreadystatechange = function() {
         if (xhttp.readyState === 4 && xhttp.status === 200) {
             let transactions = _convertToTransactions(xhttp.responseText);

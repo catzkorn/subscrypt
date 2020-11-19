@@ -51,11 +51,11 @@ type DataStore interface {
 // NewServer returns a instance of a Server
 func NewServer(dataStore DataStore, mailer email.Mailer, transactionAPI TransactionAPI) *Server {
 	s := &Server{dataStore: dataStore, router: http.NewServeMux(), transactionAPI: transactionAPI}
-	s.router.Handle("/", http.HandlerFunc(s.indexHandler))
+
 	s.router.Handle("/transactions/", http.HandlerFunc(s.transactionsHandler))
 
 	s.router.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
-
+	s.router.Handle("/", http.HandlerFunc(s.indexHandler))
 	s.router.Handle("/api/reminders", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions", http.HandlerFunc(s.subscriptionsAPIHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionIDAPIHandler))
