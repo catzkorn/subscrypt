@@ -36,15 +36,14 @@ body {
     cursor:pointer;
     overflow: hidden;
     outline:none;
-    width: 25px;
+    width: 32px;
     height: 25px;
 }
 
 .icon-button svg {
-    width: 22px;
+    width: 30px;
     height: 22px;
     fill: slateblue;
-
 }
 
 .icon-button:hover svg {
