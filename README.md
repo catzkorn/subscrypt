@@ -16,7 +16,7 @@ Note: Subscrypt is a proof of concept product, using the Plaid open banking API 
 Charlotte Brandhorst-Satzkorn ----- Farhaan Ali ------ Veronica Lee
 - Gophers by [Gopherize.me](https://gopherize.me/)
 
-Go, Team! and the Subscrypt project are the final engineering project for the [Makers Academy](https://makers.tech) Bootcamp for the September 2020 cohort. 
+Go, Team! and the Subscrypt project are the final engineering project for the [Makers Academy](https://makers.tech) Bootcamp as a part of the September 2020 cohort. 
 
 ## Group goals
 
@@ -28,7 +28,7 @@ Our team charter can be viewed [here](https://github.com/Catzkorn/subscrypt/wiki
 
 |      Area      | Technology  |
 | :------------- | :----------: | 
-|  Languages | Go, JavaScript  |
+|  Languages | [Go](https://golang.org/), [JavaScript](https://www.javascript.com/)  |
 |  APIs | [Plaid](https://plaid.com/uk/), [SendGrid](https://sendgrid.com/)  |
 |  Database | [Postgresql](https://www.postgresql.org/) |
 | Testing & Coverage | [Go Tests](https://golang.org/pkg/testing/)  |   
@@ -80,13 +80,10 @@ As a user, you are able to edit the name and the email the subscription reminder
 
 ### Import Subscriptions 
 
-Instructions here
-
-Demonstration of the open banking api integration
-
+To import subscriptions, click `Load from bank account` and select `Monzo` (The other buttons are dummy buttons). 
 ### Add Subscription Manually
 
-Instructions here
+To add a subscription manually, press `Add a subscription` and insert the desired subscription details, then press `Add subscription`. The subscription will then be show under 'Subscriptions'.
 
 ### Receive a Calendar Reminder
 
