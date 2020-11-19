@@ -74,6 +74,7 @@ func (s *Server) transactionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// processGetTransactionPage processes the get '/api/transactions/' and serves the html file
 func (s *Server) processGetTransactionPage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./web/transactions.html")
 }
