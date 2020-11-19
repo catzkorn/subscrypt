@@ -102,11 +102,11 @@ function _formatUserForm(type) {
         <div class="form-group row ${centerClass}">
             <label for="name" class="col- col-form-label col-form-label-md"><span class="icon icon-light">${userSvg}</span></label>
             <div class="col-3">
-                <input type="text" class="form-control form-control-md" id="username" placeholder="Name">
+                <input type="text" class="form-control form-control-md input-active" id="username" placeholder="Name">
             </div>
             <label for="email" class="col- col-form-label col-form-label-md"><span class="icon icon-light">${atSvg}</span></label>
             <div class="col-4">
-                <input type="text" class="form-control form-control-md" id="email" placeholder="Email">
+                <input type="text" class="form-control form-control-md input-active" id="email" placeholder="Email">
             </div>
             <div class="col-3">
                 <button type="button" class="btn btn-primary" id="create-user-button" onclick="createUser()">Submit</button>
