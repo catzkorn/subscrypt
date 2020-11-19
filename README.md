@@ -1,4 +1,4 @@
-# subscrypt
+# Subscrypt
 
 
 # The Team
