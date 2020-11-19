@@ -98,7 +98,7 @@ function _formatUserForm(type) {
     centerClass = "justify-content-center"
   }
   let userForm = `
-    <form>
+    <form id="user-form">
         <div class="form-group row ${centerClass}">
             <label for="name" class="col- col-form-label col-form-label-md"><span class="icon">${userSvg}</span></label>
             <div class="col-3">

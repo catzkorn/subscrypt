@@ -2,16 +2,32 @@ h1 {
     margin-top: 20px;
 }
 
-/*body {*/
-/*    background-image: linear-gradient(300deg, #f6d365 0%, #fda085 100%);*/
+html {
+    height: 100%;
+}
 
-/*    !*height: 100%;*!*/
-/*    !*font-family: 'Kumbh Sans', sans-serif;*!*/
-/*    !*color: white;*!*/
-/*    !*min-height: 100vh;*!*/
-/*    !*display: flex;*!*/
-/*    !*flex-direction: column;*!*/
-/*}*/
+body {
+    /* ORANGEY */
+    /*background-image: linear-gradient(300deg, #f6d365 0%, #fda085 100%);*/
+
+    /*background-color: #8BC6EC;*/
+    /*background-image: linear-gradient(135deg, #8BC6EC 0%, #9599E2 100%);*/
+
+    background-color: #7f5a83;
+    background-image: linear-gradient(315deg, #7f5a83 0%, #0d324d 74%);
+
+    height: 100%;
+    margin: 0;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+
+    /*height: 100%;*/
+    /*font-family: 'Kumbh Sans', sans-serif;*/
+    /*color: white;*/
+    /*min-height: 100vh;*/
+    /*display: flex;*/
+    /*flex-direction: column;*/
+}
 
 .icon-button {
     background-color: Transparent;
@@ -47,34 +63,33 @@ h1 {
 }
 
 .user-header {
-    /*color: white;*/
+    color: white;
     padding: 20px;
     /*background-image: linear-gradient(300deg, #f6d365 0%, #fda085 100%);*/
 
     /*font-family: 'Kumbh Sans', sans-serif;*/
 }
 
-/*.btn-primary {*/
-/*    !*background-color: slateblue;*!*/
-/*    !*border: none;*!*/
-/*}*/
+.btn-primary {
+    background-color: slateblue;
+    border: none;
+}
 
 .btn {
     border-radius: 0px;
 }
 
-.btn-primary {
-    background-image: linear-gradient(to right, #02AAB0 0%, #00CDAC  51%, #02AAB0  100%);
-    text-align: center;
-    text-transform: uppercase;
-    transition: 0.5s;
-    background-size: 200% auto;
-    color: white;
-    /*box-shadow: 0 0 20px #eee;*/
-    /*display: block;*/
-    border: none;
-    margin: 10px;
-}
+/*.btn-primary {*/
+/*    !*background-image: linear-gradient(to right, #02AAB0 0%, #00CDAC  51%, #02AAB0  100%);*!*/
+/*    text-align: center;*/
+/*    text-transform: uppercase;*/
+/*    transition: 0.5s;*/
+/*    background-size: 200% auto;*/
+/*    color: white;*/
+/*    !*display: block;*!*/
+/*    border: none;*/
+/*    margin: 10px;*/
+/*}*/
 
 .btn-primary:hover {
     background-position: right center; /* change the direction of the change here */
@@ -88,6 +103,14 @@ h1 {
     display: none;
 }
 
+th {
+    background-color: rgba(255, 255, 255, 0.18);
+}
+
 #new-user-form {
     padding: 10px;
+}
+
+#email, #username {
+    color: white;
 }
