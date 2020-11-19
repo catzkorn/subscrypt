@@ -30,12 +30,12 @@ Our team charter can be viewed [here](https://github.com/Catzkorn/subscrypt/wiki
 | :------------- | :----------: | 
 |  Languages | Go, JavaScript  |
 |  APIs | [Plaid](https://plaid.com/uk/), [SendGrid](https://sendgrid.com/)  |
+|  Database | [Postgresql](https://www.postgresql.org/) |
 | Testing & Coverage | [Go Tests](https://golang.org/pkg/testing/)  |   
 |  Linting | [Golangci-lint](https://golangci-lint.run/) |  
 | CI/CD   | [Github Actions, Heroku](https://github.com/Catzkorn/subscrypt/wiki/CI-and-CD) | 
 
 # Using Subscrypt
-
 
 ## Initial Setup
 Clone the repository: `https://github.com/Catzkorn/subscrypt.git`
@@ -56,22 +56,45 @@ For full functionality you will need to either replace code directly, or store s
 [Postgresql](https://www.postgresql.org/) is required for this setup.
 
 ```Go
+// Run postgres
 psql -c 'CREATE DATABASE subscryptdb;'
 psql -d subscryptdb -f db/migrations/database_setup.sql
 ```
 
 ## How to Run
 ```Go
-charlotte@Charlottes-MBP subscrypt % go run ./cmd/subscrypt/main.go
+$ go run ./cmd/subscrypt/main.go
 ```
 
 Navigate to `http://localhost:5000/`
 
 ## How to Use
 
-### Name and Email
+### Add Name and Email
 
 To access the subscription manager, add an email and password (this is not [user authentication](https://github.com/Catzkorn/subscrypt/blob/main/README.md#user-authentication)).
+
+#### Edit Name and Email
+
+As a user, you are able to edit the name and the email the subscription reminders go to by clicking the pencil icon next to the name and email fields and replacing the contents with the updated versions. 
+
+### Import Subscriptions 
+
+Instructions here
+
+Demonstration of the open banking api integration
+
+### Add Subscription Manually
+
+Instructions here
+
+### Receive a Calendar Reminder
+
+To receive a calendar reminder, click the envelope next to the desired subscription and an email will be sent to the specified user email address with a .ics file attachment that can be added to the desired calendar application. 
+
+### Delete a Subscription
+
+To delete a subscription, press the bin icon next to the desired subscription.
 
 ## Testing
 
@@ -81,20 +104,20 @@ Testing for the project is handled by the [Go standard library testing package](
 
 ```Go
 // Run tests
-charlotte@Charlottes-MBP subscrypt % go test ./...
+$ go test ./...
 ```
 
 ### Test Coverage
 
 ```Go
 // View test coverage per file
-charlotte@Charlottes-MBP subscrypt % go test ./... -cover
+$ go test ./... -cover
 
 // Generate a test coverage profile
-charlotte@Charlottes-MBP subscrypt % go test ./... -coverprofile=coverage.out
+$ go test ./... -coverprofile=coverage.out
 
 // View coverage report (opens broswer window)
-charlotte@Charlottes-MBP subscrypt % go tool cover -html=coverage.out
+$ go tool cover -html=coverage.out
 ```
 
 
@@ -108,13 +131,21 @@ The current state of the product does not allow for individual user accounts and
 
 Future versions of this product would include users being able to sign up, log in , manage their details and have the ability to delete their account if they wished to. 
 
-### Catagories and Cost
+### Subscription Frequencies
 
-Subscription catagories such as Fitness, Food, Entertainment, etc. could be introduced to allow the user to see a breakdown of subscriptions per category. Additionally, a user would be able to see a breakdown of how much the total of their subscriptions cost for each category, as well as for all of their subscriptions. 
+We are currently only able to handle monthly subscriptions, which excludes being able to handle users weekly, bi-weekly, quarterly, half or yearly subscriptions. Adding this functionality would provide the user with a more complete experience. 
+
+### Customisable Reminder Time Frame
+
+The current configuration defaults all calendar reminders to be stored as calendar events 5 days before the subscription is due to renew. Future iterations would allow for the user to determine the time frame in which a reminder would appear before the subscription renewal is due. 
+
+### Categories and Cost
+
+Subscription categories such as Fitness, Food, Entertainment, etc. could be introduced to allow the user to see a breakdown of subscriptions per category. Additionally, a user would be able to see a breakdown of how much the total of their subscriptions cost for each category, as well as for all of their subscriptions. 
 
 ### Frontend Testing
 
-At present our frontend is only manually tested due to time constraints and a late decision to move to JavaScript/JSON API. Future iterations of the project would include testing these aspects to ensure 
+At present our frontend is only manually tested due to time constraints and a late decision to move to JavaScript/JSON API. Future iterations of the project would include testing these aspects to ensure full functionality and consistent user experience.
 
 
 ## Attributions
