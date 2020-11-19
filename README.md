@@ -10,9 +10,21 @@ Charlotte Brandhorst-Satzkorn --- Farhaan Ali --- Veronica Lee
 
 # About Subscrypt
 
-
 ## Tech Stack
 
+### Go
+
+### Postgres
+
+### Javascript
+
+### Bootstrap
+
+## CI/CD
+
+### Github Actions
+
+### Heroku
 
 # How to Run
 
