@@ -92,20 +92,6 @@ func TestGetTransactions(t *testing.T) {
 
 		assertStatus(t, response.Code, http.StatusOK)
 	})
-
-	t.Run("Successfully loads transactions page", func(t *testing.T) {
-		store := &StubDataStore{}
-		transactionAPI := &stubTransactionAPI{}
-		server := NewServer(store, &StubMailer{}, transactionAPI)
-
-		request, _ := http.NewRequest(http.MethodGet, "/transactions/", nil)
-		response := httptest.NewRecorder()
-
-		server.ServeHTTP(response, request)
-		fmt.Println(response.Body)
-
-		assertStatus(t, response.Code, http.StatusOK)
-	})
 }
 
 func TestLoadSubscriptions(t *testing.T) {
