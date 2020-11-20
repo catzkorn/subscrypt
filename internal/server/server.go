@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -68,19 +67,20 @@ func NewServer(dataStore DataStore, mailer email.Mailer, transactionAPI Transact
 	return s
 }
 
+// transactionHandler handles the routing logic for '/api/transactions/'
 func (s *Server) transactionsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		s.processGetTransactionPage(w, r)
 	}
 }
 
+// processGetTransactionPage processes the get '/api/transactions/' and serves the html file
 func (s *Server) processGetTransactionPage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./web/transactions.html")
 }
 
-
+// listTransactionAPIHandler returns a list of transactions from the API in JSON format
 func (s *Server) listTransactionAPIHandler(w http.ResponseWriter, r *http.Request) {
-
 	switch r.Method {
 	case http.MethodGet:
 		w.Header().Set("content-type", JSONContentType)
@@ -98,22 +98,22 @@ func (s *Server) listTransactionAPIHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+// transactionsAPIHandler calls the Plaid API to get a list of transactions and then stores relevant subscriptions in the database
 func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
-
 	switch r.Method {
 	case http.MethodPost:
 		transactions, err := s.transactionAPI.GetTransactions()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		subscriptions := subscription.ProcessTransactions(transactions)
-		fmt.Println(subscriptions)
 		for _, entry := range subscriptions {
 			_, err = s.dataStore.RecordSubscription(entry)
-
 			if err != nil {
-				fmt.Errorf("unexpected insert error: %w", err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 		}
 	}
@@ -179,7 +179,6 @@ func (s *Server) processPostReminder(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -208,16 +207,17 @@ func (s *Server) subscriptionIDAPIHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// userHandler hanldes the routing logic for the '/api/users' paths
 func (s *Server) userHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		s.processGetUser(w)
 	case http.MethodPost:
 		s.processPostUser(w, r)
-
 	}
 }
 
+// processGetUser processes the get /api/users request and returns the user
 func (s *Server) processGetUser(w http.ResponseWriter) {
 	w.Header().Set("content-type", JSONContentType)
 
@@ -232,9 +232,9 @@ func (s *Server) processGetUser(w http.ResponseWriter) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 }
 
+// processPostUser processes the post /api/users request and records a users details
 func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
 	var userProfile userprofile.Userprofile
 
@@ -251,7 +251,6 @@ func (s *Server) processPostUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-
 }
 
 // processGetIndex processes the GET / request, returning the index page html
@@ -294,7 +293,6 @@ func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request)
 
 // processDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID
 func (s *Server) processDeleteSubscription(w http.ResponseWriter, ID int) {
-
 	retrievedSubscription, err := s.dataStore.GetSubscription(ID)
 
 	switch {

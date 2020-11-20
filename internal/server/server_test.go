@@ -113,9 +113,9 @@ func TestGETSubscriptions(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		got := getSubscriptionsFromResponse(t, response.Body)
+		assertSubscriptions(t, got, wantedSubscriptions)
 
 		assertStatus(t, response.Code, http.StatusOK)
-		assertSubscriptions(t, got, wantedSubscriptions)
 		assertContentType(t, response, JSONContentType)
 	})
 }
@@ -127,7 +127,6 @@ func TestStoreSubscription(t *testing.T) {
 		subscription := subscription.Subscription{Name: "Netflix", Amount: amount, DateDue: time.Date(2020, time.November, 11, 0, 0, 0, 0, time.UTC)}
 
 		store := &StubDataStore{}
-
 		transactionAPI := &stubTransactionAPI{}
 		server := NewServer(store, &StubMailer{}, transactionAPI)
 
@@ -135,7 +134,6 @@ func TestStoreSubscription(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-
 		assertStatus(t, response.Code, http.StatusOK)
 
 		if len(store.subscriptions) != 1 {
@@ -157,7 +155,6 @@ func TestCreateReminder(t *testing.T) {
 		}
 
 		store := &StubDataStore{subscriptions: subscriptions}
-
 		transactionAPI := &stubTransactionAPI{}
 		server := NewServer(store, &StubMailer{}, transactionAPI)
 
@@ -165,10 +162,7 @@ func TestCreateReminder(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-
-		fmt.Println(response.Body.String())
 		assertStatus(t, response.Code, http.StatusOK)
-
 	})
 
 }
@@ -197,11 +191,9 @@ func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want s
 func getSubscriptionsFromResponse(t *testing.T, body io.Reader) (subscriptions []subscription.Subscription) {
 	t.Helper()
 	err := json.NewDecoder(body).Decode(&subscriptions)
-
 	if err != nil {
-		t.Fatalf("Unable to parse response from server %q into slice of Subscription, '%v'", body, err)
+		t.Fatalf("unable to parse response from server %q into slice of Subscription, '%v'", body, err)
 	}
-
 	return
 }
 
@@ -215,7 +207,6 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 		server := NewServer(store, &StubMailer{}, transactionAPI)
 
 		request := newDeleteSubscriptionRequest(t, 1)
-
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
@@ -237,7 +228,6 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-
 		assertStatus(t, response.Code, http.StatusNotFound)
 	})
 }
@@ -245,9 +235,7 @@ func TestDeleteSubscriptionAPI(t *testing.T) {
 func TestUserHandler(t *testing.T) {
 
 	t.Run("tests creation of a user", func(t *testing.T) {
-
 		store := &StubDataStore{}
-
 		transactionAPI := &stubTransactionAPI{}
 		server := NewServer(store, &StubMailer{}, transactionAPI)
 
@@ -264,18 +252,15 @@ func TestUserHandler(t *testing.T) {
 		if store.userprofile.Email != "gary@gopher.com" {
 			t.Errorf("incorrect name set got %v want %v", store.userprofile.Email, "gary@gopher.com")
 		}
-
 	})
 
 	t.Run("tests retrival of user", func(t *testing.T) {
-
 		userProfile := userprofile.Userprofile{
 			Name:  "Gary Gopher",
 			Email: "gary@gopher.com",
 		}
 
 		store := &StubDataStore{userprofile: userProfile}
-
 		transactionAPI := &stubTransactionAPI{}
 		server := NewServer(store, &StubMailer{}, transactionAPI)
 
@@ -283,14 +268,13 @@ func TestUserHandler(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-
 		assertStatus(t, response.Code, http.StatusOK)
 
 		var retrievedUserProfile userprofile.Userprofile
 
 		err := json.NewDecoder(response.Body).Decode(&retrievedUserProfile)
 		if err != nil {
-			t.Fatalf("Unable to parse response from server %q into user profile, '%v'", response.Body, err)
+			t.Fatalf("unable to parse response from server %q into user profile, '%v'", response.Body, err)
 		}
 
 		if retrievedUserProfile.Name != userProfile.Name {
@@ -302,7 +286,6 @@ func TestUserHandler(t *testing.T) {
 		}
 
 		assertContentType(t, response, JSONContentType)
-
 	})
 
 }
@@ -319,11 +302,9 @@ func newGetSubscriptionRequest(t testing.TB) *http.Request {
 func newPostSubscriptionRequest(t *testing.T, subscription subscription.Subscription) *http.Request {
 	postBody, _ := json.Marshal(subscription)
 	req, err := http.NewRequest(http.MethodPost, "/api/subscriptions", bytes.NewBuffer(postBody))
-
 	if err != nil {
 		t.Errorf("failed to generate new POST subscription request")
 	}
-
 	return req
 }
 

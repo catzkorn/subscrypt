@@ -27,7 +27,6 @@ const timeLayout = "January 2, 2006"
 
 // SendEmail sends a reminder email
 func SendEmail(reminder reminder.Reminder, user userprofile.Userprofile, event *ics.Calendar, mailer Mailer, datastore DataStore) error {
-
 	subscription, err := datastore.GetSubscription(reminder.SubscriptionID)
 	if err != nil {
 		return fmt.Errorf("failed to get subscription: %w", err)
@@ -54,10 +53,10 @@ func SendEmail(reminder reminder.Reminder, user userprofile.Userprofile, event *
 	if response.StatusCode != http.StatusAccepted {
 		return fmt.Errorf("did not return expected status code")
 	}
-
 	return nil
 }
 
+// createAttachment creates an attachment of a ics calendar event and returns it
 func createAttachment(event *ics.Calendar) *mail.Attachment {
 	calendarInvite := mail.NewAttachment()
 
