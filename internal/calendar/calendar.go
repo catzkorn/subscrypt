@@ -25,7 +25,7 @@ func CreateReminderInvite(subscription subscription.Subscription, reminder remin
 	event.SetDescription(fmt.Sprintf("Hey! Your %s subscription is due to renew on %v and you asked us to remind you about that!",
 		subscription.Name, subscription.DateDue))
 	event.SetOrganizer("team@subscrypt.com", ics.WithCN("Subscrypt Team"))
-	event.AddAttendee(fmt.Sprintf("%s", reminder.Email), ics.CalendarUserTypeIndividual, ics.ParticipationStatusNeedsAction, ics.ParticipationRoleReqParticipant, ics.WithRSVP(true))
+	event.AddAttendee(reminder.Email, ics.CalendarUserTypeIndividual, ics.ParticipationStatusNeedsAction, ics.ParticipationRoleReqParticipant, ics.WithRSVP(true))
 
 	return cal
 
