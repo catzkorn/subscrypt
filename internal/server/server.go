@@ -3,6 +3,9 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"path"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -74,9 +77,11 @@ func (s *Server) transactionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// processGetTransactionPage processes the get '/api/transactions/' and serves the html file
+// processGetTransactionPage processes the get '/transactions/' and serves the html file
 func (s *Server) processGetTransactionPage(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./web/transactions.html")
+	_, file, _, _ := runtime.Caller(0)
+	pathString := filepath.Join(path.Dir(file), "../../web/transactions.html")
+	http.ServeFile(w, r, pathString)
 }
 
 // listTransactionAPIHandler returns a list of transactions from the API in JSON format
