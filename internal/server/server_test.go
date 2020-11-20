@@ -72,10 +72,12 @@ func (s *StubDataStore) GetUserDetails() (*userprofile.Userprofile, error) {
 }
 
 type stubTransactionAPI struct {
+	transactionCount   int
 }
 
 func (s *stubTransactionAPI) GetTransactions() (plaid.TransactionList, error) {
 	transactions := plaid.TransactionList{Transactions: []plaid.Transaction{{Amount: 9.99, Date: "2020-09-12", Name: "Netflix"}}}
+	s.transactionCount ++
 	return transactions, nil
 }
 
@@ -89,6 +91,39 @@ func TestGetTransactions(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+	})
+
+	t.Run("Successfully loads transactions page", func(t *testing.T) {
+		store := &StubDataStore{}
+		transactionAPI := &stubTransactionAPI{}
+		server := NewServer(store, &StubMailer{}, transactionAPI)
+
+		request, _ := http.NewRequest(http.MethodGet, "/transactions/", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+		fmt.Println(response.Body)
+
+		assertStatus(t, response.Code, http.StatusOK)
+	})
+}
+
+func TestLoadSubscriptions(t *testing.T) {
+	t.Run("Successfully calls the transactionAPI and loads Transactions", func(t *testing.T) {
+		store := &StubDataStore{}
+		transactionAPI := &stubTransactionAPI{}
+		server := NewServer(store, &StubMailer{}, transactionAPI)
+
+		request, _ := http.NewRequest(http.MethodPost, "/api/transactions/load-subscriptions", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		if transactionAPI.transactionCount != 1 {
+			t.Errorf("got %d calls to GetTransactions want %d", transactionAPI.transactionCount, 1)
+		}
 
 		assertStatus(t, response.Code, http.StatusOK)
 	})
