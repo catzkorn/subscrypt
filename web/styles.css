@@ -1,0 +1,151 @@
+h1 {
+    margin-top: 20px;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    background-color: #7f5a83;
+    background-image: linear-gradient(315deg, #7f5a83 0%, #0d324d 74%);
+
+    height: 100%;
+    margin: 0;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.input-active, .input-active:focus {
+    background-color: rgba(255, 255, 255, 0.25);
+    border: none;
+    color: white;
+}
+
+.input-light {
+    color: white;
+}
+
+.form-control-plaintext {
+    padding: .375rem .75rem;
+}
+
+.input-light {
+    margin-right: 10px;
+    margin-left: 5px;
+}
+
+input#user-name.input-light {
+    width: 150px;
+}
+
+input#email.input-light {
+    width: 250px;
+}
+
+.input-dark {
+    color: black;
+}
+
+button#create-user-button, button#edit-user-button {
+    margin-left: 10px;
+}
+
+button#reminder-button, button[id^='delete-'] {
+    outline: none;
+}
+
+#chooseBankAccountModal .modal-body button {
+    width:150px;
+    margin-bottom: 10px;
+}
+
+#transactions-spinner {
+    margin-top: 200px;
+}
+
+.icon-button {
+    background-color: Transparent;
+    background-repeat:no-repeat;
+    border: none;
+    cursor:pointer;
+    overflow: hidden;
+    outline:none;
+    width: 32px;
+    height: 25px;
+}
+
+.icon-button svg {
+    width: 30px;
+    height: 22px;
+    fill: mediumpurple;
+}
+
+.icon-button:hover svg {
+    fill: steelblue;
+    stroke: steelblue;
+}
+
+.icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-dark svg {
+    stroke: slateblue;
+}
+
+.icon-light svg {
+    stroke: #9370db;
+}
+
+.new-user {
+    color: black;
+}
+
+.user-header {
+    color: white;
+    padding: 20px;
+}
+
+.btn-primary {
+    background-color: #6a5acd;
+    border: none;
+}
+
+.btn {
+    border-radius: 0px;
+}
+
+.btn-primary:hover {
+    background-color: steelblue;
+    text-decoration: none;
+}
+
+.navbar-custom {
+    background-color: #0d324d;
+}
+
+#subscriptions {
+    background-color: rgba(255, 255, 255, 0.75);
+    padding: 20px;
+    display: none;
+}
+
+#transactions {
+    background-color: rgba(255, 255, 255, 0.75);
+    padding: 20px;
+}
+
+th {
+    background-color: rgba(255, 255, 255, 0.18);
+}
+
+#new-user-form {
+    padding: 10px;
+}
+
+#loading-spinner {
+    display: none;
+    margin-bottom: 20px;
+}

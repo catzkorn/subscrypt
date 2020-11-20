@@ -85,12 +85,12 @@ func TestGetTransactions(t *testing.T) {
 		transactionAPI := &stubTransactionAPI{}
 		server := NewServer(store, &StubMailer{}, transactionAPI)
 
-		request, _ := http.NewRequest(http.MethodGet, "/api/transactions/", nil)
+		request, _ := http.NewRequest(http.MethodGet, "/api/transactions", nil)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
-		assertStatus(t, response.Code, http.StatusFound)
+		assertStatus(t, response.Code, http.StatusOK)
 	})
 }
 

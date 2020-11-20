@@ -1,18 +1,19 @@
 loadTransactions();
 
 function loadTransactions() {
+    showSpinner()
     _getTransactions(_showTransactions);
 }
 
 
 function _getTransactions(callback) {
     let xhttp = new XMLHttpRequest();
-    let path = '/api/listoftransactions';
+    let path = '/api/transactions';
     xhttp.onreadystatechange = function() {
         if (xhttp.readyState === 4 && xhttp.status === 200) {
-            console.log(xhttp.responseText)
             let transactions = _convertToTransactions(xhttp.responseText);
             callback(transactions);
+            hideSpinner();
         }
     };
     xhttp.open("GET", path, true);
@@ -34,28 +35,31 @@ function _convertToTransactions(res) {
 }
 
 function _showTransactions(transactions) {
-    let transactionsHTML = "";
+    let transactionsHTML = `<h4>Transactions</h4>`;
     if (transactions.length > 0) {
-        transactionsHTML = _formatTransactionsTable(transactions);
+        transactionsHTML += _formatTransactionsTable(transactions);
     } else {
-        transactionsHTML = "You don't have any Transactions";
+        transactionsHTML += "<p>You don't have any Transactions</p>";
     }
     document.getElementById("transactions").innerHTML = transactionsHTML;
 }
 
 function _formatTransactionsTable(transactions) {
-    let tableHTML = `<table id=\"table-transactions\" style=\"width:100%\">
-                                <tr>
-                                    <td>Transaction</td>
-                                    <td>Date</td>
-                                    <td>Amount</td>
-                                </tr>`;
+    let tableHTML = `<table class="table" id="table-transactions">
+                        <thead>
+                            <tr>
+                                <th scope="col">Transaction</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
 
     transactions.forEach(function(transaction) {
         tableHTML += _formatTransaction(transaction);
     });
 
-    tableHTML += "</table>";
+    tableHTML += "</tbody></table>";
     return tableHTML;
 }
 
