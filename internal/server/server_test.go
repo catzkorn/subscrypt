@@ -20,8 +20,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-const indexTemplatePath = "../../web/index.html"
-
 type StubMailer struct {
 	sentEmail *mail.SGMailV3
 }

@@ -312,9 +312,9 @@ func TestDeletingSubscriptionFromDB(t *testing.T) {
 	t.Run("deletes both instances of a subscription", func(t *testing.T) {
 		subscription := createTestSubscription("Apple TV", "7.99", time.Date(2020, time.December, 15, 0, 0, 0, 0, time.UTC))
 
-		gotSubscription, err := store.RecordSubscription(subscription)
+		_, err := store.RecordSubscription(subscription)
 		assertDatabaseError(t, err)
-		gotSubscription, err = store.RecordSubscription(subscription)
+		gotSubscription, err := store.RecordSubscription(subscription)
 		assertDatabaseError(t, err)
 
 		err = store.DeleteSubscription(gotSubscription.ID)
@@ -344,7 +344,7 @@ func TestUserprofilesDatabase(t *testing.T) {
 		assertDatabaseError(t, err)
 
 		if returnedDetails == nil {
-			t.Errorf("no user details recorded: %w", err)
+			t.Fatalf("no user details recorded: %v", err)
 		}
 
 		if returnedDetails.Name != usersName {

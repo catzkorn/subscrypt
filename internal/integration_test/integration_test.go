@@ -23,7 +23,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-const indexTemplatePath = "../../web/index.html"
 const JSONContentType = "application/json"
 
 type StubMailer struct {

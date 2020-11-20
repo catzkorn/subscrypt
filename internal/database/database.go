@@ -14,8 +14,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-const timeLayout = "January 2, 2006"
-
 // Database allows the user to store and read back subscriptions
 type Database struct {
 	database *sql.DB
