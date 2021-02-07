@@ -12,12 +12,23 @@ ReactDOM.render(<App />, document.getElementById("root"));
 
 function App(props) {
   const [subscriptions, setSubscriptions] = useState([]);
+  const [user, setUser] = useState(null);
+
+  if (user === null) {
+    return (
+      <>
+        <Navbar />
+
+        <UserDetails user={user} setUser={setUser} />
+      </>
+    );
+  }
 
   return (
     <>
       <Navbar />
 
-      <UserDetails />
+      <UserDetails user={user} setUser={setUser} />
 
       <Dashboard
         subscriptions={subscriptions}

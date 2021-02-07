@@ -45,8 +45,7 @@ const pencilSvg = (
   </svg>
 );
 
-function UserDetails() {
-  const [user, setUser] = useState(null);
+function UserDetails(props) {
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [editUser, setEditUser] = useState(false);
@@ -62,7 +61,7 @@ function UserDetails() {
         return response.json();
       })
       .then((payload) => {
-        setUser(payload);
+        props.setUser(payload);
       });
   }, []);
 
@@ -91,7 +90,7 @@ function UserDetails() {
         console.log("There was an error submitting user details", response);
         return;
       }
-      setUser({ Name: userName, Email: userEmail });
+      props.setUser({ Name: userName, Email: userEmail });
     });
   }
 
@@ -173,9 +172,12 @@ function UserDetails() {
               className="form-control form-control-md input-active input-light"
               id="user-name"
               onChange={(event) => {
-                setUser({ Name: event.target.value, Email: user.Email });
+                props.setUser({
+                  Name: event.target.value,
+                  Email: props.user.Email,
+                });
               }}
-              value={user.Name}
+              value={props.user.Name}
             ></input>
             <label htmlFor="email" className="col-form-label col-form-label-md">
               <span className="icon icon-light">{atSvg}</span>
@@ -185,16 +187,19 @@ function UserDetails() {
               className="form-control form-control-md input-active input-light"
               id="email"
               onChange={(event) => {
-                setUser({ Name: user.Name, Email: event.target.value });
+                props.setUser({
+                  Name: props.user.Name,
+                  Email: event.target.value,
+                });
               }}
-              value={user.Email}
+              value={props.user.Email}
             ></input>
             <button
               type="button"
               className="btn btn-primary"
               id="create-user-button"
               onClick={(event) => {
-                submitUserDetails(event, user.Name, user.Email);
+                submitUserDetails(event, props.user.Name, props.user.Email);
                 setEditUser(false);
               }}
             >
@@ -221,7 +226,7 @@ function UserDetails() {
               readOnly
               className="form-control-plaintext form-control-md input-light"
               id="user-name"
-              value={user.Name}
+              value={props.user.Name}
             ></input>
             <label htmlFor="email" className="col-form-label col-form-label-md">
               <span className="icon icon-light">{atSvg}</span>
@@ -231,7 +236,7 @@ function UserDetails() {
               readOnly
               className="form-control-plaintext form-control-md input-light"
               id="email"
-              value={user.Email}
+              value={props.user.Email}
             ></input>
             <button
               type="button"
@@ -249,7 +254,7 @@ function UserDetails() {
 
   let userForm;
 
-  if (user === null) {
+  if (props.user === null) {
     userForm = _newUserForm();
   } else {
     userForm = _existingUser();

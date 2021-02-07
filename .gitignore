@@ -5,3 +5,6 @@
 .ics
 frontend/node_modules
 react_commands.md
+index.js
+index.js.map
+index.bak.html
