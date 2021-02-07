@@ -1,6 +1,10 @@
 import React from "react";
 
 function BankModal(props) {
+  if (!props.showBankModal) {
+    return null;
+  }
+
   return (
     <div
       className="modal fade"
@@ -21,6 +25,7 @@ function BankModal(props) {
               className="close"
               data-dismiss="modal"
               aria-label="Close"
+              onClick={() => props.setShowBankModal(false)}
             >
               <span aria-hidden="true">&times;</span>
             </button>
