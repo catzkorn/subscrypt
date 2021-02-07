@@ -53,14 +53,14 @@ type Transaction struct {
 	Name   string  `json:"name"`
 }
 
-func (p *PlaidAPI) GetTransactions() (TransactionList, error) {
+func (p *PlaidAPI) GetTransactions() ([]Transaction, error) {
 	response := getPublicToken()
 	time.Sleep(2 * time.Second)
 	access := getAccessToken(response)
 	time.Sleep(2 * time.Second)
 	TransactionList := getTransactions(access)
 
-	return TransactionList, nil
+	return TransactionList.Transactions, nil
 }
 
 func getPublicToken() PublicToken {

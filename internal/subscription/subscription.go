@@ -19,13 +19,13 @@ type Subscription struct {
 	DateDue time.Time       `json:"dateDue"`
 }
 
-func ProcessTransactions(transactions plaid.TransactionList) []Subscription {
+func ProcessTransactions(transactions []plaid.Transaction) []Subscription {
 
 	knownSubscriptions := []string{"Netflix", "Touchstone Climbing", "SparkFun", "Tectra Inc", "KFC"}
 
 	var subscriptions []Subscription
 
-	for _, transaction := range transactions.Transactions {
+	for _, transaction := range transactions {
 		if subscriptionInSlice(transaction.Name, subscriptions) {
 			continue
 		} else {

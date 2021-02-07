@@ -27,7 +27,7 @@ type Server struct {
 
 // TransactionAPI defines the transaction api interface
 type TransactionAPI interface {
-	GetTransactions() (plaid.TransactionList, error)
+	GetTransactions() ([]plaid.Transaction, error)
 }
 
 // IndexPageData defines data shown on the page
@@ -58,7 +58,6 @@ func NewServer(dataStore DataStore, mailer email.Mailer, transactionAPI Transact
 	s.router.Handle("/api/reminders", http.HandlerFunc(s.reminderHandler))
 	s.router.Handle("/api/subscriptions", http.HandlerFunc(s.subscriptionsAPIHandler))
 	s.router.Handle("/api/subscriptions/", http.HandlerFunc(s.subscriptionIDAPIHandler))
-	s.router.Handle("/api/transactions/load-subscriptions", http.HandlerFunc(s.transactionAPIHandler))
 	s.router.Handle("/api/users", http.HandlerFunc(s.userHandler))
 	s.router.Handle("/api/transactions", http.HandlerFunc(s.listTransactionAPIHandler))
 
@@ -76,7 +75,7 @@ func (s *Server) transactionsHandler(w http.ResponseWriter, r *http.Request) {
 
 // processGetTransactionPage processes the get '/transactions/' and serves the html file
 func (s *Server) processGetTransactionPage(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./web/transactions.html")
+	http.ServeFile(w, r, "./web/index.html")
 }
 
 // listTransactionAPIHandler returns a list of transactions from the API in JSON format
@@ -84,37 +83,30 @@ func (s *Server) listTransactionAPIHandler(w http.ResponseWriter, r *http.Reques
 	switch r.Method {
 	case http.MethodGet:
 		w.Header().Set("content-type", JSONContentType)
-		transactions, err := s.transactionAPI.GetTransactions()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		// transactions, err := s.transactionAPI.GetTransactions()
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
 
-		err = json.NewEncoder(w).Encode(transactions)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-}
+		// fmt.Printf("%#v\n", transactions)
 
-// transactionsAPIHandler calls the Plaid API to get a list of transactions and then stores relevant subscriptions in the database
-func (s *Server) transactionAPIHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		transactions, err := s.transactionAPI.GetTransactions()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		subscriptions := subscription.ProcessTransactions(transactions)
+		// if transactions == nil {
+		// 	transactions = []plaid.Transaction{}
+		// }
+		subscriptions := subscription.ProcessTransactions(plaidTransactions)
 		for _, entry := range subscriptions {
-			_, err = s.dataStore.RecordSubscription(entry)
+			_, err := s.dataStore.RecordSubscription(entry)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
+		}
+
+		err := json.NewEncoder(w).Encode(plaidTransactions)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 }

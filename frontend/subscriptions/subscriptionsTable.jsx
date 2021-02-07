@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import formatAmountTwoDecimals from "../util/formatNumbers";
 
 const calendarSvg = (
   <svg
@@ -82,7 +83,7 @@ function SubscriptionsTable(props) {
     return (
       <tr key={subscription.id}>
         <th scope="row">{subscription.name}</th>
-        <td>{_formatAmountTwoDecimals(subscription.amount)}</td>
+        <td>{formatAmountTwoDecimals(subscription.amount)}</td>
         <td>{_formatDateAsDay(subscription.dateDue)}</td>
         <td>Monthly</td>
         <td>
@@ -104,10 +105,6 @@ function SubscriptionsTable(props) {
         </td>
       </tr>
     );
-  }
-
-  function _formatAmountTwoDecimals(amount) {
-    return parseFloat(amount).toFixed(2);
   }
 
   function _formatDateAsDay(dateString) {
