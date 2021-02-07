@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import formatAmountTwoDecimals from "../util/formatNumbers";
+import sortDates from "../util/sorting";
 
 const calendarSvg = (
   <svg
@@ -38,16 +39,7 @@ function SubscriptionsTable(props) {
         return response.json();
       })
       .then((payload) => {
-        payload.sort((a, b) => {
-          const dayA = new Date(a.dateDue).getDate();
-          const dayB = new Date(b.dateDue).getDate();
-          if (dayA < dayB) {
-            return -1;
-          } else if (dayA > dayB) {
-            return 1;
-          }
-          return 0;
-        });
+        payload.sort(sortDates);
 
         props.setSubscriptions(payload);
       });

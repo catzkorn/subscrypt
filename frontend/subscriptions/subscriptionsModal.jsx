@@ -43,7 +43,9 @@ function SubscriptionsModal(props) {
       })
       .then((payload) => {
         subscriptions = props.subscriptions.concat([payload]);
+        subscriptions.sort(sortDates);
         props.setSubscriptions(subscriptions);
+        props.setShowModal(false);
       });
   }
 
@@ -83,7 +85,9 @@ function SubscriptionsModal(props) {
   function handleSubscriptionAmountChange(event) {
     setSubscriptionAmount(event.target.value);
   }
-
+  if (!props.showModal) {
+    return null;
+  }
   return (
     <div
       className="modal fade"
@@ -104,6 +108,7 @@ function SubscriptionsModal(props) {
               className="close"
               data-dismiss="modal"
               aria-label="Close"
+              onClick={() => props.setShowModal(false)}
             >
               <span aria-hidden="true">&times;</span>
             </button>
@@ -156,6 +161,7 @@ function SubscriptionsModal(props) {
               type="button"
               className="btn btn-secondary"
               data-dismiss="modal"
+              onClick={() => props.setShowModal(false)}
             >
               Close
             </button>
