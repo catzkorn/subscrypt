@@ -38,10 +38,49 @@ function SubscriptionsTable(props) {
         return response.json();
       })
       .then((payload) => {
+        payload.sort((a, b) => {
+          const dayA = new Date(a.dateDue).getDate();
+          const dayB = new Date(b.dateDue).getDate();
+          if (dayA < dayB) {
+            return -1;
+          } else if (dayA > dayB) {
+            return 1;
+          }
+          return 0;
+        });
+
         props.setSubscriptions(payload);
       });
   }, []);
 
+  if (props.subscriptions.length === 0) {
+    return <p>You don't have any subscriptions</p>;
+  }
+  return (
+    <div id="subscriptions-table">
+      <table className="table" id="table-subscriptions">
+        <thead>
+          <tr>
+            <th scope="col">Subscription Name</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Payment Date</th>
+            <th scope="col">Frequency</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {props.subscriptions.map((subscription) => {
+            return (
+              <Subscription subscription={subscription} key={subscription.id} />
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Subscription(props) {
   function handleDeleteSubscription(subscriptionID) {
     const url = "/api/subscriptions/" + subscriptionID;
     const options = {
@@ -79,40 +118,6 @@ function SubscriptionsTable(props) {
     });
   }
 
-  function renderSubscription(subscription, index) {
-    return (
-      <tr key={subscription.id}>
-        <th scope="row">{subscription.name}</th>
-        <td>{formatAmountTwoDecimals(subscription.amount)}</td>
-        <td>{_formatDateAsDay(subscription.dateDue)}</td>
-        <td>Monthly</td>
-        <td>
-          <button
-            type="button"
-            className="icon-button"
-            onClick={() => handleSendReminder(subscription.id)}
-            id="reminder-button"
-          >
-            {calendarSvg}
-          </button>
-          <button
-            type="button"
-            className="icon-button"
-            onClick={() => handleDeleteSubscription(subscription.id)}
-          >
-            {binSvg}
-          </button>
-        </td>
-      </tr>
-    );
-  }
-
-  function _formatDateAsDay(dateString) {
-    const date = new Date(dateString);
-    let d = date.getDate();
-    return d + _getOrdinal(d);
-  }
-
   function _getOrdinal(number) {
     if (number > 3 && number < 21) return "th";
     switch (number % 10) {
@@ -127,24 +132,36 @@ function SubscriptionsTable(props) {
     }
   }
 
-  if (props.subscriptions.length === 0) {
-    return <p>You don't have any subscriptions</p>;
+  function _formatDateAsDay(dateString) {
+    const date = new Date(dateString);
+    let d = date.getDate();
+    return d + _getOrdinal(d);
   }
+
   return (
-    <div id="subscriptions-table">
-      <table className="table" id="table-subscriptions">
-        <thead>
-          <tr>
-            <th scope="col">Subscription Name</th>
-            <th scope="col">Amount</th>
-            <th scope="col">Payment Date</th>
-            <th scope="col">Frequency</th>
-            <th scope="col">Actions</th>
-          </tr>
-        </thead>
-        <tbody>{props.subscriptions.map(renderSubscription)}</tbody>
-      </table>
-    </div>
+    <tr>
+      <th scope="row">{props.subscription.name}</th>
+      <td>{formatAmountTwoDecimals(props.subscription.amount)}</td>
+      <td>{_formatDateAsDay(props.subscription.dateDue)}</td>
+      <td>Monthly</td>
+      <td>
+        <button
+          type="button"
+          className="icon-button"
+          onClick={() => handleSendReminder(props.subscription.id)}
+          id="reminder-button"
+        >
+          {calendarSvg}
+        </button>
+        <button
+          type="button"
+          className="icon-button"
+          onClick={() => handleDeleteSubscription(props.subscription.id)}
+        >
+          {binSvg}
+        </button>
+      </td>
+    </tr>
   );
 }
 

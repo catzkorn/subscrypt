@@ -16,16 +16,6 @@ function Transactions() {
       });
   }, []);
 
-  function renderTransaction(transaction, index) {
-    return (
-      <tr key={transaction.name + transaction.date + transaction.amount}>
-        <td>{transaction.name}</td>
-        <td>{transaction.date}</td>
-        <td>£{formatAmountTwoDecimals(transaction.amount)}</td>
-      </tr>
-    );
-  }
-
   if (transactions.length === 0) {
     return <p>You don't have any transactions</p>;
   }
@@ -39,8 +29,27 @@ function Transactions() {
           <th scope="col">Amount</th>
         </tr>
       </thead>
-      <tbody>{transactions.map(renderTransaction)}</tbody>
+      <tbody>
+        {transactions.map((transaction) => {
+          return (
+            <Transaction
+              transaction={transaction}
+              key={transaction.name + transaction.date + transaction.amount}
+            />
+          );
+        })}
+      </tbody>
     </table>
+  );
+}
+
+function Transaction(props) {
+  return (
+    <tr>
+      <td>{props.transaction.name}</td>
+      <td>{props.transaction.date}</td>
+      <td>£{formatAmountTwoDecimals(props.transaction.amount)}</td>
+    </tr>
   );
 }
 
