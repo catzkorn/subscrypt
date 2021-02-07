@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import BankModal from "./banking/bankModal";
 import Navbar from "./navbar/navbar";
 import Dashboard from "./subscriptions/subscriptionsDashboard";
 import SubscriptionsModal from "./subscriptions/subscriptionsModal";
 import SubscriptionsTable from "./subscriptions/subscriptionsTable";
+import Transactions from "./transactions/transactions";
 import UserDetails from "./users/userLogin";
 import UserLogin from "./users/userLogin";
 
@@ -16,26 +18,33 @@ function App(props) {
 
   if (user === null) {
     return (
-      <>
+      <Router>
         <Navbar />
 
         <UserDetails user={user} setUser={setUser} />
-      </>
+      </Router>
     );
   }
 
   return (
-    <>
+    <Router>
       <Navbar />
+      <Switch>
+        <Route path="/transactions">
+          <Transactions />
+        </Route>
 
-      <UserDetails user={user} setUser={setUser} />
+        <Route path="/">
+          <UserDetails user={user} setUser={setUser} />
 
-      <Dashboard
-        subscriptions={subscriptions}
-        setSubscriptions={setSubscriptions}
-      />
+          <Dashboard
+            subscriptions={subscriptions}
+            setSubscriptions={setSubscriptions}
+          />
 
-      <BankModal />
-    </>
+          <BankModal />
+        </Route>
+      </Switch>
+    </Router>
   );
 }
