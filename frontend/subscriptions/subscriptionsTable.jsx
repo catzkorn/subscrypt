@@ -58,6 +58,26 @@ function SubscriptionsTable(props) {
     });
   }
 
+  function handleSendReminder(subscriptionID) {
+    const url = "/api/reminders";
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: subscriptionID,
+      }),
+    };
+    fetch(url, options).then((response) => {
+      if (response.status !== 200) {
+        console.log("There was an error sending a reminder", response);
+        return;
+      }
+      console.log("it worked!");
+    });
+  }
+
   function renderSubscription(subscription, index) {
     return (
       <tr key={subscription.id}>
@@ -66,7 +86,12 @@ function SubscriptionsTable(props) {
         <td>{_formatDateAsDay(subscription.dateDue)}</td>
         <td>Monthly</td>
         <td>
-          <button type="button" className="icon-button" id="reminder-button">
+          <button
+            type="button"
+            className="icon-button"
+            onClick={() => handleSendReminder(subscription.id)}
+            id="reminder-button"
+          >
             {calendarSvg}
           </button>
           <button

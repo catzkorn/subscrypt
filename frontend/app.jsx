@@ -5,6 +5,7 @@ import Navbar from "./navbar/navbar";
 import Dashboard from "./subscriptions/subscriptionsDashboard";
 import SubscriptionsModal from "./subscriptions/subscriptionsModal";
 import SubscriptionsTable from "./subscriptions/subscriptionsTable";
+import UserDetails from "./users/userLogin";
 import UserLogin from "./users/userLogin";
 
 ReactDOM.render(<App />, document.getElementById("root"));
@@ -16,7 +17,7 @@ function App(props) {
     <>
       <Navbar />
 
-      <UserLogin />
+      <UserDetails />
 
       <Dashboard
         subscriptions={subscriptions}

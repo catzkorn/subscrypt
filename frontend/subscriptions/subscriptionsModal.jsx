@@ -4,14 +4,23 @@ function SubscriptionsModal(props) {
   const [subscriptionDate, setSubscriptionDate] = useState("");
   const [subscriptionName, setSubscriptionName] = useState("");
   const [subscriptionAmount, setSubscriptionAmount] = useState(0);
+  const [validationErrorMessage, setValidationErrorMessage] = useState("");
 
   function handleSubscriptionSubmit(event) {
     event.preventDefault();
 
+    if (
+      !_subscriptionValuesAreValid(
+        subscriptionName,
+        subscriptionAmount,
+        subscriptionDate
+      )
+    ) {
+      return;
+    }
+
     const url = "/api/subscriptions";
-    console.log(subscriptionDate);
     const formatDate = _formatDateForJSON(subscriptionDate);
-    console.log(formatDate);
     const options = {
       method: "POST",
       headers: {
@@ -23,10 +32,11 @@ function SubscriptionsModal(props) {
         dateDue: formatDate,
       }),
     };
+
     fetch(url, options)
       .then((response) => {
         if (response.status !== 200) {
-          console.log("There was an error with the submitted data".response);
+          console.log("There was an error with the submitted data", response);
           return;
         }
         return response.json();
@@ -35,6 +45,27 @@ function SubscriptionsModal(props) {
         subscriptions = props.subscriptions.concat([payload]);
         props.setSubscriptions(subscriptions);
       });
+  }
+
+  function _subscriptionValuesAreValid(
+    subscriptionName,
+    subscriptionAmount,
+    subscriptionDate
+  ) {
+    if (
+      subscriptionName === "" ||
+      subscriptionAmount === "" ||
+      subscriptionDate === ""
+    ) {
+      setValidationErrorMessage("One or more fields is empty");
+      return false;
+    }
+
+    if (parseInt(subscriptionAmount) <= 0) {
+      setValidationErrorMessage("Amount can not be 0 or a negative number");
+      return false;
+    }
+    return true;
   }
 
   function _formatDateForJSON(date) {
@@ -117,6 +148,9 @@ function SubscriptionsModal(props) {
               </div>
             </form>
           </div>
+          <div className="subscription-validation-error">
+            {validationErrorMessage}
+          </div>
           <div className="modal-footer">
             <button
               type="button"
@@ -130,7 +164,10 @@ function SubscriptionsModal(props) {
               className="btn btn-primary"
               id="create-subscription-button"
               data-dismiss="modal"
-              onClick={(event) => handleSubscriptionSubmit(event)}
+              onClick={(event) => {
+                setValidationErrorMessage("");
+                handleSubscriptionSubmit(event);
+              }}
             >
               Add subscription
             </button>
