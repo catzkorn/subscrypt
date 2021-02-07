@@ -1,11 +1,56 @@
-import React from "react";
+import React, { useState } from "react";
 
 function SubscriptionsModal(props) {
+  const [subscriptionDate, setSubscriptionDate] = useState("");
+  const [subscriptionName, setSubscriptionName] = useState("");
+  const [subscriptionAmount, setSubscriptionAmount] = useState(0);
+
+  function handleSubscriptionSubmit(event) {
+    event.preventDefault();
+
+    const url = "/api/subscriptions";
+    console.log(subscriptionDate);
+    const formatDate = _formatDateForJSON(subscriptionDate);
+    console.log(formatDate);
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: subscriptionName,
+        amount: subscriptionAmount,
+        dateDue: formatDate,
+      }),
+    };
+    fetch(url, options).then((response) => {
+      if (response.status !== 200) {
+        console.log("There was an error with the submitted data".response);
+      }
+    });
+  }
+
+  function _formatDateForJSON(date) {
+    return date + "T00:00:00Z";
+  }
+
+  function handleSubscriptionDateChange(event) {
+    setSubscriptionDate(event.target.value);
+  }
+
+  function handleSubscriptionNameChange(event) {
+    setSubscriptionName(event.target.value);
+  }
+
+  function handleSubscriptionAmountChange(event) {
+    setSubscriptionAmount(event.target.value);
+  }
+
   return (
     <div
       className="modal fade"
       id="addSubscriptionModal"
-      tabindex="-1"
+      tabIndex="-1"
       role="dialog"
       aria-labelledby="addSubscriptionModalLabel"
       aria-hidden="true"
@@ -28,32 +73,38 @@ function SubscriptionsModal(props) {
           <div className="modal-body">
             <form>
               <div className="form-group">
-                <label for="subscription-name" className="col-form-label">
+                <label htmlFor="subscription-name" className="col-form-label">
                   Subscription name:
                 </label>
                 <input
                   type="text"
                   className="form-control"
+                  onChange={(event) => handleSubscriptionNameChange(event)}
+                  value={subscriptionName}
                   id="subscription-name"
                 ></input>
               </div>
               <div className="form-group">
-                <label for="subscription-amount" className="col-form-label">
+                <label htmlFor="subscription-amount" className="col-form-label">
                   Price:
                 </label>
                 <input
                   type="text"
                   className="form-control"
+                  onChange={(event) => handleSubscriptionAmountChange(event)}
+                  value={subscriptionAmount}
                   id="subscription-amount"
                 ></input>
               </div>
               <div className="form-group">
-                <label for="subscription-date" className="col-form-label">
+                <label htmlFor="subscription-date" className="col-form-label">
                   Next payment date:
                 </label>
                 <input
                   type="date"
                   className="form-control"
+                  onChange={(event) => handleSubscriptionDateChange(event)}
+                  value={subscriptionDate}
                   id="subscription-date"
                 ></input>
               </div>
@@ -72,7 +123,7 @@ function SubscriptionsModal(props) {
               className="btn btn-primary"
               id="create-subscription-button"
               data-dismiss="modal"
-              onclick="createSubscription()"
+              onClick={(event) => handleSubscriptionSubmit(event)}
             >
               Add subscription
             </button>

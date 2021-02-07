@@ -5,7 +5,7 @@ function BankModal(props) {
     <div
       className="modal fade"
       id="chooseBankAccountModal"
-      tabindex="-1"
+      tabIndex="-1"
       role="dialog"
       aria-labelledby="chooseBankAccountModalTitle"
       aria-hidden="true"
@@ -34,7 +34,6 @@ function BankModal(props) {
                     className="btn btn-primary"
                     id="getTransactions"
                     data-dismiss="modal"
-                    onclick="importTransactionsToSubscriptions()"
                   >
                     <img
                       width="15px"
