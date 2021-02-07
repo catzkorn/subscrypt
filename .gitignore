@@ -3,3 +3,5 @@
 .envrc
 .vscode
 .ics
+frontend/node_modules
+react_commands.md

@@ -23,11 +23,18 @@ function SubscriptionsModal(props) {
         dateDue: formatDate,
       }),
     };
-    fetch(url, options).then((response) => {
-      if (response.status !== 200) {
-        console.log("There was an error with the submitted data".response);
-      }
-    });
+    fetch(url, options)
+      .then((response) => {
+        if (response.status !== 200) {
+          console.log("There was an error with the submitted data".response);
+          return;
+        }
+        return response.json();
+      })
+      .then((payload) => {
+        subscriptions = props.subscriptions.concat([payload]);
+        props.setSubscriptions(subscriptions);
+      });
   }
 
   function _formatDateForJSON(date) {

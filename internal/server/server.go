@@ -268,6 +268,12 @@ func (s *Server) processGetSubscriptions(w http.ResponseWriter) {
 		return
 	}
 
+	// return empty slice of subscriptions instead of nil so the API
+	// does not return null to the user
+	if subscriptions == nil {
+		subscriptions = []subscription.Subscription{}
+	}
+
 	err = json.NewEncoder(w).Encode(subscriptions)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -277,18 +283,25 @@ func (s *Server) processGetSubscriptions(w http.ResponseWriter) {
 
 // processPostSubscription tells the SubscriptionStore to record the subscription from the post body
 func (s *Server) processPostSubscription(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 	var subscription subscription.Subscription
 	err := json.NewDecoder(r.Body).Decode(&subscription)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	_, err = s.dataStore.RecordSubscription(subscription)
+	newSubscription, err := s.dataStore.RecordSubscription(subscription)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer r.Body.Close()
+
+	err = json.NewEncoder(w).Encode(newSubscription)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 }
 
 // processDeleteSubscription tells the SubscriptionStore to delete the subscription with the given ID
