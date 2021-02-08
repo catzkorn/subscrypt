@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import formatAmountTwoDecimals from "../util/formatNumbers";
 import sortDates from "../util/sorting";
+import Subscription from "./subscriptionType";
 
 const calendarSvg = (
   <svg
@@ -31,7 +32,12 @@ const binSvg = (
   </svg>
 );
 
-function SubscriptionsTable(props) {
+interface SubscriptionsTableProps {
+  subscriptions: Subscription[];
+  setSubscriptions: (subscriptions: Subscription[]) => void;
+}
+
+function SubscriptionsTable(props: SubscriptionsTableProps): JSX.Element {
   useEffect(() => {
     const url = "/api/subscriptions";
     fetch(url)
@@ -63,7 +69,12 @@ function SubscriptionsTable(props) {
         <tbody>
           {props.subscriptions.map((subscription) => {
             return (
-              <Subscription subscription={subscription} key={subscription.id} />
+              <Subscription
+                subscription={subscription}
+                subscriptions={props.subscriptions}
+                setSubscriptions={props.setSubscriptions}
+                key={subscription.id}
+              />
             );
           })}
         </tbody>
@@ -72,8 +83,14 @@ function SubscriptionsTable(props) {
   );
 }
 
-function Subscription(props) {
-  function handleDeleteSubscription(subscriptionID) {
+interface SubscriptionProps {
+  subscription: Subscription;
+  subscriptions: Subscription[];
+  setSubscriptions: (subscriptions: Subscription[]) => void;
+}
+
+function Subscription(props: SubscriptionProps): JSX.Element {
+  function handleDeleteSubscription(subscriptionID: number) {
     const url = "/api/subscriptions/" + subscriptionID;
     const options = {
       method: "DELETE",
@@ -83,14 +100,14 @@ function Subscription(props) {
         console.log("There was an error deleting the subscription", response);
         return;
       }
-      newSubscriptions = props.subscriptions.filter((subscription) => {
+      let newSubscriptions = props.subscriptions.filter((subscription) => {
         return subscription.id !== subscriptionID;
       });
       props.setSubscriptions(newSubscriptions);
     });
   }
 
-  function handleSendReminder(subscriptionID) {
+  function handleSendReminder(subscriptionID: number) {
     const url = "/api/reminders";
     const options = {
       method: "POST",
@@ -110,7 +127,7 @@ function Subscription(props) {
     });
   }
 
-  function _getOrdinal(number) {
+  function _getOrdinal(number: number): string {
     if (number > 3 && number < 21) return "th";
     switch (number % 10) {
       case 1:
@@ -124,7 +141,7 @@ function Subscription(props) {
     }
   }
 
-  function _formatDateAsDay(dateString) {
+  function _formatDateAsDay(dateString: string): string {
     const date = new Date(dateString);
     let d = date.getDate();
     return d + _getOrdinal(d);

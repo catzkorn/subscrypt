@@ -1,6 +1,11 @@
-import React from "react";
+import * as React from "react";
 
-function BankModal(props) {
+interface BankModalProps {
+  showBankModal: boolean;
+  setShowBankModal: (showBankModal: boolean) => void;
+}
+
+function BankModal(props: BankModalProps): JSX.Element | null {
   if (!props.showBankModal) {
     return null;
   }
@@ -9,7 +14,7 @@ function BankModal(props) {
     <div
       className="modal fade"
       id="chooseBankAccountModal"
-      tabIndex="-1"
+      tabIndex={-1}
       role="dialog"
       aria-labelledby="chooseBankAccountModalTitle"
       aria-hidden="true"

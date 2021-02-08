@@ -1,4 +1,4 @@
-function formatAmountTwoDecimals(amount) {
+function formatAmountTwoDecimals(amount: string): string {
   return parseFloat(amount).toFixed(2);
 }
 

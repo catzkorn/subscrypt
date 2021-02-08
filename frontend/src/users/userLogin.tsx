@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import User from "./userTypes";
 
 const atSvg = (
   <svg
@@ -45,10 +46,15 @@ const pencilSvg = (
   </svg>
 );
 
-function UserDetails(props) {
-  const [userName, setUserName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [editUser, setEditUser] = useState(false);
+interface UserDetailsProps {
+  setUser: (user: User) => void;
+  user: User | null;
+}
+
+function UserDetails(props: UserDetailsProps) {
+  const [userName, setUserName] = useState<string>("");
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [editUser, setEditUser] = useState<boolean>(false);
 
   useEffect(() => {
     const url = "/api/users";
@@ -65,18 +71,22 @@ function UserDetails(props) {
       });
   }, []);
 
-  function handleUserNameChange(event) {
+  function handleUserNameChange(event: React.ChangeEvent<HTMLInputElement>) {
     setUserName(event.target.value);
   }
 
-  function handleUserEmailChange(event) {
+  function handleUserEmailChange(event: React.ChangeEvent<HTMLInputElement>) {
     setUserEmail(event.target.value);
   }
 
-  function submitUserDetails(event, userName, userEmail) {
+  function submitUserDetails(
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    userName: string,
+    userEmail: string
+  ) {
     event.preventDefault();
     const url = "/api/users";
-    options = {
+    const options = {
       method: "POST",
       headers: { "Content-type": "application/json" },
       body: JSON.stringify({
@@ -156,7 +166,7 @@ function UserDetails(props) {
     );
   }
 
-  function _existingUser() {
+  function _existingUser(user: User) {
     if (editUser) {
       return (
         <form className="form-inline" id="user-form">
@@ -174,10 +184,10 @@ function UserDetails(props) {
               onChange={(event) => {
                 props.setUser({
                   Name: event.target.value,
-                  Email: props.user.Email,
+                  Email: user.Email,
                 });
               }}
-              value={props.user.Name}
+              value={user.Name}
             ></input>
             <label htmlFor="email" className="col-form-label col-form-label-md">
               <span className="icon icon-light">{atSvg}</span>
@@ -188,18 +198,18 @@ function UserDetails(props) {
               id="email"
               onChange={(event) => {
                 props.setUser({
-                  Name: props.user.Name,
+                  Name: user.Name,
                   Email: event.target.value,
                 });
               }}
-              value={props.user.Email}
+              value={user.Email}
             ></input>
             <button
               type="button"
               className="btn btn-primary"
               id="create-user-button"
               onClick={(event) => {
-                submitUserDetails(event, props.user.Name, props.user.Email);
+                submitUserDetails(event, user.Name, user.Email);
                 setEditUser(false);
               }}
             >
@@ -226,7 +236,7 @@ function UserDetails(props) {
               readOnly
               className="form-control-plaintext form-control-md input-light"
               id="user-name"
-              value={props.user.Name}
+              value={user.Name}
             ></input>
             <label htmlFor="email" className="col-form-label col-form-label-md">
               <span className="icon icon-light">{atSvg}</span>
@@ -236,7 +246,7 @@ function UserDetails(props) {
               readOnly
               className="form-control-plaintext form-control-md input-light"
               id="email"
-              value={props.user.Email}
+              value={user.Email}
             ></input>
             <button
               type="button"
@@ -252,15 +262,12 @@ function UserDetails(props) {
     );
   }
 
-  let userForm;
-
   if (props.user === null) {
-    userForm = _newUserForm();
-  } else {
-    userForm = _existingUser();
+    const userForm = _newUserForm();
+    return <div className="user">{userForm}</div>;
   }
 
-  return <div className="user">{userForm}</div>;
+  return <div className="user">{_existingUser(props.user)} </div>;
 }
 
 export default UserDetails;

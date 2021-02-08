@@ -1,12 +1,26 @@
 import React, { useState } from "react";
+import sortDates from "../util/sorting";
 
-function SubscriptionsModal(props) {
-  const [subscriptionDate, setSubscriptionDate] = useState("");
-  const [subscriptionName, setSubscriptionName] = useState("");
-  const [subscriptionAmount, setSubscriptionAmount] = useState(0);
-  const [validationErrorMessage, setValidationErrorMessage] = useState("");
+import Subscription from "./subscriptionType";
 
-  function handleSubscriptionSubmit(event) {
+interface SubscriptionsModalProps {
+  subscriptions: Subscription[];
+  setSubscriptions: (subscriptions: Subscription[]) => void;
+  showSubscriptionModal: boolean;
+  setShowSubscriptionModal: (showSubscriptionModal: boolean) => void;
+}
+
+function SubscriptionsModal(props: SubscriptionsModalProps) {
+  const [subscriptionDate, setSubscriptionDate] = useState<string>("");
+  const [subscriptionName, setSubscriptionName] = useState<string>("");
+  const [subscriptionAmount, setSubscriptionAmount] = useState<number>(0);
+  const [validationErrorMessage, setValidationErrorMessage] = useState<string>(
+    ""
+  );
+
+  function handleSubscriptionSubmit(
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) {
     event.preventDefault();
 
     if (
@@ -42,7 +56,7 @@ function SubscriptionsModal(props) {
         return response.json();
       })
       .then((payload) => {
-        subscriptions = props.subscriptions.concat([payload]);
+        let subscriptions = props.subscriptions.concat([payload]);
         subscriptions.sort(sortDates);
         props.setSubscriptions(subscriptions);
         props.setShowSubscriptionModal(false);
@@ -50,49 +64,53 @@ function SubscriptionsModal(props) {
   }
 
   function _subscriptionValuesAreValid(
-    subscriptionName,
-    subscriptionAmount,
-    subscriptionDate
-  ) {
-    if (
-      subscriptionName === "" ||
-      subscriptionAmount === "" ||
-      subscriptionDate === ""
-    ) {
+    subscriptionName: string,
+    subscriptionAmount: number,
+    subscriptionDate: string
+  ): boolean {
+    if (subscriptionName === "" || subscriptionDate === "") {
       setValidationErrorMessage("One or more fields is empty");
       return false;
     }
 
-    if (parseInt(subscriptionAmount) <= 0) {
+    if (subscriptionAmount <= 0) {
       setValidationErrorMessage("Amount can not be 0 or a negative number");
       return false;
     }
     return true;
   }
 
-  function _formatDateForJSON(date) {
+  function _formatDateForJSON(date: string): string {
     return date + "T00:00:00Z";
   }
 
-  function handleSubscriptionDateChange(event) {
+  function handleSubscriptionDateChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
     setSubscriptionDate(event.target.value);
   }
 
-  function handleSubscriptionNameChange(event) {
+  function handleSubscriptionNameChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
     setSubscriptionName(event.target.value);
   }
 
-  function handleSubscriptionAmountChange(event) {
-    setSubscriptionAmount(event.target.value);
+  function handleSubscriptionAmountChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    setSubscriptionAmount(parseInt(event.target.value));
   }
+
   if (!props.showSubscriptionModal) {
     return null;
   }
+
   return (
     <div
       className="modal fade"
       id="addSubscriptionModal"
-      tabIndex="-1"
+      tabIndex={-1}
       role="dialog"
       aria-labelledby="addSubscriptionModalLabel"
       aria-hidden="true"
@@ -132,7 +150,7 @@ function SubscriptionsModal(props) {
                   Price:
                 </label>
                 <input
-                  type="text"
+                  type="numeric"
                   className="form-control"
                   onChange={(event) => handleSubscriptionAmountChange(event)}
                   value={subscriptionAmount}

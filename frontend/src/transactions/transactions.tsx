@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import formatAmountTwoDecimals from "../util/formatNumbers";
+import Transaction from "./transactionType";
 
 function Transactions() {
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
     const url = "/api/transactions";
@@ -43,7 +44,11 @@ function Transactions() {
   );
 }
 
-function Transaction(props) {
+interface TransactionProps {
+  transaction: Transaction;
+}
+
+function Transaction(props: TransactionProps) {
   return (
     <tr>
       <td>{props.transaction.name}</td>

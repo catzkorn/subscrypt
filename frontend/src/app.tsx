@@ -9,12 +9,14 @@ import SubscriptionsTable from "./subscriptions/subscriptionsTable";
 import Transactions from "./transactions/transactions";
 import UserDetails from "./users/userLogin";
 import UserLogin from "./users/userLogin";
+import Subscription from "./subscriptions/subscriptionType";
+import User from "./users/userTypes";
 
 ReactDOM.render(<App />, document.getElementById("root"));
 
-function App(props) {
-  const [subscriptions, setSubscriptions] = useState([]);
-  const [user, setUser] = useState(null);
+function App() {
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [user, setUser] = useState<User | null>(null);
 
   if (user === null) {
     return (
@@ -41,8 +43,6 @@ function App(props) {
             subscriptions={subscriptions}
             setSubscriptions={setSubscriptions}
           />
-
-          <BankModal />
         </Route>
       </Switch>
     </Router>

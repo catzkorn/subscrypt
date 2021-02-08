@@ -2,8 +2,14 @@ import React, { useState } from "react";
 import BankModal from "../banking/bankModal";
 import SubscriptionsModal from "./subscriptionsModal";
 import SubscriptionsTable from "./subscriptionsTable";
+import Subscription from "./subscriptionType";
 
-function Dashboard(props) {
+interface DashboardProps {
+  subscriptions: Subscription[];
+  setSubscriptions: (subscriptions: Subscription[]) => void;
+}
+
+function Dashboard(props: DashboardProps) {
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [showBankModal, setShowBankModal] = useState(false);
   return (
